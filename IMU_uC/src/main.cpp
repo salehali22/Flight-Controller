@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <Wire.h>
 
 // Pin definitions
@@ -24,41 +25,6 @@ float GyroErrorX, GyroErrorY, GyroErrorZ;
 // Timing
 long sample_time;
 
-void setup() {
-  Serial.begin(115200);
-  
-  while(!Wire.begin(SDA_PIN, SCL_PIN)) {
-    Serial.println("Error: I2C initialization failed");
-    delay(1000);
-  }
-  
-  Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x6B);
-  Wire.write(0x00);
-  Wire.endTransmission(true);
-  
-  calculate_IMU_error();
-  delay(20);
-  
-  sample_time = millis();
-}
-
-void loop() {
-  if(millis() - sample_time >= SAMPLE_INTERVAL) {
-    sample_time = millis();
-    
-    read_accelerometer();
-    read_gyroscope();
-    calculate_acc_angles();
-    
-    float dt = SAMPLE_INTERVAL / 1000.0;
-    
-    integrate_gyro(dt);
-    apply_complementary_filter();
-    
-    print_orientation();
-  }
-}
 
 void read_accelerometer() {
   Wire.beginTransmission(MPU_ADDR);
@@ -151,4 +117,41 @@ void calculate_IMU_error() {
   Serial.print("GyroErrorX: "); Serial.println(GyroErrorX);
   Serial.print("GyroErrorY: "); Serial.println(GyroErrorY);
   Serial.print("GyroErrorZ: "); Serial.println(GyroErrorZ);
+}
+
+
+void setup() {
+  Serial.begin(115200);
+  
+  while(!Wire.begin(SDA_PIN, SCL_PIN)) {
+    Serial.println("Error: I2C initialization failed");
+    delay(1000);
+  }
+  
+  Wire.beginTransmission(MPU_ADDR);
+  Wire.write(0x6B);
+  Wire.write(0x00);
+  Wire.endTransmission(true);
+  
+  calculate_IMU_error();
+  delay(20);
+  
+  sample_time = millis();
+}
+
+void loop() {
+  if(millis() - sample_time >= SAMPLE_INTERVAL) {
+    sample_time = millis();
+    
+    read_accelerometer();
+    read_gyroscope();
+    calculate_acc_angles();
+    
+    float dt = SAMPLE_INTERVAL / 1000.0;
+    
+    integrate_gyro(dt);
+    apply_complementary_filter();
+    
+    print_orientation();
+  }
 }
