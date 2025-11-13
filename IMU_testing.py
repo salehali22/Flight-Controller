@@ -1,16 +1,20 @@
 """
-Drone IMU Serial Monitor
-------------------------
-Simple tool for evaluating IMU data from ESP32 + MPU6050
-- Real-time 3D visualization of orientation
-- Serial data logging with command support
-- Export capability with time windows
+IMU Monitor
+-----------
+Full-featured IMU evaluation suite with command system and charting
+
+Features:
+- Command presets for common tests
+- Data marker protocol (<DATA> ... </DATA>)
+- Real-time charting with multiple views
+- Statistics and drift analysis
+- High-speed data capture (up to 6.8kHz)
 
 Run with --debug flag for detailed console logging
 """
 
 import tkinter as tk
-from tkinter import ttk, scrolledtext, messagebox
+from tkinter import ttk, scrolledtext, messagebox, filedialog, simpledialog
 import serial
 import serial.tools.list_ports
 import threading
@@ -21,25 +25,157 @@ import os
 import sys
 from datetime import datetime
 from collections import deque
+from dataclasses import dataclass, field
+import binascii
+import shutil
+import subprocess
+import re
+from typing import Optional, List
+import bisect
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from mpl_toolkits.mplot3d import Axes3D
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Line3DCollection
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 
-# Check if debug mode is enabled
 DEBUG_MODE = '--debug' in sys.argv
-
-# Enable matplotlib interactive mode
 plt.ion()
 
 
+@dataclass
+class CommandPreset:
+    name: str
+    description: str
+    commands: list[str]
+
+
+@dataclass
+class DataBlock:
+    metadata: dict = field(default_factory=dict)
+    lines: List[str] = field(default_factory=list)
+    start_ts: float = 0.0
+    end_ts: float = 0.0
+    missing_end: bool = False
+    crc_status: Optional[str] = None
+    sample_count_expected: Optional[int] = None
+    warnings: List[str] = field(default_factory=list)
+    block_id: int = 0
+    sample_count_actual: int = 0
+    data_rows: List[dict] = field(default_factory=list)
+
+    def to_csv_rows(self):
+        return self.lines
+
+    def duration(self):
+        if not self.start_ts or not self.end_ts:
+            return 0.0
+        return self.end_ts - self.start_ts
+
+
+class DataBlockParser:
+    """Parser for <DATA> ... </DATA> marked blocks"""
+    def __init__(self):
+        self.in_block = False
+        self.current_block: Optional[DataBlock] = None
+        self.metadata = {}
+        self.block_start_time: Optional[float] = None
+        self._last_line_ts: Optional[float] = None
+    
+    def parse_line(self, line, timestamp=None):
+        """Returns: None (still parsing), or DataBlock when block complete"""
+        if timestamp is None:
+            timestamp = time.time()
+        self._last_line_ts = timestamp
+        
+        if line.startswith("<DATA"):
+            self.in_block = True
+            self.block_start_time = timestamp
+            self.metadata = self.extract_metadata(line)
+            self.current_block = DataBlock(metadata=self.metadata.copy(), start_ts=timestamp)
+            return None
+            
+        elif line == "</DATA>":
+            if not self.in_block or not self.current_block:
+                return None
+            self.in_block = False
+            self.current_block.end_ts = timestamp
+            result = self.current_block
+            self.current_block = None
+            self.metadata = {}
+            self.block_start_time = None
+            return result
+            
+        elif self.in_block:
+            if not self.current_block:
+                # Should not happen, but guard
+                self.current_block = DataBlock(metadata=self.metadata.copy(), start_ts=self.block_start_time or timestamp)
+            self.current_block.lines.append(line)
+            return None
+            
+        return None
+    
+    def extract_metadata(self, line):
+        """Extract metadata from <DATA:key=val,key=val> format"""
+        meta = {}
+        match = re.search(r'<DATA:(.+)>', line)
+        if match:
+            pairs = match.group(1).split(',')
+            for pair in pairs:
+                if '=' in pair:
+                    key, val = pair.split('=', 1)
+                    meta[key.strip()] = val.strip()
+        return meta
+
+    def finalize_if_timed_out(self, timeout=None):
+        """If a block is open too long without closing tag, mark missing end"""
+        if not self.in_block or not self.current_block or not self.block_start_time:
+            return None
+        
+        # Calculate appropriate timeout based on metadata
+        if timeout is None:
+            # Default timeout: use DURATION if available, otherwise use SAMPLES estimate, otherwise 60 seconds
+            duration_meta = self.metadata.get("DURATION")
+            samples_meta = self.metadata.get("SAMPLES")
+            rate_meta = self.metadata.get("RATE", "100")
+            
+            if duration_meta:
+                try:
+                    timeout = float(duration_meta) + 5.0  # Add 5 seconds buffer
+                except (ValueError, TypeError):
+                    timeout = 60.0
+            elif samples_meta:
+                try:
+                    samples = int(samples_meta)
+                    rate = float(rate_meta)
+                    if rate > 0:
+                        timeout = (samples / rate) + 10.0  # Add 10 seconds buffer
+                    else:
+                        timeout = 60.0
+                except (ValueError, TypeError):
+                    timeout = 60.0
+            else:
+                # No duration or samples specified - use longer timeout for free run
+                timeout = 300.0  # 5 minutes for continuous streaming
+        
+        if time.time() - self.block_start_time < timeout:
+            return None
+        self.current_block.missing_end = True
+        self.current_block.end_ts = self._last_line_ts or time.time()
+        result = self.current_block
+        self.in_block = False
+        self.current_block = None
+        self.metadata = {}
+        self.block_start_time = None
+        return result
+
+
 class DebugLogger:
-    """Simple debug logger - only logs when DEBUG_MODE is True"""
+    """Debug logger"""
     def __init__(self):
         self.enabled = DEBUG_MODE
-        self.logs = deque(maxlen=1000)  # Keep only last 1000 entries
+        self.logs = deque(maxlen=1000)
     
     def log(self, level, message):
         if not self.enabled:
@@ -62,547 +198,1582 @@ class DebugLogger:
         return "\n".join(self.logs)
 
 
-class DroneIMUMonitor:
+class EnhancedIMUMonitor:
     def __init__(self, root):
         self.root = root
-        self.root.title("Drone IMU Monitor")
-        self.root.geometry("1400x800")
+        self.root.title("IMU Monitor")
+        self.root.geometry("1600x900")
+        self.root.minsize(1280, 860)
         self.root.configure(bg="#1e1e1e")
         
-        # Initialize debug logger
         self.logger = DebugLogger()
         self.logger.info("Application starting")
         
-        # Serial state
+        # Serial
         self.serial_port = None
         self.reading = False
-        self.data_queue = queue.Queue(maxsize=1000)  # Limit queue size
+        self.data_queue = queue.Queue(maxsize=10000)
         
-        # Data storage (use deque for better performance)
-        self.log_data = deque(maxlen=10000)  # Keep last 10k entries
+        # Data storage (large buffers for high-speed capture)
+        self.log_data = deque(maxlen=100000)  # ~15s at 6.8kHz
         self.sent_commands = deque(maxlen=1000)
+        
+        # Data block parser
+        self.parser = DataBlockParser()
+        self.recording_block = False
+        self.current_block_metadata = {}
+        self.data_blocks: List[DataBlock] = []
+        self.csv_buffer: List[str] = []
+        self.block_sample_counter = 0
+        self.total_samples_captured = 0
+        self.block_start_timestamp = None
+        self.last_block_summary = "No data blocks captured yet."
+        self.data_block_counter = 0
+        self.data_block_index = {}
+        
+        # Chart data buffers
+        self.chart_buffer_size = 250000  # ~5 minutes at 500 Hz
+        self.chart_keys = [
+            "roll", "pitch", "yaw",
+            "gx", "gy", "gz",
+            "ax", "ay", "az",
+            "roll_raw", "pitch_raw", "yaw_raw",
+            "roll_gyro_raw", "pitch_gyro_raw", "yaw_gyro_raw"
+        ]
+        self.chart_data = {key: deque(maxlen=self.chart_buffer_size) for key in ["time"] + self.chart_keys}
+        self.chart_start_time = time.time()
+        self.chart_window_var = tk.StringVar(value="1min")
+        self.chart_axis_var = tk.StringVar(value="roll")
+        self.chart_paused = tk.BooleanVar(value=False)
+        self.chart_autoscale = tk.BooleanVar(value=True)
+        self.chart_axis_options = {
+            "roll": "Roll (°)",
+            "pitch": "Pitch (°)",
+            "yaw": "Yaw (°)",
+            "gx": "Gyro X (°/s)",
+            "gy": "Gyro Y (°/s)",
+            "gz": "Gyro Z (°/s)",
+            "ax": "Accel X (g)",
+            "ay": "Accel Y (g)",
+            "az": "Accel Z (g)",
+            "roll_raw": "Roll (Accel Raw)",
+            "pitch_raw": "Pitch (Accel Raw)",
+            "yaw_raw": "Yaw (Accel Raw)",
+            "roll_gyro_raw": "Roll (Gyro Raw)",
+            "pitch_gyro_raw": "Pitch (Gyro Raw)",
+            "yaw_gyro_raw": "Yaw (Gyro Raw)",
+        }
+        self.chart_axis_label_map = {label: key for key, label in self.chart_axis_options.items()}
+        self.chart_axis_label_var = tk.StringVar(value=self.chart_axis_options["roll"])
+        self.chart_manual_min = tk.StringVar(value="-180")
+        self.chart_manual_max = tk.StringVar(value="180")
+        self.series_visibility = {
+            "roll": tk.BooleanVar(value=True),
+            "pitch": tk.BooleanVar(value=True),
+            "yaw": tk.BooleanVar(value=True),
+            "raw_accel": tk.BooleanVar(value=True),
+            "raw_gyro": tk.BooleanVar(value=True),
+            "sensor_accel": tk.BooleanVar(value=True),
+            "sensor_gyro": tk.BooleanVar(value=True),
+        }
+        self.filtered_colors = {"roll": "#ef4444", "pitch": "#22c55e", "yaw": "#06b6d4"}
+        self.accel_colors = {"roll": "#fda4af", "pitch": "#86efac", "yaw": "#67e8f9"}
+        self.gyro_colors = {"roll": "#fb923c", "pitch": "#bef264", "yaw": "#7dd3fc"}
+        self.live_raw_angle_state = self._create_raw_angle_state()
+        
+        # Statistics
+        self.stats_samples = 0
+        self.stats_sum_roll = 0
+        self.stats_sum_pitch = 0
+        self.stats_sum_yaw = 0
+        self.stats_sum_sq_roll = 0
+        self.stats_sum_sq_pitch = 0
+        self.stats_sum_sq_yaw = 0
+        self.stats_min_roll = float("inf")
+        self.stats_min_pitch = float("inf")
+        self.stats_min_yaw = float("inf")
+        self.stats_max_roll = float("-inf")
+        self.stats_max_pitch = float("-inf")
+        self.stats_max_yaw = float("-inf")
+        self.stats_min_roll = float("inf")
+        self.stats_min_pitch = float("inf")
+        self.stats_min_yaw = float("inf")
+        self.stats_max_roll = float("-inf")
+        self.stats_max_pitch = float("-inf")
+        self.stats_max_yaw = float("-inf")
+        self.sample_interval_history = deque(maxlen=2000)
+        self.last_sample_timestamp = None
+        self.latest_sample = {"time": 0.0}
+        for key in self.chart_keys:
+            self.latest_sample[key] = math.nan
         
         # UI state
         self.auto_update_3d = tk.BooleanVar(value=True)
         self.autoscroll = tk.BooleanVar(value=True)
+        self.show_chart = tk.BooleanVar(value=True)
+        self.chart_mode = tk.StringVar(value="drift")  # drift, raw, comparison
         self.paused = False
         self.connected = False
+        self.data_format = "Unknown"
+        self.expected_sample_rate = None
+        self.sample_rate_warning_active = False
+        self.recording_indicator = tk.StringVar(value="⚪ Not Recording")
+        self.recording_light_color = tk.StringVar(value="#444444")
+        self.sample_counter_var = tk.StringVar(value="Samples: 0")
+        self.data_rate_var = tk.StringVar(value="Rate: 0.0 Hz")
+        self.command_history = deque(maxlen=200)
+        self.recording_active = False
+        self.recording_start_time = None
+        self.recording_capture_active = False
+        self.recordings = []
+        self.recording_session_counter = 0
+        self.recording_folder = os.path.join(os.getcwd(), "recordings")
+        self.record_elapsed_var = tk.StringVar(value="Elapsed: 00:00")
+        self.record_status_text = tk.StringVar(value="Not Recording")
+        self.recording_current_blocks = []
+        self.record_timer_job = None
+        self.recording_start_block_id = None
+        self.pending_recording_finalize = False
+        self.free_run_var = tk.BooleanVar(value=False)
+        self.test_time_var = tk.StringVar(value="Test Time: --")
+        self.current_time_var = tk.StringVar(value="Local Time: --")
+        self.test_start_time = None
+        self.test_duration_target = None
+        self.stats_samples_var = tk.StringVar(value="Samples: 0")
+        self.stats_current_var = tk.StringVar(value="Current: R=0.00° P=0.00° Y=0.00°")
+        self.stats_mean_var = tk.StringVar(value="Mean: R=0.00° P=0.00° Y=0.00°")
+        self.stats_std_var = tk.StringVar(value="StdDev: R=0.00° P=0.00° Y=0.00°")
+        self.stats_min_var = tk.StringVar(value="Min: R=0.00° P=0.00° Y=0.00°")
+        self.stats_max_var = tk.StringVar(value="Max: R=0.00° P=0.00° Y=0.00°")
+        self.stats_drift_var = tk.StringVar(value="Drift Rate: 0.00°/min")
+        self.stats_quality_var = tk.StringVar(value="Quality: n/a")
+        self.stats_rate_var = tk.StringVar(value="Sample Rate: 0.0 Hz")
+        self.stats_quality_color = "#00ff00"
+        self.suggestion_var = tk.StringVar(value="Suggestion: Monitor drift performance")
         
-        # Export settings
-        self.export_range = tk.StringVar(value="all")
-        self.export_from_time = ""
-        self.export_to_time = ""
+        # Command builder state
+        self.cmd_mode = tk.StringVar(value="FILTERED")
+        self.cmd_rate = tk.StringVar(value="100")
+        self.cmd_duration = tk.StringVar(value="60")
+        self.cmd_samples = tk.StringVar(value="")
+        self.cmd_alpha = tk.DoubleVar(value=0.98)
+        self.cmd_calibrate = tk.StringVar(value="1000")
+        self.manual_preview_var = tk.StringVar(value="")
+        self.custom_command_var = tk.StringVar()
+        self.alpha_display_var = tk.StringVar(value="0.98")
+        self.preset_hint_var = tk.StringVar(value="Select a preset to populate default commands.")
+        self.command_presets: List[CommandPreset] = [
+            CommandPreset("Static Drift Test", "5 min filtered capture @100Hz",
+                          ["MODE:FILTERED", "RATE:100", "DURATION:300", "START"]),
+            CommandPreset("Raw Data Analysis", "5000 raw samples @500Hz",
+                          ["MODE:RAW", "RATE:500", "SAMPLES:5000", "START"]),
+            CommandPreset("Filter Comparison", "30 sec both modes @200Hz",
+                          ["MODE:BOTH", "RATE:200", "DURATION:30", "START"]),
+            CommandPreset("Quick Calibration", "Collect calibration samples",
+                          ["CALIBRATE:1000"]),
+        ]
+        for var in (self.cmd_mode, self.cmd_rate, self.cmd_duration, self.cmd_samples):
+            var.trace_add("write", self.update_manual_preview)
+        self.chart_mode.trace_add("write", self.on_chart_mode_changed)
         
-        # IMU angles
+        # IMU data
         self.roll = 0
         self.pitch = 0
         self.yaw = 0
         
-        # Drone position
-        self.pos_x = 0
-        self.pos_y = 0
-        self.pos_z = 0
+        # ESP32 status
+        self.esp_mode = "UNKNOWN"
+        self.esp_rate = "0"
+        self.esp_alpha = "0.00"
         
-        # 3D update throttling (reduced for less delay)
+        # 3D update throttling
         self.last_3d_update = 0
-        self.min_3d_interval = 0.016  # ~60 FPS for smoother updates
+        self.min_3d_interval = 0.016  # 60 FPS
+        
+        # Chart update throttling
+        self.last_chart_update = 0
+        self.min_chart_interval = 0.1  # 10 FPS
+        
+        # Statistics update throttling
+        self.last_stats_update = 0
+        self.min_stats_interval = 0.5  # 2 FPS
         
         # Batch text updates
         self.pending_log_lines = []
         self.last_log_update = 0
-        self.log_update_interval = 0.1  # Update text every 100ms
+        self.log_update_interval = 0.1
         
-        # 3D view settings
+        # 3D view
         self.view_elev = 20
         self.view_azim = 45
         
         self.setup_ui()
+        self.update_test_time_display()
         self.update_loop()
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         self.logger.info("UI setup complete")
     
     def setup_ui(self):
-        """Create the user interface"""
-        # Configure dark theme
+        """Create UI"""
         style = ttk.Style()
         style.theme_use("clam")
         style.configure(".", background="#1e1e1e", foreground="white", fieldbackground="#2b2b2b")
         style.configure("TButton", background="#333", foreground="white", padding=6)
         style.configure("TLabel", background="#1e1e1e", foreground="white")
         style.configure("TCheckbutton", background="#1e1e1e", foreground="white")
+        style.configure("TRadiobutton", background="#1e1e1e", foreground="white")
         style.configure("TFrame", background="#1e1e1e")
         style.configure("TLabelframe", background="#1e1e1e", foreground="white")
         style.configure("TLabelframe.Label", background="#1e1e1e", foreground="white")
-        style.configure("TEntry", fieldbackground="#2b2b2b", foreground="white", insertcolor="white")
-        style.configure("TCombobox", fieldbackground="#2b2b2b", foreground="white")
-        style.map("TCombobox", fieldbackground=[("readonly", "#2b2b2b")])
-        style.map("TCombobox", selectbackground=[("readonly", "#2b2b2b")])
-        style.map("TCombobox", selectforeground=[("readonly", "white")])
         
-        # Main container
-        main = tk.PanedWindow(self.root, orient=tk.HORIZONTAL, bg="#1e1e1e", 
-                             sashwidth=4, sashrelief=tk.RAISED)
+        # Main container: 30% left, 70% right
+        main = tk.PanedWindow(self.root, orient=tk.HORIZONTAL, bg="#1e1e1e", sashwidth=4)
         main.pack(fill="both", expand=True, padx=10, pady=10)
         
-        # Left panel
-        left = ttk.Frame(main, width=400)
+        left = ttk.Frame(main, width=480)
         left.pack_propagate(False)
         
-        # Right panel (3D view)
         right = ttk.Frame(main)
         
-        main.add(left, width=400)
+        main.add(left, width=480)
         main.add(right)
         
-        self.create_controls(left)
-        self.create_log_view(left)
-        self.create_command_view(left)
-        self.create_3d_view(right)
+        self.create_left_panel(left)
+        self.create_right_panel(right)
     
-    def create_controls(self, parent):
-        """Serial connection controls"""
-        frame = ttk.LabelFrame(parent, text="Connection", padding=10)
-        frame.pack(fill="x", pady=(0, 10))
+    def create_left_panel(self, parent):
+        """Left panel: connection, command system, logging"""
+        # Connection
+        conn_frame = ttk.LabelFrame(parent, text="Connection", padding=10)
+        conn_frame.pack(fill="x", pady=(0, 10))
         
-        # Port selection
-        port_frame = ttk.Frame(frame)
+        port_frame = ttk.Frame(conn_frame)
         port_frame.pack(fill="x", pady=5)
-        
         ttk.Label(port_frame, text="Port:").pack(side="left", padx=(0, 5))
         self.port_var = tk.StringVar()
-        self.port_combo = ttk.Combobox(port_frame, textvariable=self.port_var, 
-                                       width=12, state="readonly")
+        self.port_combo = ttk.Combobox(port_frame, textvariable=self.port_var, width=12, state="readonly")
         self.port_combo.pack(side="left", padx=(0, 5))
+        ttk.Button(port_frame, text="↻", width=3, command=self.refresh_ports).pack(side="left")
         
-        ttk.Button(port_frame, text="↻", width=3, 
-                  command=self.refresh_ports).pack(side="left")
-        
-        # Baud rate
-        baud_frame = ttk.Frame(frame)
+        baud_frame = ttk.Frame(conn_frame)
         baud_frame.pack(fill="x", pady=5)
-        
         ttk.Label(baud_frame, text="Baud:").pack(side="left", padx=(0, 5))
         self.baud_var = tk.StringVar(value="115200")
-        baud_combo = ttk.Combobox(baud_frame, textvariable=self.baud_var,
-                                  values=["9600", "57600", "115200", "230400"],
-                                  width=12, state="readonly")
-        baud_combo.pack(side="left")
+        ttk.Combobox(baud_frame, textvariable=self.baud_var,
+                     values=["115200", "230400", "460800", "921600"],
+                    width=12, state="readonly").pack(side="left")
         
-        # Connect button
-        btn_frame = ttk.Frame(frame)
-        btn_frame.pack(fill="x", pady=10)
+        self.connect_btn = tk.Button(conn_frame, text="Connect", command=self.toggle_connection,
+                                     bg="#22aa55", fg="white", font=("Segoe UI", 10, "bold"),
+                                     relief=tk.RAISED, bd=2, cursor="hand2")
+        self.connect_btn.pack(fill="x", pady=(10, 5))
         
-        self.connect_btn = tk.Button(btn_frame, text="Connect", 
-                                      command=self.toggle_connection,
-                                      bg="#22aa55", fg="white", font=("Segoe UI", 10, "bold"),
-                                      relief=tk.RAISED, bd=2, cursor="hand2",
-                                      activebackground="#33bb66")
-        self.connect_btn.pack(fill="x", pady=(0, 5))
-        
-        # Pause/Resume button
-        self.pause_btn = tk.Button(btn_frame, text="⏸ Pause", 
-                                    command=self.toggle_pause,
-                                    bg="#ff8800", fg="white", font=("Segoe UI", 9, "bold"),
-                                    relief=tk.RAISED, bd=2, cursor="hand2",
-                                    activebackground="#ff9922", state="disabled")
+        self.pause_btn = tk.Button(conn_frame, text="⏸ Pause", command=self.toggle_pause,
+                                   bg="#ff8800", fg="white", font=("Segoe UI", 9, "bold"),
+                                   relief=tk.RAISED, bd=2, cursor="hand2", state="disabled")
         self.pause_btn.pack(fill="x")
         
-        # Options
-        opt_frame = ttk.Frame(frame)
-        opt_frame.pack(fill="x", pady=5)
+        # Presets
+        preset_frame = ttk.LabelFrame(parent, text="Command Presets", padding=10)
+        preset_frame.pack(fill="x", pady=(0, 10))
         
-        ttk.Checkbutton(opt_frame, text="Auto-update 3D", 
-                       variable=self.auto_update_3d).pack(anchor="w")
-        ttk.Checkbutton(opt_frame, text="Auto-scroll", 
-                       variable=self.autoscroll).pack(anchor="w")
+        for idx, preset in enumerate(self.command_presets):
+            btn = ttk.Button(preset_frame, text=preset.name, command=lambda p=preset: self.apply_command_preset(p))
+            btn.grid(row=idx, column=0, sticky="ew", pady=2)
+        preset_frame.columnconfigure(0, weight=1)
         
-        # Debug mode indicator
-        if DEBUG_MODE:
-            debug_label = ttk.Label(opt_frame, text="🔧 Debug Mode ON", 
-                                   foreground="#ff8800", font=("Segoe UI", 8, "bold"))
-            debug_label.pack(anchor="w", pady=(5, 0))
+        preset_hint = ttk.Label(preset_frame, textvariable=self.preset_hint_var, wraplength=420, foreground="#bbbbbb", justify="left")
+        preset_hint.grid(row=len(self.command_presets), column=0, sticky="w", pady=(6, 0))
         
-        # Current values
-        values_frame = ttk.Frame(frame)
-        values_frame.pack(fill="x", pady=10)
+        preset_actions = ttk.Frame(preset_frame)
+        preset_actions.grid(row=len(self.command_presets)+1, column=0, sticky="ew", pady=(10, 0))
+        ttk.Button(preset_actions, text="STATUS", command=lambda: self.send_command_sequence(["STATUS"])).pack(side="left", expand=True, fill="x", padx=2)
+        ttk.Button(preset_actions, text="RESET", command=lambda: self.send_command_sequence(["RESET"])).pack(side="left", expand=True, fill="x", padx=2)
+        ttk.Button(preset_actions, text="STOP", command=lambda: self.send_command_sequence(["STOP"])).pack(side="left", expand=True, fill="x", padx=2)
         
-        ttk.Label(values_frame, text="Current Values:", 
-                 font=("Segoe UI", 9, "bold")).pack(anchor="w")
-        self.values_label = ttk.Label(values_frame, 
-                                     text="Roll: 0.0°\nPitch: 0.0°\nYaw: 0.0°",
-                                     font=("Consolas", 9))
-        self.values_label.pack(anchor="w", padx=(10, 0))
+        # Test controls
+        test_frame = ttk.LabelFrame(parent, text="Test Controls", padding=10)
+        test_frame.pack(fill="x", pady=(0, 10))
+        test_frame.columnconfigure(1, weight=1)
+        test_frame.columnconfigure(3, weight=1)
+        ttk.Label(test_frame, text="Mode:").grid(row=0, column=0, sticky="w")
+        ttk.Combobox(test_frame, textvariable=self.cmd_mode,
+                     values=["RAW", "FILTERED", "BOTH"], width=14, state="readonly").grid(row=0, column=1, sticky="ew", pady=2)
+        ttk.Label(test_frame, text="Rate (Hz):").grid(row=0, column=2, sticky="w", padx=(10, 0))
+        ttk.Combobox(test_frame, textvariable=self.cmd_rate,
+                     values=["50", "100", "200", "500"], width=10, state="readonly").grid(row=0, column=3, sticky="ew", pady=2)
         
-        # Action buttons
-        action_frame = ttk.Frame(frame)
-        action_frame.pack(fill="x", pady=5)
+        ttk.Label(test_frame, text="Duration (s):").grid(row=1, column=0, sticky="w", pady=2)
+        ttk.Entry(test_frame, textvariable=self.cmd_duration, width=12).grid(row=1, column=1, sticky="ew", pady=2)
+        ttk.Label(test_frame, text="Samples:").grid(row=1, column=2, sticky="w", padx=(10, 0))
+        ttk.Entry(test_frame, textvariable=self.cmd_samples, width=12).grid(row=1, column=3, sticky="ew", pady=2)
         
-        ttk.Button(action_frame, text="Clear Log", 
-                  command=self.clear_log).pack(fill="x", pady=(0, 5))
+        alpha_frame = ttk.Frame(test_frame)
+        alpha_frame.grid(row=2, column=0, columnspan=4, sticky="ew", pady=(8, 4))
+        ttk.Label(alpha_frame, text="Alpha:").pack(side="left")
+        self.alpha_scale = ttk.Scale(alpha_frame, from_=0.0, to=1.0, variable=self.cmd_alpha, command=self.on_alpha_change)
+        self.alpha_scale.pack(side="left", fill="x", expand=True, padx=(6, 6))
+        ttk.Label(alpha_frame, textvariable=self.alpha_display_var, width=5).pack(side="right")
         
-        ttk.Button(action_frame, text="📤 Export Data Now", 
-                  command=self.export_data_now).pack(fill="x", pady=(0, 5))
+        calib_frame = ttk.Frame(test_frame)
+        calib_frame.grid(row=3, column=0, columnspan=4, sticky="ew", pady=(4, 4))
+        ttk.Label(calib_frame, text="Calibrate samples:").pack(side="left")
+        ttk.Entry(calib_frame, textvariable=self.cmd_calibrate, width=10).pack(side="left", padx=(5, 10))
+        ttk.Button(calib_frame, text="Run Calibration", command=self.send_calibration_command).pack(side="left")
         
-        ttk.Button(action_frame, text="⚙ Export Settings", 
-                  command=self.show_export_settings).pack(fill="x", pady=(0, 5))
+        ttk.Checkbutton(test_frame, text="Enable Free Run (continuous)", variable=self.free_run_var,
+                        command=self.update_manual_preview).grid(row=4, column=0, columnspan=4, sticky="w", pady=(6, 0))
         
-        if DEBUG_MODE:
-            ttk.Button(action_frame, text="Debug Log", 
-                      command=self.show_debug_log).pack(fill="x")
+        button_row = ttk.Frame(test_frame)
+        button_row.grid(row=5, column=0, columnspan=4, sticky="ew", pady=(8, 0))
+        ttk.Button(button_row, text="Start Test", command=self.send_manual_command).pack(side="left", expand=True, fill="x", padx=2)
+        ttk.Button(button_row, text="Free Run", command=self.send_free_run_command).pack(side="left", expand=True, fill="x", padx=2)
+        ttk.Button(button_row, text="Stop", command=lambda: self.send_command_sequence(["STOP"])).pack(side="left", expand=True, fill="x", padx=2)
+        
+        ttk.Label(test_frame, text="Command Preview:", foreground="#bbbbbb").grid(row=6, column=0, columnspan=4, sticky="w", pady=(8, 0))
+        preview_label = ttk.Label(test_frame, textvariable=self.manual_preview_var, font=("Consolas", 9),
+                                  wraplength=420, justify="left")
+        preview_label.grid(row=7, column=0, columnspan=4, sticky="w")
+        
+        # Recording controls
+        rec_frame = ttk.LabelFrame(parent, text="Recording Controls", padding=10)
+        rec_frame.pack(fill="x", pady=(0, 10))
+        
+        rec_top = ttk.Frame(rec_frame)
+        rec_top.pack(fill="x")
+        self.record_btn = tk.Button(rec_top, text="⬤ Start Recording", command=self.toggle_recording,
+                                    bg="#bb2244", fg="white", font=("Segoe UI", 10, "bold"),
+                                    relief=tk.RAISED, bd=2, cursor="hand2")
+        self.record_btn.pack(side="left", padx=(0, 6))
+        
+        self.record_canvas = tk.Canvas(rec_top, width=26, height=26, bg="#1e1e1e", highlightthickness=0)
+        self.record_canvas.pack(side="left", padx=(6, 6))
+        self.record_indicator_item = self.record_canvas.create_oval(4, 4, 22, 22,
+                                                                    fill=self.recording_light_color.get(),
+                                                                    outline="")
+        ttk.Label(rec_top, textvariable=self.record_status_text).pack(side="left")
+        
+        rec_stats = ttk.Frame(rec_frame)
+        rec_stats.pack(fill="x", pady=(8, 0))
+        rec_stats.columnconfigure(1, weight=1)
+        rec_stats.columnconfigure(2, weight=1)
+        ttk.Label(rec_stats, textvariable=self.sample_counter_var).grid(row=0, column=0, sticky="w")
+        ttk.Label(rec_stats, textvariable=self.record_elapsed_var).grid(row=0, column=1, sticky="w", padx=(10, 0))
+        ttk.Label(rec_stats, textvariable=self.data_rate_var).grid(row=0, column=2, sticky="e")
+        ttk.Label(rec_stats, textvariable=self.test_time_var).grid(row=1, column=0, sticky="w", pady=(4, 0))
+        ttk.Label(rec_stats, textvariable=self.current_time_var).grid(row=1, column=1, sticky="w", padx=(10, 0), pady=(4, 0))
+        
+        rec_folder_row = ttk.Frame(rec_frame)
+        rec_folder_row.pack(fill="x", pady=(6, 0))
+        ttk.Label(rec_folder_row, text="Recording Folder:").pack(side="left", padx=(0, 5))
+        self.recording_folder_label = ttk.Label(rec_folder_row, text=os.path.basename(self.recording_folder) if os.path.exists(self.recording_folder) else self.recording_folder, foreground="gray")
+        self.recording_folder_label.pack(side="left", padx=(0, 5))
+        ttk.Button(rec_folder_row, text="Select Folder...", command=self.select_recording_folder).pack(side="left")
+        
+        # Serial Monitor Button
+        serial_monitor_frame = ttk.Frame(parent)
+        serial_monitor_frame.pack(fill="x", pady=(0, 10))
+        ttk.Button(serial_monitor_frame, text="📡 Open Serial Monitor", 
+                  command=self.open_serial_monitor_window).pack(fill="x", pady=5)
+        
+        # Internal log text (hidden, used for data processing)
+        self.log_text = None  # Will be created in serial monitor window
+        self.serial_monitor_window = None
+        
+        # Export & Analysis
+        action_frame = ttk.LabelFrame(parent, text="Export & Analysis", padding=10)
+        action_frame.pack(fill="x", pady=(0, 10))
+        ttk.Button(action_frame, text="Export Data…", command=self.export_data_dialog).pack(side="left", padx=(0, 5))
+        ttk.Button(action_frame, text="Export Values…", command=self.export_current_values).pack(side="left", padx=(0, 5))
+        ttk.Button(action_frame, text="Export Formatted CSV…", command=self.export_formatted_csv).pack(side="left", padx=(0, 5))
+        ttk.Button(action_frame, text="Import CSV…", command=self.import_data_from_csv).pack(side="left", padx=(0, 5))
+        ttk.Button(action_frame, text="Reference PDF", command=self.generate_reference_pdf).pack(side="left", padx=(0, 5))
+        ttk.Button(action_frame, text="Clear Monitor", command=self.clear_log).pack(side="left", padx=(0, 5))
+        ttk.Button(action_frame, text="Debug Log", command=self.show_debug_log).pack(side="left")
         
         self.refresh_ports()
+        self.update_manual_preview()
+        self.refresh_recording_indicator()
+        self.root.update_idletasks()
     
-    def create_log_view(self, parent):
-        """Data log display"""
-        frame = ttk.LabelFrame(parent, text="Serial Data", padding=10)
-        frame.pack(fill="both", expand=True, pady=(0, 10))
+    def create_right_panel(self, parent):
+        """Right panel: 3D view + chart"""
+        parent.columnconfigure(0, weight=1)
+        parent.rowconfigure(0, weight=3)
+        parent.rowconfigure(1, weight=2)
+
+        # Top: 3D visualization
+        viz_frame = ttk.LabelFrame(parent, text="IMU Orientation (3D)", padding=10)
+        viz_frame.grid(row=0, column=0, sticky="nsew", pady=(0, 10))
+        viz_frame.columnconfigure(0, weight=1)
+        viz_frame.rowconfigure(1, weight=1)
         
-        self.log_text = scrolledtext.ScrolledText(
-            frame, wrap=tk.WORD, height=20,
-            background="#0d0d0d", foreground="#00ff00",
-            insertbackground="white", font=("Consolas", 9)
-        )
-        self.log_text.pack(fill="both", expand=True)
-        self.log_text.config(state="disabled")
+        # 3D controls
+        ctrl = ttk.Frame(viz_frame)
+        ctrl.grid(row=0, column=0, sticky="ew", pady=(0, 10))
+        
+        view_row = ttk.Frame(ctrl)
+        view_row.pack(side="left", fill="x")
+        ttk.Label(view_row, text="View:").pack(side="left", padx=(0, 10))
+        ttk.Button(view_row, text="Top", width=8, command=lambda: self.set_view(90, 0)).pack(side="left", padx=2)
+        ttk.Button(view_row, text="Front", width=8, command=lambda: self.set_view(0, 0)).pack(side="left", padx=2)
+        ttk.Button(view_row, text="Side", width=8, command=lambda: self.set_view(0, 90)).pack(side="left", padx=2)
+        ttk.Button(view_row, text="Iso", width=8, command=lambda: self.set_view(20, 45)).pack(side="left", padx=2)
+        ttk.Button(view_row, text="Reset", width=8, command=self.reset_drone).pack(side="left", padx=2)
+        
+        ttk.Checkbutton(ctrl, text="Auto-update", variable=self.auto_update_3d).pack(side="right")
+        
+        # Orientation display in top left
+        self.orientation_label = ttk.Label(ctrl, text="Roll: 0.0°  Pitch: 0.0°  Yaw: 0.0°", font=("Arial", 9))
+        self.orientation_label.pack(side="left", padx=(10, 0))
+        
+        # 3D figure
+        self.fig_3d = plt.Figure(figsize=(8, 6), facecolor="black", dpi=96)
+        self.fig_3d.subplots_adjust(left=0, right=1, bottom=0, top=1)
+        self.ax_3d = self.fig_3d.add_subplot(111, projection="3d")
+        self.ax_3d.set_facecolor("black")
+        self.ax_3d.set_xlim(-2, 2)
+        self.ax_3d.set_ylim(-2, 2)
+        self.ax_3d.set_zlim(-1.5, 1.5)
+        self.ax_3d.set_box_aspect([1, 1, 0.65])
+        self.ax_3d.view_init(elev=20, azim=45)
+        self.ax_3d.set_xlabel("")
+        self.ax_3d.set_ylabel("")
+        self.ax_3d.set_zlabel("")
+        self.ax_3d.set_xticks([])
+        self.ax_3d.set_yticks([])
+        self.ax_3d.set_zticks([])
+        self.ax_3d.grid(True, color="#374151", linestyle=":", linewidth=0.8, alpha=0.4)
+        
+        self.create_drone_model()
+        
+        self.canvas_3d = FigureCanvasTkAgg(self.fig_3d, viz_frame)
+        canvas3d_widget = self.canvas_3d.get_tk_widget()
+        canvas3d_widget.grid(row=1, column=0, sticky="nsew")
+        canvas3d_widget.configure(bg="black", highlightthickness=0)
+        
+        # Bottom: Chart
+        chart_frame = ttk.LabelFrame(parent, text="Real-Time Chart", padding=10)
+        chart_frame.grid(row=1, column=0, sticky="nsew")
+        chart_frame.columnconfigure(0, weight=1)
+        chart_frame.rowconfigure(1, weight=1)
+        chart_frame.rowconfigure(2, weight=0)
+        
+        # Chart controls
+        chart_ctrl = ttk.Frame(chart_frame)
+        chart_ctrl.grid(row=0, column=0, sticky="ew", pady=(0, 10))
+        
+        view_row = ttk.Frame(chart_ctrl)
+        view_row.pack(fill="x")
+        ttk.Label(view_row, text="View:").pack(side="left", padx=(0, 10))
+        ttk.Radiobutton(view_row, text="Drift", variable=self.chart_mode, value="drift").pack(side="left", padx=4)
+        ttk.Radiobutton(view_row, text="Raw Sensors", variable=self.chart_mode, value="raw").pack(side="left", padx=4)
+        ttk.Radiobutton(view_row, text="Comparison", variable=self.chart_mode, value="comparison").pack(side="left", padx=4)
+        ttk.Radiobutton(view_row, text="Per-Axis", variable=self.chart_mode, value="axis").pack(side="left", padx=4)
+        ttk.Checkbutton(view_row, text="Show Chart", variable=self.show_chart).pack(side="right")
+        
+        visibility_frame = ttk.LabelFrame(chart_ctrl, text="Series Visibility", padding=4)
+        visibility_frame.pack(fill="x", pady=(6, 0))
+        visibility_row = ttk.Frame(visibility_frame)
+        visibility_row.pack(fill="x")
+        toggles = [
+            ("roll", "Roll", "Roll.TCheckbutton"),
+            ("pitch", "Pitch", "Pitch.TCheckbutton"),
+            ("yaw", "Yaw", "Yaw.TCheckbutton"),
+            ("raw_accel", "Accel Raw", None),
+            ("raw_gyro", "Gyro Raw", None),
+            ("sensor_accel", "Accel Sensors", None),
+            ("sensor_gyro", "Gyro Sensors", None),
+        ]
+        for key, label, style_name in toggles:
+            ttk.Checkbutton(
+                visibility_row,
+                text=label,
+                variable=self.series_visibility[key],
+                command=lambda k=key: self.update_chart(force=True),
+                style=style_name if style_name else "TCheckbutton"
+            ).pack(side="left", padx=4)
+        
+        options_row = ttk.Frame(chart_ctrl)
+        options_row.pack(fill="x", pady=(6, 0))
+        ttk.Label(options_row, text="Time Window:").pack(side="left")
+        self.chart_window_combo = ttk.Combobox(options_row, textvariable=self.chart_window_var,
+                                               values=["10s", "30s", "1min", "5min", "all"], width=8, state="readonly")
+        self.chart_window_combo.pack(side="left", padx=(4, 12))
+        ttk.Checkbutton(options_row, text="Auto-scale", variable=self.chart_autoscale,
+                        command=self.on_chart_autoscale_toggle).pack(side="left")
+        self.chart_min_entry = ttk.Entry(options_row, textvariable=self.chart_manual_min, width=8)
+        self.chart_max_entry = ttk.Entry(options_row, textvariable=self.chart_manual_max, width=8)
+        ttk.Label(options_row, text="Y Min:").pack(side="left", padx=(12, 2))
+        self.chart_min_entry.pack(side="left")
+        ttk.Label(options_row, text="Y Max:").pack(side="left", padx=(12, 2))
+        self.chart_max_entry.pack(side="left")
+        
+        axis_row = ttk.Frame(chart_ctrl)
+        axis_row.pack(fill="x", pady=(6, 0))
+        ttk.Label(axis_row, text="Axis:").pack(side="left")
+        self.chart_axis_combo = ttk.Combobox(axis_row, textvariable=self.chart_axis_label_var,
+                                             values=list(self.chart_axis_options.values()), width=18, state="readonly")
+        self.chart_axis_combo.pack(side="left", padx=(4, 12))
+        self.chart_axis_combo.bind("<<ComboboxSelected>>", self.on_chart_axis_selected)
+        
+        action_row = ttk.Frame(chart_ctrl)
+        action_row.pack(fill="x", pady=(6, 0))
+        self.chart_pause_btn = ttk.Button(action_row, text="Pause", command=self.toggle_chart_pause)
+        self.chart_pause_btn.pack(side="left", padx=2)
+        ttk.Button(action_row, text="Clear", command=self.clear_chart).pack(side="left", padx=2)
+        ttk.Button(action_row, text="Export Chart", command=self.export_chart).pack(side="left", padx=2)
+        ttk.Button(action_row, text="Reset Scale", command=self.reset_chart_scale).pack(side="left", padx=2)
+        ttk.Button(action_row, text="Refresh", command=self.update_chart).pack(side="left", padx=2)
+        ttk.Label(action_row, textvariable=self.data_rate_var).pack(side="right")
+        
+        stats_panel = ttk.LabelFrame(chart_frame, text="Statistics", padding=5)
+        stats_panel.grid(row=2, column=0, sticky="ew", pady=(10, 0))
+        stats_row = ttk.Frame(stats_panel)
+        stats_row.pack(fill="x")
+        ttk.Label(stats_row, textvariable=self.stats_samples_var).pack(side="left", padx=(0, 15))
+        ttk.Label(stats_row, textvariable=self.stats_mean_var).pack(side="left", padx=(0, 15))
+        ttk.Label(stats_row, textvariable=self.stats_std_var).pack(side="left", padx=(0, 15))
+        ttk.Label(stats_row, textvariable=self.stats_drift_var).pack(side="left")
+        self.update_stats_display()
+        
+        # Chart figure
+        self.fig_chart = plt.Figure(figsize=(10, 4), facecolor="#0b1120", dpi=96)
+        self.ax_chart = self.fig_chart.add_subplot(111)
+        self.ax_chart.set_facecolor("#0d0d0d")
+        self.ax_chart.grid(True, color="#333", linestyle="--", alpha=0.5)
+        self.ax_chart.set_xlabel("Time (s)", color="white")
+        self.ax_chart.set_ylabel("Angle (°)", color="white")
+        self.ax_chart.tick_params(colors="white")
+        self.fig_chart.subplots_adjust(left=0.07, right=0.98, bottom=0.12, top=0.95)
+        
+        self.canvas_chart = FigureCanvasTkAgg(self.fig_chart, chart_frame)
+        chart_widget = self.canvas_chart.get_tk_widget()
+        chart_widget.grid(row=1, column=0, sticky="nsew")
+        chart_widget.configure(bg="#0b1120", highlightthickness=0)
     
-    def create_command_view(self, parent):
-        """Command sending interface"""
-        cmd_frame = ttk.LabelFrame(parent, text="Send Command", padding=10)
-        cmd_frame.pack(fill="x", pady=(0, 10))
-        
-        input_frame = ttk.Frame(cmd_frame)
-        input_frame.pack(fill="x")
-        
-        self.cmd_var = tk.StringVar()
-        cmd_entry = tk.Entry(input_frame, textvariable=self.cmd_var,
-                            bg="#2b2b2b", fg="white", insertbackground="white",
-                            font=("Consolas", 10), relief=tk.FLAT, bd=2)
-        cmd_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
-        cmd_entry.bind("<Return>", lambda e: self.send_command())
-        
-        ttk.Button(input_frame, text="Send", 
-                  command=self.send_command).pack(side="left")
-        
-        # Sent commands log
-        sent_frame = ttk.LabelFrame(parent, text="Sent Commands", padding=10)
-        sent_frame.pack(fill="x")
-        
-        self.sent_text = scrolledtext.ScrolledText(
-            sent_frame, wrap=tk.WORD, height=4,
-            background="#0d0d0d", foreground="#ffaa00",
-            insertbackground="white", font=("Consolas", 9)
-        )
-        self.sent_text.pack(fill="x")
-        self.sent_text.config(state="disabled")
+        self.chart_window_combo.bind("<<ComboboxSelected>>", lambda event: self.update_chart())
+        self.on_chart_autoscale_toggle()
+        self.on_chart_mode_changed()
     
-    def create_3d_view(self, parent):
-        """3D orientation visualization"""
-        frame = ttk.LabelFrame(parent, text="IMU Orientation", padding=10)
-        frame.pack(fill="both", expand=True)
-        
-        # View controls
-        control_frame = ttk.Frame(frame)
-        control_frame.pack(fill="x", pady=(0, 10))
-        
-        ttk.Label(control_frame, text="View:").pack(side="left", padx=(0, 10))
-        ttk.Button(control_frame, text="Top", width=8,
-                  command=lambda: self.set_view(90, 0)).pack(side="left", padx=2)
-        ttk.Button(control_frame, text="Front", width=8,
-                  command=lambda: self.set_view(0, 0)).pack(side="left", padx=2)
-        ttk.Button(control_frame, text="Side", width=8,
-                  command=lambda: self.set_view(0, 90)).pack(side="left", padx=2)
-        ttk.Button(control_frame, text="Isometric", width=8,
-                  command=lambda: self.set_view(20, 45)).pack(side="left", padx=2)
-        ttk.Button(control_frame, text="Reset", width=8,
-                  command=self.reset_drone).pack(side="left", padx=2)
-        
-        # Create matplotlib figure
-        self.fig = plt.Figure(figsize=(8, 8), facecolor="#000000", dpi=80)
-        self.ax = self.fig.add_subplot(111, projection="3d")
-        self.ax.set_facecolor("#000000")
-        
-        # Set limits
-        self.ax.set_xlim(-4, 4)
-        self.ax.set_ylim(-4, 4)
-        self.ax.set_zlim(-3, 3)
-        self.ax.set_box_aspect([4, 4, 3])
-        self.ax.view_init(elev=self.view_elev, azim=self.view_azim)
-        
-        # Remove labels
-        self.ax.set_xlabel("")
-        self.ax.set_ylabel("")
-        self.ax.set_zlabel("")
-        self.ax.set_xticks([])
-        self.ax.set_yticks([])
-        self.ax.set_zticks([])
-        
-        # Thick grid
-        self.ax.grid(True, color="white", linestyle="--", linewidth=2, alpha=0.6)
-        
-        # Panes with thick edges
-        self.ax.xaxis.pane.fill = False
-        self.ax.yaxis.pane.fill = False
-        self.ax.zaxis.pane.fill = False
-        self.ax.xaxis.pane.set_edgecolor('white')
-        self.ax.yaxis.pane.set_edgecolor('white')
-        self.ax.zaxis.pane.set_edgecolor('white')
-        self.ax.xaxis.pane.set_linewidth(2)
-        self.ax.yaxis.pane.set_linewidth(2)
-        self.ax.zaxis.pane.set_linewidth(2)
-        self.ax.xaxis.pane.set_alpha(0.1)
-        self.ax.yaxis.pane.set_alpha(0.1)
-        self.ax.zaxis.pane.set_alpha(0.1)
-        
-        # Create drone
-        self.create_drone_body()
-        
-        # Embed
-        self.canvas = FigureCanvasTkAgg(self.fig, frame)
-        self.canvas.get_tk_widget().pack(fill="both", expand=True)
+    def refresh_recording_indicator(self):
+        if hasattr(self, "record_canvas"):
+            self.record_canvas.itemconfig(self.record_indicator_item, fill=self.recording_light_color.get())
+        if hasattr(self, "record_status_text"):
+            self.record_status_text.set(self.recording_indicator.get())
     
-    def create_drone_body(self):
-        """Create quadcopter visualization"""
-        # Center body - more detailed with beveled edges
-        s = 0.6
-        h = 0.35
-        bevel = 0.08
+    def on_alpha_change(self, value):
+        try:
+            val = float(value)
+        except (TypeError, ValueError):
+            val = self.cmd_alpha.get()
+        self.alpha_display_var.set(f"{val:.2f}")
+        self.update_manual_preview()
+    
+    def update_manual_preview(self, *args):
+        commands = []
+        mode = self.cmd_mode.get().strip().upper()
+        if mode:
+            commands.append(f"MODE:{mode}")
+        rate = self.cmd_rate.get().strip()
+        if rate:
+            commands.append(f"RATE:{rate}")
+        duration = self.cmd_duration.get().strip()
+        samples = self.cmd_samples.get().strip()
+        if duration and not self.free_run_var.get():
+            commands.append(f"DURATION:{duration}")
+        if samples and not self.free_run_var.get():
+            commands.append(f"SAMPLES:{samples}")
+        alpha = self.cmd_alpha.get()
+        commands.append(f"ALPHA:{alpha:.2f}")
+        commands.append("FREE" if self.free_run_var.get() else "START")
+        self.manual_preview_var.set(" | ".join(commands))
+    
+    def apply_command_preset(self, preset: CommandPreset):
+        """Apply preset settings and send commands"""
+        self.preset_hint_var.set(preset.description)
+        self.cmd_samples.set("")
+        self.cmd_duration.set("")
+        self.free_run_var.set(False)
+        for cmd in preset.commands:
+            if ":" not in cmd:
+                continue
+            key, val = cmd.split(":", 1)
+            key = key.strip().upper()
+            val = val.strip()
+            if key == "MODE":
+                self.cmd_mode.set(val.upper())
+            elif key == "RATE":
+                self.cmd_rate.set(val)
+            elif key == "DURATION":
+                self.cmd_duration.set(val)
+            elif key == "SAMPLES":
+                self.cmd_samples.set(val)
+            elif key == "ALPHA":
+                try:
+                    self.cmd_alpha.set(float(val))
+                    self.alpha_display_var.set(f"{float(val):.2f}")
+                except ValueError:
+                    pass
+        self.update_manual_preview()
+        self.send_command_sequence(preset.commands)
+    
+    def update_command_history_display(self):
+        if not hasattr(self, "history_list"):
+            return
+        self.history_list.delete(0, tk.END)
+        for ts, cmd in list(self.command_history):
+            time_str = datetime.fromtimestamp(ts).strftime("%H:%M:%S")
+            self.history_list.insert(0, f"{time_str}  {cmd}")
+    
+    def send_command_sequence(self, commands, delay=0.05):
+        if isinstance(commands, str):
+            commands = [cmd.strip() for cmd in commands.splitlines() if cmd.strip()]
+        if not commands:
+            return False
+        if not self.connected:
+            messagebox.showwarning("Not Connected", "Connect to the ESP32 before sending commands.")
+            return False
+        for idx, cmd in enumerate(commands):
+            self.send_command_direct(cmd)
+            if delay and idx < len(commands) - 1:
+                time.sleep(delay)
+        return True
+    
+    def send_manual_command(self):
+        """Send manually configured command sequence"""
+        commands = []
+        mode = self.cmd_mode.get().strip().upper()
+        if mode:
+            commands.append(f"MODE:{mode}")
+        rate = self.cmd_rate.get().strip()
+        if rate:
+            commands.append(f"RATE:{rate}")
+        duration = self.cmd_duration.get().strip()
+        samples = self.cmd_samples.get().strip()
+        if duration and not self.free_run_var.get():
+            commands.append(f"DURATION:{duration}")
+        if samples and not self.free_run_var.get():
+            commands.append(f"SAMPLES:{samples}")
+        alpha = self.cmd_alpha.get()
+        commands.append(f"ALPHA:{alpha:.2f}")
+        final_command = "FREE" if self.free_run_var.get() else "START"
+        commands.append(final_command)
+        sent = self.send_command_sequence(commands)
+        if sent:
+            self.update_manual_preview()
+    
+    def send_free_run_command(self):
+        self.free_run_var.set(True)
+        self.update_manual_preview()
+        self.send_manual_command()
+    
+    def send_calibration_command(self):
+        value = self.cmd_calibrate.get().strip()
+        if not value.isdigit():
+            messagebox.showerror("Invalid Value", "Calibration samples must be a positive integer.")
+            return
+        self.send_command_sequence([f"CALIBRATE:{value}"])
+    
+    def send_custom_command(self):
+        cmd_text = self.custom_command_var.get().strip()
+        if not cmd_text:
+            return
+        if "\n" in cmd_text or ";" in cmd_text:
+            parts = re.split(r'[;\n]+', cmd_text)
+        else:
+            parts = [cmd_text]
+        commands = [p.strip() for p in parts if p.strip()]
+        self.send_command_sequence(commands)
+        self.custom_command_var.set("")
+    
+    def toggle_recording(self):
+        if not self.connected:
+            messagebox.showwarning("Not Connected", "Connect first to control recording.")
+            return
+        if not self.recording_active:
+            self.recording_active = True
+            self.recording_capture_active = True
+            self.pending_recording_finalize = False
+            self.recording_current_blocks = []
+            self.record_btn.config(text="■ Stop Recording", bg="#1e3a8a")
+            self.recording_indicator.set("🟢 Recording")
+            self.recording_light_color.set("#bb2233")
+            self.refresh_recording_indicator()
+            self.recording_start_time = time.time()
+            self.recording_start_block_id = self.data_block_counter
+            self.sample_counter_var.set("Samples: 0")
+            self.update_recording_timer()
+            self.send_command_sequence(["START"])
+        else:
+            self.recording_active = False
+            self.recording_capture_active = False
+            self.record_btn.config(text="⬤ Start Recording", bg="#bb2244")
+            self.recording_indicator.set("⚪ Not Recording")
+            self.recording_light_color.set("#444444")
+            self.refresh_recording_indicator()
+            self.stop_recording_timer()
+            self.send_command_sequence(["STOP"])
+            self.pending_recording_finalize = True
+            self.root.after(1200, self._finalize_recording_if_pending)
+    
+    def select_recording_folder(self):
+        """Open folder selection dialog for recordings"""
+        folder = filedialog.askdirectory(title="Select Recording Folder", initialdir=self.recording_folder)
+        if folder:
+            self.recording_folder = folder
+            if hasattr(self, "recording_folder_label"):
+                self.recording_folder_label.config(text=os.path.basename(folder) if os.path.exists(folder) else folder)
+            # Ensure folder exists
+            os.makedirs(folder, exist_ok=True)
+    
+    def export_data_dialog(self):
+        if not self.data_blocks:
+            messagebox.showinfo("No Data", "No captured data blocks available to export yet.")
+            return
         
-        # Main body vertices with beveled corners
-        body_verts = np.array([
-            # Bottom face (z = -h)
-            [-s+bevel, -s, -h], [s-bevel, -s, -h], [s, -s+bevel, -h], [s, s-bevel, -h],
-            [s-bevel, s, -h], [-s+bevel, s, -h], [-s, s-bevel, -h], [-s, -s+bevel, -h],
-            # Top face (z = h)
-            [-s+bevel, -s, h], [s-bevel, -s, h], [s, -s+bevel, h], [s, s-bevel, h],
-            [s-bevel, s, h], [-s+bevel, s, h], [-s, s-bevel, h], [-s, -s+bevel, h],
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Export Data")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        dialog.configure(bg="#1e1e1e")
+        dialog.geometry("640x640")
+        
+        block_frame = ttk.LabelFrame(dialog, text="Data Blocks", padding=10)
+        block_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        block_scroll = ttk.Scrollbar(block_frame, orient=tk.VERTICAL)
+        block_list = tk.Listbox(block_frame, selectmode=tk.MULTIPLE, height=8,
+                                bg="#0d0d0d", fg="#00ff00", activestyle="dotbox",
+                                highlightbackground="#444444", selectbackground="#2563eb")
+        block_scroll.pack(side="right", fill="y")
+        block_list.pack(side="left", fill="both", expand=True)
+        block_list.config(yscrollcommand=block_scroll.set)
+        block_scroll.config(command=block_list.yview)
+        for block in self.data_blocks:
+            block_list.insert(tk.END, self.describe_block(block))
+        
+        range_frame = ttk.LabelFrame(dialog, text="Time Range", padding=10)
+        range_frame.pack(fill="x", padx=10, pady=(0, 10))
+        range_var = tk.StringVar(value="all")
+        last_minutes_var = tk.StringVar(value="1")
+        custom_start_var = tk.StringVar(value="0")
+        custom_end_var = tk.StringVar(value="60")
+        
+        ttk.Radiobutton(range_frame, text="All data", variable=range_var, value="all").grid(row=0, column=0, sticky="w")
+        ttk.Radiobutton(range_frame, text="Last N minutes", variable=range_var, value="last").grid(row=1, column=0, sticky="w")
+        ttk.Radiobutton(range_frame, text="Custom range (seconds)", variable=range_var, value="custom").grid(row=2, column=0, sticky="w")
+        ttk.Radiobutton(range_frame, text="Between markers (selected blocks)", variable=range_var, value="markers").grid(row=3, column=0, sticky="w")
+        
+        ttk.Label(range_frame, text="Minutes:").grid(row=1, column=1, padx=(10, 2))
+        last_entry = ttk.Entry(range_frame, textvariable=last_minutes_var, width=10)
+        last_entry.grid(row=1, column=2, padx=(0, 10))
+        
+        ttk.Label(range_frame, text="Start (s):").grid(row=2, column=1, padx=(10, 2))
+        custom_start_entry = ttk.Entry(range_frame, textvariable=custom_start_var, width=10)
+        custom_start_entry.grid(row=2, column=2, padx=(0, 10))
+        ttk.Label(range_frame, text="End (s):").grid(row=2, column=3, padx=(10, 2))
+        custom_end_entry = ttk.Entry(range_frame, textvariable=custom_end_var, width=10)
+        custom_end_entry.grid(row=2, column=4, padx=(0, 10))
+        
+        options_frame = ttk.LabelFrame(dialog, text="Export Options", padding=10)
+        options_frame.pack(fill="x", padx=10, pady=(0, 10))
+        include_metadata_var = tk.BooleanVar(value=True)
+        include_stats_var = tk.BooleanVar(value=True)
+        include_chart_var = tk.BooleanVar(value=True)
+        include_3d_var = tk.BooleanVar(value=False)
+        
+        ttk.Checkbutton(options_frame, text="Include metadata headers", variable=include_metadata_var).pack(anchor="w")
+        ttk.Checkbutton(options_frame, text="Include statistics summary", variable=include_stats_var).pack(anchor="w")
+        ttk.Checkbutton(options_frame, text="Include chart image (PNG/SVG)", variable=include_chart_var).pack(anchor="w")
+        ttk.Checkbutton(options_frame, text="Include 3D orientation snapshot", variable=include_3d_var).pack(anchor="w")
+        
+        naming_frame = ttk.LabelFrame(dialog, text="Output", padding=10)
+        naming_frame.pack(fill="x", padx=10, pady=(0, 10))
+        ttk.Label(naming_frame, text="Base file name:").grid(row=0, column=0, sticky="w")
+        default_name = datetime.now().strftime("imu_export_%Y-%m-%d_%H-%M-%S")
+        base_name_var = tk.StringVar(value=default_name)
+        ttk.Entry(naming_frame, textvariable=base_name_var, width=32).grid(row=0, column=1, padx=(5, 0))
+        ttk.Label(naming_frame, text="(folder will be created under ./imu_exports)").grid(row=1, column=0, columnspan=2, sticky="w", pady=(6, 0))
+        
+        status_var = tk.StringVar(value="")
+        status_label = ttk.Label(dialog, textvariable=status_var, foreground="#facc15")
+        status_label.pack(fill="x", padx=10, pady=(0, 10))
+        
+        def update_range_controls(*args):
+            mode = range_var.get()
+            if mode == "last":
+                last_entry.config(state="normal")
+            else:
+                last_entry.config(state="disabled")
+            if mode == "custom":
+                custom_start_entry.config(state="normal")
+                custom_end_entry.config(state="normal")
+            else:
+                custom_start_entry.config(state="disabled")
+                custom_end_entry.config(state="disabled")
+            if mode != "markers":
+                status_var.set("")
+        
+        range_var.trace_add("write", update_range_controls)
+        update_range_controls()
+        
+        def perform_export():
+            nonlocal dialog
+            try:
+                selected_indices = block_list.curselection()
+                if selected_indices:
+                    blocks = [self.data_blocks[i] for i in selected_indices]
+                else:
+                    blocks = list(self.data_blocks)
+                if range_var.get() == "markers" and not selected_indices:
+                    status_var.set("Select at least one block for 'between markers' export.")
+                    return
+                block_rows_map = {block.block_id: self.collect_block_rows(block) for block in blocks}
+                all_rows = [row for rows in block_rows_map.values() for row in rows]
+                if not all_rows:
+                    messagebox.showinfo("No Data", "No samples available within the selected blocks.")
+                    return
+                valid_abs = [row["time_absolute"] for row in all_rows if not math.isnan(row["time_absolute"])]
+                if valid_abs:
+                    latest_time = max(valid_abs)
+                    time_accessor = lambda r: r["time_absolute"]
+                else:
+                    latest_time = max(row["timestamp"] for row in all_rows)
+                    time_accessor = lambda r: r["timestamp"]
+                range_mode = range_var.get()
+                filtered_blocks = []
+                try:
+                    last_minutes = float(last_minutes_var.get())
+                except ValueError:
+                    last_minutes = 1.0
+                try:
+                    custom_start = float(custom_start_var.get())
+                    custom_end = float(custom_end_var.get())
+                except ValueError:
+                    custom_start = 0.0
+                    custom_end = 0.0
+                if custom_end < custom_start:
+                    custom_start, custom_end = custom_end, custom_start
+                for block in blocks:
+                    rows = block_rows_map[block.block_id]
+                    filtered = []
+                    for row in rows:
+                        current_time = time_accessor(row)
+                        if range_mode == "all" or range_mode == "markers":
+                            filtered.append(row)
+                        elif range_mode == "last":
+                            cutoff = latest_time - last_minutes * 60.0
+                            if current_time >= cutoff:
+                                filtered.append(row)
+                        elif range_mode == "custom":
+                            if custom_start <= row["timestamp"] <= custom_end:
+                                filtered.append(row)
+                    if filtered:
+                        filtered_blocks.append((block, filtered))
+                if not filtered_blocks:
+                    messagebox.showinfo("No Data", "No samples matched the selected time range.")
+                    return
+                
+                export_root = os.path.join(os.getcwd(), "imu_exports")
+                base_name = base_name_var.get().strip() or default_name
+                folder = self._write_export_artifacts(
+                    filtered_blocks,
+                    base_name,
+                    range_mode,
+                    include_metadata_var.get(),
+                    include_stats_var.get(),
+                    include_chart_var.get(),
+                    include_3d_var.get(),
+                    export_root,
+                )
+                
+                dialog.grab_release()
+                dialog.destroy()
+                messagebox.showinfo("Export Complete", f"Export saved to:\n{folder}")
+            except Exception as exc:
+                status_var.set(f"Export failed: {exc}")
+                self.logger.error(f"Export error: {exc}")
+        
+        button_frame = ttk.Frame(dialog)
+        button_frame.pack(fill="x", padx=10, pady=(0, 10))
+        ttk.Button(button_frame, text="Cancel", command=lambda: (dialog.grab_release(), dialog.destroy())).pack(side="right")
+        ttk.Button(button_frame, text="Export", command=perform_export).pack(side="right", padx=(0, 10))
+    
+    def show_debug_log(self):
+        logs = self.logger.get_logs()
+        if not logs:
+            logs = "No debug logs captured."
+        messagebox.showinfo("Debug Log", logs)
+
+    def export_current_values(self):
+        """Export current live buffer to CSV"""
+        times = list(self.chart_data["time"])
+        if not times:
+            messagebox.showinfo("No Data", "No live data available to export.")
+            return
+        default_name = datetime.now().strftime("imu_live_%Y-%m-%d_%H-%M-%S.csv")
+        path = filedialog.asksaveasfilename(defaultextension=".csv", initialfile=default_name,
+                                            filetypes=[("CSV Files", "*.csv")])
+        if not path:
+            return
+        try:
+            data_lists = {key: list(self.chart_data[key]) for key in self.chart_keys}
+            columns = ["time"] + self.chart_keys
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(",".join(columns) + "\n")
+                for idx, t in enumerate(times):
+                    row_values = [f"{t:.6f}"]
+                    for key in self.chart_keys:
+                        values = data_lists.get(key, [])
+                        value = values[idx] if idx < len(values) else float("nan")
+                        if value is None or math.isnan(value):
+                            row_values.append("")
+                        else:
+                            row_values.append(f"{value:.6f}")
+                    f.write(",".join(row_values) + "\n")
+            messagebox.showinfo("Export Complete", f"Live data exported to:\n{path}")
+        except Exception as exc:
+            messagebox.showerror("Export Failed", f"Unable to export data:\n{exc}")
+
+    def export_formatted_csv(self):
+        """Export the most recent captured block using formatted metadata headers"""
+        if not self.data_blocks:
+            messagebox.showinfo("No Data", "No captured data blocks available to export.")
+            return
+        block = self.data_blocks[-1]
+        rows = block.data_rows or self.collect_block_rows(block)
+        if not rows:
+            messagebox.showinfo("No Data", "The latest block does not contain sample data.")
+            return
+        default_name = datetime.now().strftime("imu_block_%Y-%m-%d_%H-%M-%S.csv")
+        path = filedialog.asksaveasfilename(defaultextension=".csv", initialfile=default_name,
+                                            filetypes=[("CSV Files", "*.csv")])
+        if not path:
+            return
+        try:
+            metrics = self.compute_block_metrics(block, rows)
+            now = datetime.now()
+            columns = ["timestamp", "roll", "pitch", "yaw", "gx", "gy", "gz", "ax", "ay", "az", "roll_raw", "pitch_raw", "yaw_raw"]
+            def fmt(value):
+                if value is None or (isinstance(value, float) and (math.isnan(value) or math.isinf(value))):
+                    return ""
+                return f"{float(value):.6f}"
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(f"# Recorded: {now.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"# Mode: {block.metadata.get('MODE', 'UNKNOWN')}\n")
+                f.write(f"# Sample Rate: {block.metadata.get('RATE', 'n/a')}Hz\n")
+                f.write(f"# Alpha: {block.metadata.get('ALPHA', 'n/a')}\n")
+                f.write(f"# Samples: {metrics['samples']}\n")
+                f.write(f"# Duration: {metrics['duration']:.2f}s\n")
+                f.write(f"# Drift Rate: {metrics['drift_rate']:.2f}°/min\n")
+                if block.warnings:
+                    f.write(f"# Warnings: {'; '.join(block.warnings)}\n")
+                f.write(",".join(columns) + "\n")
+                for row in rows:
+                    values = [
+                        fmt(row.get("timestamp")),
+                        fmt(row.get("roll")),
+                        fmt(row.get("pitch")),
+                        fmt(row.get("yaw")),
+                        fmt(row.get("gx")),
+                        fmt(row.get("gy")),
+                        fmt(row.get("gz")),
+                        fmt(row.get("ax")),
+                        fmt(row.get("ay")),
+                        fmt(row.get("az")),
+                        fmt(row.get("roll_raw")),
+                        fmt(row.get("pitch_raw")),
+                        fmt(row.get("yaw_raw")),
+                    ]
+                    f.write(",".join(values) + "\n")
+            messagebox.showinfo("Export Complete", f"Formatted CSV exported to:\n{path}")
+        except Exception as exc:
+            messagebox.showerror("Export Failed", f"Unable to export formatted CSV:\n{exc}")
+            self.logger.error(f"Export formatted CSV error: {exc}")
+
+    def import_data_from_csv(self):
+        """Import external CSV data for analysis"""
+        path = filedialog.askopenfilename(filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")])
+        if not path:
+            return
+        try:
+            rows = self._load_rows_from_csv(path)
+            if not rows:
+                messagebox.showinfo("No Data", "No usable rows found in selected file.")
+                return
+            self.clear_chart()
+            self._display_loaded_rows(rows)
+            self.last_block_summary = f"Imported data from '{os.path.basename(path)}'"
+            messagebox.showinfo("Import Complete", "CSV data imported and analysed.")
+        except Exception as exc:
+            messagebox.showerror("Import Failed", f"Unable to import file:\n{exc}")
+            self.logger.error(f"Import CSV error: {exc}")
+
+    def generate_reference_pdf(self):
+        """Generate comprehensive reference PDF with feature overview and visuals"""
+        path = os.path.join(os.getcwd(), "IMU_Monitor_Reference_Guide.pdf")
+        try:
+            with PdfPages(path) as pdf:
+                # Page 1: Title and Overview
+                fig = plt.figure(figsize=(8.27, 11.69), facecolor="white")
+                fig.text(0.5, 0.95, "IMU Monitor", ha="center", fontsize=24, fontweight="bold")
+                fig.text(0.5, 0.92, "Reference Guide", ha="center", fontsize=20, style="italic")
+                fig.text(0.5, 0.88, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", 
+                        ha="center", fontsize=10, color="#666666")
+                
+                y_pos = 0.82
+                fig.text(0.1, y_pos, "Overview", fontsize=16, fontweight="bold")
+                y_pos -= 0.05
+                overview_text = [
+                    "The IMU Monitor is a comprehensive tool for evaluating IMU (Inertial Measurement Unit)",
+                    "performance, analyzing drift characteristics, and visualizing sensor data in real-time.",
+                    "",
+                    "Key Features:",
+                    "• Real-time 3D orientation visualization with interactive drone model",
+                    "• Multiple chart modes: Drift, Raw Sensors, Comparison, Per-Axis",
+                    "• Statistics panel with drift rate analysis and quality assessment",
+                    "• Command system with presets and manual configuration",
+                    "• Data recording with automatic session management",
+                    "• Export capabilities: CSV, charts, statistics, and 3D snapshots",
+                    "• Free run mode for continuous streaming without limits",
+                    "• Calibration tools with visual feedback"
+                ]
+                for line in overview_text:
+                    fig.text(0.1, y_pos, line, fontsize=10, ha="left")
+                    y_pos -= 0.035
+                
+                pdf.savefig(fig)
+                plt.close(fig)
+
+                # Page 2: Connection and Setup
+                fig = plt.figure(figsize=(8.27, 11.69), facecolor="white")
+                fig.text(0.5, 0.95, "Connection and Setup", ha="center", fontsize=18, fontweight="bold")
+                
+                y_pos = 0.88
+                sections = [
+                    ("1. Connection", [
+                        "• Select COM port from dropdown (click ↻ to refresh)",
+                        "• Choose baud rate (default: 115200)",
+                        "• Click 'Connect' button",
+                        "• Status will appear in ESP32 Status panel"
+                    ]),
+                    ("2. Calibration", [
+                        "• Enter number of samples (recommended: 1000)",
+                        "• Click 'Run Calibration'",
+                        "• Keep sensor stationary during calibration",
+                        "• Popup will show accelerometer and gyroscope errors"
+                    ]),
+                    ("3. Test Configuration", [
+                        "• Mode: FILTERED (complementary filter), RAW (sensor only), BOTH (both)",
+                        "• Rate: Sample rate in Hz (50, 100, 200, 500)",
+                        "• Duration: Test duration in seconds",
+                        "• Samples: Target number of samples",
+                        "• Alpha: Complementary filter coefficient (0.0-1.0)",
+                        "• Enable Free Run for continuous streaming"
+                    ]),
+                    ("4. Starting Tests", [
+                        "• Use presets for quick setup",
+                        "• Or configure manually and click 'Start Test'",
+                        "• Click 'Free Run' for continuous mode",
+                        "• Click 'Stop' to end current test"
+                    ])
+                ]
+                
+                for title, items in sections:
+                    fig.text(0.1, y_pos, title, fontsize=14, fontweight="bold")
+                    y_pos -= 0.04
+                    for item in items:
+                        fig.text(0.15, y_pos, item, fontsize=10)
+                        y_pos -= 0.03
+                    y_pos -= 0.02
+                
+                pdf.savefig(fig)
+                plt.close(fig)
+
+                # Page 3: Chart Modes
+                fig = plt.figure(figsize=(8.27, 11.69), facecolor="white")
+                fig.text(0.5, 0.95, "Chart Modes Explained", ha="center", fontsize=18, fontweight="bold")
+                
+                y_pos = 0.88
+                chart_modes = [
+                    ("Drift Mode", [
+                        "Shows filtered roll, pitch, and yaw angles over time.",
+                        "Best for: Analyzing drift characteristics and stability.",
+                        "Requires: MODE:FILTERED or MODE:BOTH"
+                    ]),
+                    ("Raw Sensors Mode", [
+                        "Displays gyroscope (gx, gy, gz) and accelerometer (ax, ay, az) outputs.",
+                        "Best for: Examining raw sensor data and noise characteristics.",
+                        "Requires: MODE:RAW or MODE:BOTH",
+                        "Note: If no data appears, ensure MODE:RAW or MODE:BOTH is selected."
+                    ]),
+                    ("Comparison Mode", [
+                        "Compares filtered angles vs raw angles side-by-side.",
+                        "Best for: Evaluating filter performance and drift reduction.",
+                        "Requires: MODE:BOTH (to get both filtered and raw angles)",
+                        "Fallback: Shows filtered angles if raw not available."
+                    ]),
+                    ("Per-Axis Mode", [
+                        "Focuses on a single selected axis (roll, pitch, yaw, or sensors).",
+                        "Best for: Detailed analysis of specific measurements.",
+                        "Use: Select axis from dropdown when in Per-Axis mode."
+                    ])
+                ]
+                
+                for title, desc in chart_modes:
+                    fig.text(0.1, y_pos, title, fontsize=14, fontweight="bold", color="#2563eb")
+                    y_pos -= 0.04
+                    for line in desc:
+                        fig.text(0.15, y_pos, f"• {line}", fontsize=10)
+                        y_pos -= 0.03
+                    y_pos -= 0.02
+                
+                pdf.savefig(fig)
+                plt.close(fig)
+
+                # Page 4: Visual Examples - Charts
+                fig, axes = plt.subplots(2, 1, figsize=(8.27, 11.69), facecolor="white")
+                fig.suptitle("Chart Mode Examples", fontsize=16, fontweight="bold")
+                
+                t = np.linspace(0, 30, 600)
+                # Drift plot
+                axes[0].plot(t, 5 * np.sin(t / 3) + 0.1*t, label="Roll", color="#ef4444", linewidth=2)
+                axes[0].plot(t, 4 * np.cos(t / 4) + 0.05*t, label="Pitch", color="#22c55e", linewidth=2)
+                axes[0].plot(t, 2 * np.sin(t / 5) + 0.15*t, label="Yaw", color="#06b6d4", linewidth=2)
+                axes[0].set_title("Drift Mode: Filtered Angles with Drift", fontsize=12, fontweight="bold")
+                axes[0].set_xlabel("Time (s)")
+                axes[0].set_ylabel("Angle (°)")
+                axes[0].grid(True, linestyle="--", alpha=0.5)
+                axes[0].legend(loc="upper left")
+
+                # Raw sensors plot
+                axes[1].plot(t, np.sin(t) * 50, label="GX (gyro)", color="#f97316", linewidth=1.5)
+                axes[1].plot(t, np.cos(t / 2) * 50, label="GY (gyro)", color="#facc15", linewidth=1.5)
+                axes[1].plot(t, np.sin(t / 1.5) * 50, label="GZ (gyro)", color="#f43f5e", linewidth=1.5)
+                axes[1].plot(t, np.sin(t * 2) * 0.5, label="AX (accel)", color="#3b82f6", linewidth=1.5, linestyle="--")
+                axes[1].plot(t, np.cos(t * 2) * 0.5, label="AY (accel)", color="#8b5cf6", linewidth=1.5, linestyle="--")
+                axes[1].plot(t, np.sin(t * 1.5) * 0.5, label="AZ (accel)", color="#22d3ee", linewidth=1.5, linestyle="--")
+                axes[1].set_title("Raw Sensors Mode: Gyroscope and Accelerometer Outputs", fontsize=12, fontweight="bold")
+                axes[1].set_xlabel("Time (s)")
+                axes[1].set_ylabel("Sensor Output")
+                axes[1].grid(True, linestyle="--", alpha=0.5)
+                axes[1].legend(loc="upper right", fontsize=8)
+
+                plt.tight_layout(rect=[0, 0, 1, 0.96])
+                pdf.savefig(fig)
+                plt.close(fig)
+
+                # Page 5: Statistics and Analysis
+                fig = plt.figure(figsize=(8.27, 11.69), facecolor="white")
+                fig.text(0.5, 0.95, "Statistics Panel", ha="center", fontsize=18, fontweight="bold")
+                
+                y_pos = 0.88
+                stats_info = [
+                    ("Statistics Display", [
+                        "The statistics panel shows real-time analysis of captured data:",
+                        "",
+                        "• Samples: Total number of samples collected",
+                        "• Mean: Average values for Roll, Pitch, Yaw",
+                        "• StdDev: Standard deviation (measure of variation)",
+                        "• Drift Rate: Rate of change in yaw angle (°/min)"
+                    ]),
+                    ("Drift Quality Assessment", [
+                        "Drift rate is automatically assessed:",
+                        "• Green (<1°/min): Excellent stability",
+                        "• Yellow (1-5°/min): Acceptable drift",
+                        "• Red (>5°/min): High drift, consider calibration or filter tuning"
+                    ]),
+                    ("Free Run Mode", [
+                        "In free run mode:",
+                        "• Statistics collection is disabled",
+                        "• No analysis popups appear",
+                        "• Continuous streaming without limits",
+                        "• Ideal for real-time monitoring"
+                    ])
+                ]
+                
+                for title, items in stats_info:
+                    fig.text(0.1, y_pos, title, fontsize=14, fontweight="bold", color="#2563eb")
+                    y_pos -= 0.04
+                    for item in items:
+                        fig.text(0.15, y_pos, item, fontsize=10)
+                        y_pos -= 0.03
+                    y_pos -= 0.02
+                
+                pdf.savefig(fig)
+                plt.close(fig)
+
+                # Page 6: 3D Visualization
+                fig = plt.figure(figsize=(8.27, 11.69), facecolor="white")
+                fig.text(0.5, 0.95, "3D Visualization", ha="center", fontsize=18, fontweight="bold")
+                
+                y_pos = 0.88
+                viz_info = [
+                    ("Drone Model", [
+                        "• Real-time 3D quadcopter model shows current orientation",
+                        "• Blue body represents the IMU frame",
+                        "• Yellow arms extend to four rotors",
+                        "• White rotors with spokes for detail",
+                        "• Color-coded axes: Red (X), Green (Y), Blue (Z)"
+                    ]),
+                    ("View Controls", [
+                        "• Top: View from above (elevation 90°)",
+                        "• Front: View from front (elevation 0°)",
+                        "• Side: View from side (azimuth 90°)",
+                        "• Iso: Isometric view (elevation 20°, azimuth 45°)",
+                        "• Reset: Reset drone to zero orientation"
+                    ]),
+                    ("Auto-Update", [
+                        "• Enable auto-update for real-time rotation",
+                        "• Disable to freeze current orientation",
+                        "• Orientation values shown in top-left corner"
+                    ])
+                ]
+                
+                for title, items in viz_info:
+                    fig.text(0.1, y_pos, title, fontsize=14, fontweight="bold", color="#2563eb")
+                    y_pos -= 0.04
+                    for item in items:
+                        fig.text(0.15, y_pos, f"• {item}", fontsize=10)
+                        y_pos -= 0.03
+                    y_pos -= 0.02
+                
+                pdf.savefig(fig)
+                plt.close(fig)
+
+                # Page 7: Recording and Export
+                fig = plt.figure(figsize=(8.27, 11.69), facecolor="white")
+                fig.text(0.5, 0.95, "Recording and Export", ha="center", fontsize=18, fontweight="bold")
+                
+                y_pos = 0.88
+                export_info = [
+                    ("Recording Sessions", [
+                        "• Click 'Start Recording' to begin capturing data",
+                        "• Recording indicator shows status (green = active)",
+                        "• Select folder for recordings using 'Select Folder' button",
+                        "• Sessions are automatically saved when stopped",
+                        "• Each session includes CSV data and metadata"
+                    ]),
+                    ("Export Options", [
+                        "Export Data: Select blocks, time ranges, and export options",
+                        "Export Values: Export current live buffer to CSV",
+                        "Export Formatted CSV: Export latest block with headers",
+                        "Export Chart: Save chart as PNG or SVG",
+                        "Import CSV: Load external CSV data for analysis"
+                    ]),
+                    ("Export Features", [
+                        "• Include metadata headers",
+                        "• Include statistics summary",
+                        "• Include chart images (PNG/SVG)",
+                        "• Include 3D orientation snapshots",
+                        "• Time range filtering (all, last N min, custom)"
+                    ])
+                ]
+                
+                for title, items in export_info:
+                    fig.text(0.1, y_pos, title, fontsize=14, fontweight="bold", color="#2563eb")
+                    y_pos -= 0.04
+                    for item in items:
+                        fig.text(0.15, y_pos, f"• {item}", fontsize=10)
+                        y_pos -= 0.03
+                    y_pos -= 0.02
+                
+                pdf.savefig(fig)
+                plt.close(fig)
+
+                # Page 8: Troubleshooting
+                fig = plt.figure(figsize=(8.27, 11.69), facecolor="white")
+                fig.text(0.5, 0.95, "Troubleshooting Guide", ha="center", fontsize=18, fontweight="bold")
+                
+                y_pos = 0.88
+                troubleshooting = [
+                    ("No Data in Charts", [
+                        "• Ensure test is running (click Start Test)",
+                        "• Check connection status (should show 'Disconnect')",
+                        "• Verify data format matches selected mode",
+                        "• For Raw Sensors: Use MODE:RAW or MODE:BOTH",
+                        "• For Comparison: Use MODE:BOTH to get raw angles"
+                    ]),
+                    ("Calibration Not Showing Results", [
+                        "• Wait for calibration to complete (takes time)",
+                        "• Check serial monitor for status messages",
+                        "• Ensure sensor is stationary during calibration",
+                        "• Popup should appear automatically when done"
+                    ]),
+                    ("Missing </DATA> Warnings", [
+                        "• Normal in free run mode (continuous streaming)",
+                        "• In timed tests, wait for full duration",
+                        "• Timeout is calculated from DURATION or SAMPLES",
+                        "• Warnings only appear if test doesn't complete properly"
+                    ]),
+                    ("Test Analysis Popup Too Early", [
+                        "• Fixed: Timeout now respects DURATION/SAMPLES",
+                        "• Analysis appears only when test completes",
+                        "• Free run mode: No popups (by design)"
+                    ]),
+                    ("Connection Issues", [
+                        "• Refresh ports if device not listed",
+                        "• Check baud rate matches ESP32 (default: 115200)",
+                        "• Ensure no other program is using the port",
+                        "• Try disconnecting and reconnecting"
+                    ])
+                ]
+                
+                for title, items in troubleshooting:
+                    fig.text(0.1, y_pos, title, fontsize=13, fontweight="bold", color="#dc2626")
+                    y_pos -= 0.04
+                    for item in items:
+                        fig.text(0.15, y_pos, f"• {item}", fontsize=9)
+                        y_pos -= 0.028
+                    y_pos -= 0.015
+                
+                pdf.savefig(fig)
+                plt.close(fig)
+
+                # Page 9: Command Reference
+                fig = plt.figure(figsize=(8.27, 11.69), facecolor="white")
+                fig.text(0.5, 0.95, "Command Reference", ha="center", fontsize=18, fontweight="bold")
+                
+                y_pos = 0.88
+                commands = [
+                    ("Configuration Commands", [
+                        "MODE:FILTERED  - Use complementary filter (default)",
+                        "MODE:RAW       - Raw sensor data only",
+                        "MODE:BOTH      - Both filtered and raw angles",
+                        "RATE:100       - Set sample rate (Hz)",
+                        "ALPHA:0.98     - Set filter coefficient (0.0-1.0)",
+                        "DURATION:60    - Test duration in seconds",
+                        "SAMPLES:1000   - Target number of samples"
+                    ]),
+                    ("Control Commands", [
+                        "START          - Begin data streaming",
+                        "STOP           - Stop current stream",
+                        "FREE           - Start free run (continuous)",
+                        "STATUS         - Request current status",
+                        "RESET          - Reset filter state",
+                        "CALIBRATE:1000 - Run calibration (samples)"
+                    ]),
+                    ("Data Format", [
+                        "Data blocks are marked with <DATA> ... </DATA>",
+                        "Metadata included: MODE, RATE, ALPHA, DURATION, SAMPLES",
+                        "Each line contains: timestamp, roll, pitch, yaw, gx, gy, gz, ax, ay, az",
+                        "MODE:BOTH adds: roll_raw, pitch_raw, yaw_raw"
+                    ])
+                ]
+                
+                for title, items in commands:
+                    fig.text(0.1, y_pos, title, fontsize=14, fontweight="bold", color="#2563eb")
+                    y_pos -= 0.04
+                    for item in items:
+                        fig.text(0.15, y_pos, item, fontsize=9, family="monospace")
+                        y_pos -= 0.03
+                    y_pos -= 0.02
+                
+                pdf.savefig(fig)
+                plt.close(fig)
+
+            messagebox.showinfo("Reference Generated", f"Comprehensive reference guide saved to:\n{path}")
+        except Exception as exc:
+            messagebox.showerror("PDF Error", f"Failed to generate reference PDF:\n{exc}")
+            self.logger.error(f"PDF generation error: {exc}")
+    
+    def create_drone_model(self):
+        """Create improved quadcopter model with better proportions"""
+        # Central body (more compact and realistic)
+        body_half_length = 0.4
+        body_half_width = 0.3
+        body_half_height = 0.08
+        
+        self.body_vertices_base = np.array([
+            [-body_half_length, -body_half_width, -body_half_height],
+            [ body_half_length, -body_half_width, -body_half_height],
+            [ body_half_length,  body_half_width, -body_half_height],
+            [-body_half_length,  body_half_width, -body_half_height],
+            [-body_half_length, -body_half_width,  body_half_height],
+            [ body_half_length, -body_half_width,  body_half_height],
+            [ body_half_length,  body_half_width,  body_half_height],
+            [-body_half_length,  body_half_width,  body_half_height],
         ])
+        body_faces_idx = [
+            [0, 1, 5, 4],
+            [1, 2, 6, 5],
+            [2, 3, 7, 6],
+            [3, 0, 4, 7],
+            [4, 5, 6, 7],
+            [0, 1, 2, 3],
+        ]
+        body_faces = [[self.body_vertices_base[idx] for idx in face] for face in body_faces_idx]
+        self.drone_body = Poly3DCollection(body_faces, alpha=0.9, facecolors='#2563eb', edgecolors='#60a5fa', linewidths=1.5)
+        self.ax_3d.add_collection3d(self.drone_body)
         
-        # Body faces with beveled edges
-        body_faces = [
-            # Bottom face
-            [body_verts[0], body_verts[1], body_verts[2], body_verts[3], 
-             body_verts[4], body_verts[5], body_verts[6], body_verts[7]],
-            # Top face
-            [body_verts[8], body_verts[9], body_verts[10], body_verts[11],
-             body_verts[12], body_verts[13], body_verts[14], body_verts[15]],
-            # Side faces
-            [body_verts[0], body_verts[1], body_verts[9], body_verts[8]],
-            [body_verts[1], body_verts[2], body_verts[10], body_verts[9]],
-            [body_verts[2], body_verts[3], body_verts[11], body_verts[10]],
-            [body_verts[3], body_verts[4], body_verts[12], body_verts[11]],
-            [body_verts[4], body_verts[5], body_verts[13], body_verts[12]],
-            [body_verts[5], body_verts[6], body_verts[14], body_verts[13]],
-            [body_verts[6], body_verts[7], body_verts[15], body_verts[14]],
-            [body_verts[7], body_verts[0], body_verts[8], body_verts[15]],
+        # Arms (thicker and more visible)
+        arm_length = 1.2
+        arm_height = 0.02
+        arm_width = 0.03
+        
+        # Create arm boxes instead of lines for better visibility
+        arm_offsets = [
+            [arm_length, 0, arm_height],
+            [-arm_length, 0, arm_height],
+            [0, arm_length, arm_height],
+            [0, -arm_length, arm_height],
         ]
         
-        self.drone_body = Poly3DCollection(body_faces, alpha=0.95, 
-                                          facecolors='#2563eb', 
-                                          edgecolors='#1e40af', linewidths=1.5)
-        self.ax.add_collection3d(self.drone_body)
-        
-        # Add top marker (landing pad style)
-        marker_size = s * 0.6
-        marker_verts = np.array([
-            [0, -marker_size, h+0.01], [marker_size*0.866, marker_size*0.5, h+0.01],
-            [-marker_size*0.866, marker_size*0.5, h+0.01]
-        ])
-        marker_faces = [[marker_verts[0], marker_verts[1], marker_verts[2]]]
-        self.top_marker = Poly3DCollection(marker_faces, alpha=1.0,
-                                          facecolors='#fbbf24',
-                                          edgecolors='#f59e0b', linewidths=2)
-        self.ax.add_collection3d(self.top_marker)
-        
-        # Arms and motors
-        arm_length = 2.2
-        arm_width = 0.15
-        arm_height = 0.1
-        motor_radius = 0.3
-        motor_height = 0.18
-        prop_radius = 0.45
-        
-        self.arms = []
-        self.motors = []
-        self.props = []
-        arm_positions = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
-        arm_colors = ['#ef4444', '#22c55e', '#3b82f6', '#f59e0b']  # Different colors for each arm
-        
-        for idx, (dx, dy) in enumerate(arm_positions):
-            start = np.array([dx * s, dy * s, 0])
-            end = np.array([dx * arm_length, dy * arm_length, 0])
-            
-            arm_dir = end - start
-            arm_dir = arm_dir / np.linalg.norm(arm_dir)
-            perp = np.array([-arm_dir[1], arm_dir[0], 0]) * arm_width
-            up = np.array([0, 0, arm_height])
-            
-            arm_verts = np.array([
-                start - perp - up, start + perp - up, start + perp + up, start - perp + up,
-                end - perp - up, end + perp - up, end + perp + up, end - perp + up
+        self.arm_segments_base = []
+        for offset in arm_offsets:
+            # Create a small box for each arm
+            arm_box = np.array([
+                [offset[0] - arm_width, offset[1] - arm_width, offset[2]],
+                [offset[0] + arm_width, offset[1] - arm_width, offset[2]],
+                [offset[0] + arm_width, offset[1] + arm_width, offset[2]],
+                [offset[0] - arm_width, offset[1] + arm_width, offset[2]],
             ])
-            
-            arm_faces = [
-                [arm_verts[0], arm_verts[1], arm_verts[5], arm_verts[4]],
-                [arm_verts[2], arm_verts[3], arm_verts[7], arm_verts[6]],
-                [arm_verts[0], arm_verts[3], arm_verts[7], arm_verts[4]],
-                [arm_verts[1], arm_verts[2], arm_verts[6], arm_verts[5]],
-                [arm_verts[4], arm_verts[5], arm_verts[6], arm_verts[7]]
-            ]
-            
-            arm_poly = Poly3DCollection(arm_faces, alpha=0.9, 
-                                       facecolors=arm_colors[idx], 
-                                       edgecolors='#1e293b', linewidths=1)
-            self.ax.add_collection3d(arm_poly)
-            self.arms.append(arm_poly)
-            
-            # Motor at end
-            motor_center = end
-            theta = np.linspace(0, 2*np.pi, 16)
-            z_bottom = np.full(16, -motor_height/2)
-            z_top = np.full(16, motor_height/2)
-            x_circle = motor_radius * np.cos(theta)
-            y_circle = motor_radius * np.sin(theta)
-            
-            motor_verts = []
-            for i in range(16):
-                motor_verts.append(motor_center + np.array([x_circle[i], y_circle[i], z_bottom[i]]))
-                motor_verts.append(motor_center + np.array([x_circle[i], y_circle[i], z_top[i]]))
-            
-            motor_verts = np.array(motor_verts)
-            motor_faces = []
-            for i in range(0, 30, 2):
-                j = (i + 2) % 32
-                motor_faces.append([motor_verts[i], motor_verts[j], motor_verts[j+1], motor_verts[i+1]])
-            
-            motor_poly = Poly3DCollection(motor_faces, alpha=0.95, 
-                                         facecolors='#1e293b', 
-                                         edgecolors='#475569', linewidths=1)
-            self.ax.add_collection3d(motor_poly)
-            self.motors.append((motor_poly, motor_center, dx, dy))
-            
-            # Propeller (thin disc)
-            prop_z = motor_center[2] + motor_height/2 + 0.05
-            prop_theta = np.linspace(0, 2*np.pi, 20)
-            prop_x = motor_center[0] + prop_radius * np.cos(prop_theta)
-            prop_y = motor_center[1] + prop_radius * np.sin(prop_theta)
-            prop_z_arr = np.full(20, prop_z)
-            
-            prop_verts = []
-            for i in range(20):
-                prop_verts.append([prop_x[i], prop_y[i], prop_z_arr[i]])
-            prop_verts.append([motor_center[0], motor_center[1], prop_z])
-            
-            prop_verts = np.array(prop_verts)
-            prop_faces = []
-            for i in range(20):
-                j = (i + 1) % 20
-                prop_faces.append([prop_verts[20], prop_verts[i], prop_verts[j]])
-            
-            prop_poly = Poly3DCollection(prop_faces, alpha=0.4,
-                                        facecolors='#94a3b8',
-                                        edgecolors='#64748b', linewidths=0.5)
-            self.ax.add_collection3d(prop_poly)
-            self.props.append(prop_poly)
+            # Also add line from center to arm
+            center_to_arm = np.array([[0, 0, arm_height], [offset[0], offset[1], offset[2]]])
+            self.arm_segments_base.append(center_to_arm)
         
-        # Orientation vectors
+        self.arm_collection = Line3DCollection(self.arm_segments_base, colors='#fbbf24', linewidths=5, alpha=0.95)
+        self.ax_3d.add_collection3d(self.arm_collection)
+        
+        # Rotors (larger and more detailed)
+        rotor_radius = 0.35
+        rotor_z = arm_height + 0.08
+        rotor_thickness = 0.02
+        theta = np.linspace(0, 2 * np.pi, 40)
+        
+        def rotor_disk(center, radius, z_pos):
+            circle = np.column_stack((
+                center[0] + radius * np.cos(theta),
+                center[1] + radius * np.sin(theta),
+                np.full_like(theta, z_pos)
+            ))
+            return circle
+        
+        rotor_centers = [
+            np.array([arm_length,  0, rotor_z]),
+            np.array([-arm_length,  0, rotor_z]),
+            np.array([0,  arm_length, rotor_z]),
+            np.array([0, -arm_length, rotor_z]),
+        ]
+        
+        # Create rotor disks (top and bottom for thickness)
+        self.rotor_circles_base = []
+        self.rotor_spokes_base = []
+        for center in rotor_centers:
+            top_circle = rotor_disk(center, rotor_radius, rotor_z)
+            bottom_circle = rotor_disk(center, rotor_radius, rotor_z - rotor_thickness)
+            self.rotor_circles_base.append(top_circle)
+            self.rotor_circles_base.append(bottom_circle)
+            # Add spokes
+            for angle in [0, np.pi/2, np.pi, 3*np.pi/2]:
+                spoke = np.array([
+                    [center[0], center[1], rotor_z],
+                    [center[0] + rotor_radius * np.cos(angle), center[1] + rotor_radius * np.sin(angle), rotor_z]
+                ])
+                self.rotor_spokes_base.append(spoke)
+        
+        self.rotor_circle_collection = Line3DCollection(self.rotor_circles_base, colors='#ffffff', linewidths=2, alpha=0.8)
+        self.rotor_spoke_collection = Line3DCollection(self.rotor_spokes_base, colors='#d1d5db', linewidths=1.5, alpha=0.7)
+        self.ax_3d.add_collection3d(self.rotor_circle_collection)
+        self.ax_3d.add_collection3d(self.rotor_spoke_collection)
+        
+        # Orientation vectors (longer and more visible)
         vec_length = 1.8
-        self.x_vector = self.ax.quiver(0, 0, 0, vec_length, 0, 0, 
-                                      color='#ef4444', arrow_length_ratio=0.15, linewidth=4)
-        self.y_vector = self.ax.quiver(0, 0, 0, 0, vec_length, 0, 
-                                      color='#22c55e', arrow_length_ratio=0.15, linewidth=4)
-        self.z_vector = self.ax.quiver(0, 0, 0, 0, 0, vec_length, 
-                                      color='#06b6d4', arrow_length_ratio=0.15, linewidth=4)
-        
-        # Vector labels (will be updated with vectors)
-        self.x_label = self.ax.text(vec_length + 0.4, 0, 0, "X", color="#ef4444", fontsize=16, weight='bold')
-        self.y_label = self.ax.text(0, vec_length + 0.4, 0, "Y", color="#22c55e", fontsize=16, weight='bold')
-        self.z_label = self.ax.text(0, 0, vec_length + 0.4, "Z", color="#06b6d4", fontsize=16, weight='bold')
+        self.x_vec = self.ax_3d.quiver(0,0,0,vec_length,0,0, color='#ef4444', arrow_length_ratio=0.25, linewidth=4, alpha=0.9)
+        self.y_vec = self.ax_3d.quiver(0,0,0,0,vec_length,0, color='#22c55e', arrow_length_ratio=0.25, linewidth=4, alpha=0.9)
+        self.z_vec = self.ax_3d.quiver(0,0,0,0,0,vec_length, color='#06b6d4', arrow_length_ratio=0.25, linewidth=4, alpha=0.9)
     
     def set_view(self, elev, azim):
-        """Set 3D view angle"""
         self.view_elev = elev
         self.view_azim = azim
-        self.ax.view_init(elev=elev, azim=azim)
-        self.canvas.draw_idle()
+        self.ax_3d.view_init(elev=elev, azim=azim)
+        self.canvas_3d.draw_idle()
     
     def reset_drone(self):
-        """Reset orientation and position"""
-        self.roll = 0
-        self.pitch = 0
-        self.yaw = 0
-        self.pos_x = 0
-        self.pos_y = 0
-        self.pos_z = 0
-        self.update_3d_orientation()
-        self.values_label.config(text="Roll: 0.0°\nPitch: 0.0°\nYaw: 0.0°\nPos: (0.0, 0.0, 0.0)")
-    
-    def toggle_pause(self):
-        """Toggle pause/resume of data processing"""
-        self.paused = not self.paused
-        if self.paused:
-            self.pause_btn.config(text="▶ Resume", bg="#22aa55", activebackground="#33bb66")
-            self.logger.info("Data processing paused")
-        else:
-            self.pause_btn.config(text="⏸ Pause", bg="#ff8800", activebackground="#ff9922")
-            self.logger.info("Data processing resumed")
+        self.roll = self.pitch = self.yaw = 0
+        self.update_orientation_text()
+        self.update_3d()
     
     def refresh_ports(self):
-        """Scan for serial ports"""
         ports = [p.device for p in serial.tools.list_ports.comports()]
         self.port_combo["values"] = ports
         if ports:
             self.port_combo.current(0)
     
     def toggle_connection(self):
-        """Toggle connection"""
         if self.connected:
             self.disconnect()
         else:
             self.connect()
     
     def connect(self):
-        """Open serial connection"""
         port = self.port_var.get()
         if not port:
-            messagebox.showerror("Error", "Please select a port")
+            messagebox.showerror("Error", "Select a port")
             return
         
         try:
             baud = int(self.baud_var.get())
             self.serial_port = serial.Serial(port, baudrate=baud, timeout=0.1)
-            
             self.reading = True
             threading.Thread(target=self.read_serial, daemon=True).start()
-            
             self.connected = True
-            self.connect_btn.config(text="Disconnect", bg="#d22", activebackground="#f33")
+            self.connect_btn.config(text="Disconnect", bg="#d22")
             self.pause_btn.config(state="normal")
-            self.logger.info(f"Connected to {port} at {baud} baud")
+            self.logger.info(f"Connected to {port}")
             
+            # Request status
+            time.sleep(0.5)
+            self.send_command_direct("STATUS")
         except Exception as e:
-            self.logger.error(f"Connection failed: {e}")
-            messagebox.showerror("Connection Error", f"Failed to connect:\n{e}")
+            messagebox.showerror("Error", f"Connection failed:\n{e}")
     
     def disconnect(self):
-        """Close serial connection"""
+        if self.recording_active:
+            self.recording_active = False
+            self.pending_recording_finalize = True
+        if self.pending_recording_finalize or self.recording_current_blocks:
+            self.finalize_recording_session()
         self.reading = False
-        
         if self.serial_port and self.serial_port.is_open:
             try:
                 self.serial_port.close()
-            except Exception as e:
-                self.logger.error(f"Error closing port: {e}")
-        
+            except:
+                pass
         self.connected = False
-        self.connect_btn.config(text="Connect", bg="#22aa55", activebackground="#33bb66")
+        self.connect_btn.config(text="Connect", bg="#22aa55")
         self.pause_btn.config(state="disabled")
-        self.paused = False
-        self.pause_btn.config(text="⏸ Pause", bg="#ff8800", activebackground="#ff9922")
         self.logger.info("Disconnected")
     
+    def toggle_pause(self):
+        self.paused = not self.paused
+        if self.paused:
+            self.pause_btn.config(text="▶ Resume", bg="#22aa55")
+        else:
+            self.pause_btn.config(text="⏸ Pause", bg="#ff8800")
+    
+    def send_preset(self, commands):
+        """Send multiple commands from preset"""
+        self.send_command_sequence(commands)
+    
+    def send_command_direct(self, cmd):
+        """Send single command"""
+        if not self.connected:
+            return
+        
+        try:
+            self.serial_port.write((cmd + "\n").encode())
+            timestamp = time.time()
+            self.data_queue.put(("sent", timestamp, cmd))
+            self.logger.info(f"Sent: {cmd}")
+            self.command_history.appendleft((timestamp, cmd))
+            self.update_command_history_display()
+        except Exception as e:
+            self.logger.error(f"Send failed: {e}")
+    
     def read_serial(self):
-        """Read serial data in background thread"""
-        self.logger.info("Serial read thread started")
+        """Background serial read thread"""
+        self.logger.info("Serial thread started")
         try:
             while self.reading and self.serial_port and self.serial_port.is_open:
                 try:
@@ -613,41 +1784,20 @@ class DroneIMUMonitor:
                             try:
                                 self.data_queue.put_nowait(("received", timestamp, line))
                             except queue.Full:
-                                self.logger.warning("Queue full, dropping data")
+                                self.logger.warning("Queue full")
                 except Exception as e:
-                    self.logger.error(f"Serial read error: {e}")
+                    self.logger.error(f"Read error: {e}")
                     break
-                time.sleep(0.001)  # Small delay to prevent CPU spinning
-        except Exception as e:
-            self.logger.error(f"Serial thread error: {e}")
+                time.sleep(0.001)
         finally:
-            self.logger.info("Serial read thread stopped")
-    
-    def send_command(self):
-        """Send command over serial"""
-        if not self.connected:
-            messagebox.showwarning("Not Connected", "Please connect to a port first")
-            return
-        
-        cmd = self.cmd_var.get().strip()
-        if not cmd:
-            return
-        
-        try:
-            self.serial_port.write((cmd + "\n").encode())
-            timestamp = time.time()
-            self.data_queue.put(("sent", timestamp, cmd))
-            self.cmd_var.set("")
-        except Exception as e:
-            messagebox.showerror("Send Error", f"Failed to send:\n{e}")
+            self.logger.info("Serial thread stopped")
     
     def update_loop(self):
         """Main update loop"""
         try:
-            # Process queue items in batch (only if not paused)
             if not self.paused:
                 processed = 0
-                while not self.data_queue.empty() and processed < 100:
+                while not self.data_queue.empty() and processed < 200:
                     try:
                         msg_type, timestamp, line = self.data_queue.get_nowait()
                         if msg_type == "received":
@@ -658,529 +1808,1583 @@ class DroneIMUMonitor:
                     except queue.Empty:
                         break
                 
-                # Batch update log text
+                # Batch log updates
                 current_time = time.time()
                 if self.pending_log_lines and current_time - self.last_log_update > self.log_update_interval:
                     self.flush_log_updates()
                     self.last_log_update = current_time
                 
+                # Update chart
+                if self.show_chart.get() and current_time - self.last_chart_update > self.min_chart_interval:
+                    self.update_chart()
+                    self.last_chart_update = current_time
+                
+                # Update statistics (skip in free run mode)
+                if not self.free_run_var.get() and current_time - self.last_stats_update > self.min_stats_interval:
+                    self.update_stats_display()
+                    self.last_stats_update = current_time
+                
+                # Only check timeout if we're in a recording block and not in free run mode
+                if self.recording_block and not self.free_run_var.get():
+                    timed_out_block = self.parser.finalize_if_timed_out()
+                    if timed_out_block:
+                        self.recording_block = False
+                        timed_out_block.warnings.append("Timed out waiting for </DATA>")
+                        self.pending_log_lines.append(f"[{datetime.now().strftime('%H:%M:%S.%f')[:-3]}] ⚠ DATA BLOCK TIMEOUT\n")
+                        self.handle_completed_block(timed_out_block)
+            self.update_test_time_display()
+                    
         except Exception as e:
             self.logger.error(f"Update loop error: {e}")
         finally:
             self.root.after(50, self.update_loop)
     
     def process_received(self, timestamp, line):
-        """Process incoming serial data"""
-        # Store in log
+        """Process received line"""
+        # Check for data block markers
+        block_result = self.parser.parse_line(line, timestamp=timestamp)
+        
+        if line.startswith("<DATA"):
+            self.recording_block = True
+            self.current_block_metadata = self.parser.metadata
+            self.clear_chart()
+            self.block_sample_counter = 0
+            self.block_start_timestamp = timestamp
+            self.chart_start_time = timestamp
+            self.recording_indicator.set("🟢 Recording")
+            self.recording_light_color.set("#22c55e")
+            self.refresh_recording_indicator()
+            self.sample_counter_var.set("Samples: 0")
+            duration_meta = self._parse_float(self.current_block_metadata.get("DURATION"))
+            self.test_duration_target = duration_meta
+            self.test_start_time = timestamp
+            self.update_test_time_display()
+            self.pending_log_lines.append(f"[{datetime.fromtimestamp(timestamp).strftime('%H:%M:%S.%f')[:-3]}] 🟢 DATA BLOCK START: {self.current_block_metadata}\n")
+            return
+        elif line == "</DATA>":
+            self.recording_block = False
+            self.pending_log_lines.append(f"[{datetime.fromtimestamp(timestamp).strftime('%H:%M:%S.%f')[:-3]}] 🔴 DATA BLOCK END\n")
+            if block_result:
+                self.handle_completed_block(block_result)
+            return
+        
+        # Store all data
         self.log_data.append(("RX", timestamp, line))
         
-        # Queue text update
+        # Queue log text
         time_str = datetime.fromtimestamp(timestamp).strftime("%H:%M:%S.%f")[:-3]
-        self.pending_log_lines.append(f"[{time_str}] {line}\n")
+        prefix = "[DATA] " if self.recording_block else ""
+        self.pending_log_lines.append(f"[{time_str}] {prefix}{line}\n")
         
-        # Parse orientation
-        if self.auto_update_3d.get():
-            self.parse_and_update_orientation(line)
+        # Parse status messages
+        if line.startswith("[STATUS]"):
+            self.parse_status_message(line)
+            # Check for calibration completion
+            if "Calibration complete" in line:
+                self.show_calibration_popup(line)
+        
+        # Parse data rows
+        if not line.startswith("[") and not line.startswith("<"):
+            self.process_data_row(timestamp, line)
+        
+        if self.recording_block and self.parser.current_block:
+            self.block_sample_counter = len(self.parser.current_block.lines)
+            self.sample_counter_var.set(f"Samples: {self.block_sample_counter}")
+            if self.block_start_timestamp:
+                elapsed = max(timestamp - self.block_start_timestamp, 1e-3)
+                rate = self.block_sample_counter / elapsed
+                self.data_rate_var.set(f"Rate: {rate:.1f} Hz")
+    
+    def handle_completed_block(self, block: DataBlock):
+        """Store completed data block"""
+        rows = self.collect_block_rows(block)
+        block_samples = len(block.lines)
+        meta_mode = block.metadata.get("MODE", self.current_block_metadata.get("MODE", "UNKNOWN"))
+        meta_rate = block.metadata.get("RATE", self.current_block_metadata.get("RATE", "0"))
+        alpha_val = block.metadata.get("ALPHA", self.current_block_metadata.get("ALPHA", "0"))
+        block.block_id = self.data_block_counter
+        self.data_block_counter += 1
+        rate_float = self._parse_float(meta_rate)
+        if rate_float:
+            self.expected_sample_rate = rate_float
+        
+        if block.metadata:
+            self.current_block_metadata = block.metadata.copy()
+        block.sample_count_expected = self._parse_int(block.metadata.get("SAMPLES") or block.metadata.get("COUNT"))
+        
+        if block.sample_count_expected is not None and block_samples != block.sample_count_expected:
+            block.warnings.append(f"Sample count mismatch expected={block.sample_count_expected} got={block_samples}")
+        
+        # Suppress missing </DATA> warning in free run mode (continuous streaming)
+        if block.missing_end and "Missing </DATA>" not in block.warnings and not self.free_run_var.get():
+            block.warnings.insert(0, "Missing </DATA>")
+        
+        meta_crc = block.metadata.get("CRC")
+        if meta_crc:
+            joined = "\n".join(block.lines).encode("utf-8", errors="ignore")
+            crc_val = binascii.crc32(joined) & 0xFFFFFFFF
+            crc_hex = f"{crc_val:08X}"
+            if meta_crc.strip().upper() == crc_hex.upper():
+                block.crc_status = "OK"
+            else:
+                block.crc_status = f"MISMATCH:{crc_hex}"
+                block.warnings.append(f"CRC mismatch expected={meta_crc} got={crc_hex}")
+        
+        self.data_blocks.append(block)
+        block.sample_count_actual = block_samples
+        self.data_block_index[block.block_id] = block
+        block.data_rows = rows
+        self.total_samples_captured += block_samples
+        self.block_sample_counter = 0
+        self.sample_counter_var.set("Samples: 0")
+        self.csv_buffer.extend(block.lines)
+        self.recording_indicator.set("⚪ Ready" if not block.warnings else "⚠ Check Data")
+        if block.warnings:
+            self.recording_light_color.set("#ffaa00")
+        else:
+            self.recording_light_color.set("#33bb66")
+        self.block_start_timestamp = None
+        self.refresh_recording_indicator()
+        
+        if self.recording_capture_active or self.pending_recording_finalize:
+            self.recording_current_blocks.append(block.block_id)
+        if self.pending_recording_finalize and not self.recording_capture_active:
+            self.finalize_recording_session()
+        
+        rate_display = 0.0
+        duration = block.duration()
+        if block_samples and duration:
+            rate_display = block_samples / duration
+        else:
+            try:
+                rate_display = float(meta_rate)
+            except (TypeError, ValueError):
+                rate_display = 0.0
+        self.data_rate_var.set(f"Rate: {rate_display:.1f} Hz")
+        
+        summary = f"{meta_mode} {meta_rate}Hz α={alpha_val} samples={block_samples}"
+        if block.warnings:
+            summary += f" ⚠ {'; '.join(block.warnings)}"
+        self.last_block_summary = summary
+        self.pending_log_lines.append(f"[DATA] Stored block: {summary}\n")
+        self.test_start_time = None
+        self.test_duration_target = None
+        self.update_test_time_display()
+        self.test_time_var.set(f"Test Completed: {block.duration():.2f}s")
+        # Only show analysis popup if not in free run mode
+        if not self.free_run_var.get():
+            self.show_block_analysis(block, rows)
+    
+    def _parse_int(self, value):
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+    
+    def _parse_float(self, value):
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+    
+    def describe_block(self, block: DataBlock):
+        mode = block.metadata.get("MODE", "UNKNOWN")
+        rate = block.metadata.get("RATE", "n/a")
+        duration = block.duration()
+        warning_flag = " ⚠" if block.warnings else ""
+        return f"#{block.block_id} {mode} - {block.sample_count_actual or len(block.lines)} samples @ {rate}Hz ({duration:.1f}s){warning_flag}"
+    
+    def collect_block_rows(self, block: DataBlock):
+        rows = []
+        rate = self._parse_float(block.metadata.get("RATE"))
+        dt = (1.0 / rate) if rate and rate > 0 else None
+        block_raw_state = self._create_raw_angle_state()
+        for idx, line in enumerate(block.lines):
+            cleaned_line = line.strip()
+            if cleaned_line.startswith("[DATA]"):
+                cleaned_line = cleaned_line.split("]", 1)[-1].strip()
+            parts = [p.strip() for p in cleaned_line.split(",")]
+            floats = []
+            for part in parts:
+                try:
+                    floats.append(float(part))
+                except ValueError:
+                    floats.append(float("nan"))
+            row = {
+                "block_id": block.block_id,
+                "index": idx,
+                "timestamp": math.nan,
+                "time_absolute": math.nan,
+                "roll": math.nan,
+                "pitch": math.nan,
+                "yaw": math.nan,
+                "gx": math.nan,
+                "gy": math.nan,
+                "gz": math.nan,
+                "ax": math.nan,
+                "ay": math.nan,
+                "az": math.nan,
+                "roll_raw": math.nan,
+                "pitch_raw": math.nan,
+                "yaw_raw": math.nan,
+                "roll_gyro_raw": math.nan,
+                "pitch_gyro_raw": math.nan,
+                "yaw_gyro_raw": math.nan,
+                "raw_line": line,
+            }
+            timestamp_val = None
+            if len(floats) >= 10:
+                if not math.isnan(floats[0]):
+                    timestamp_val = floats[0]
+                row["roll"] = floats[1]
+                row["pitch"] = floats[2]
+                row["yaw"] = floats[3]
+                row["gx"] = floats[4]
+                row["gy"] = floats[5]
+                row["gz"] = floats[6]
+                row["ax"] = floats[7]
+                row["ay"] = floats[8]
+                row["az"] = floats[9]
+                if len(floats) >= 13:
+                    row["roll_raw"] = floats[10]
+                    row["pitch_raw"] = floats[11]
+                    row["yaw_raw"] = floats[12]
+            elif len(floats) == 9:
+                # BOTH mode: roll, pitch, yaw, gx, gy, gz, ax, ay, az
+                row["roll"] = floats[0]
+                row["pitch"] = floats[1]
+                row["yaw"] = floats[2]
+                row["gx"] = floats[3]
+                row["gy"] = floats[4]
+                row["gz"] = floats[5]
+                row["ax"] = floats[6]
+                row["ay"] = floats[7]
+                row["az"] = floats[8]
+            elif len(floats) == 6:
+                # RAW mode: GyroX, GyroY, GyroZ, AccX, AccY, AccZ
+                row["gx"] = floats[0]
+                row["gy"] = floats[1]
+                row["gz"] = floats[2]
+                row["ax"] = floats[3]
+                row["ay"] = floats[4]
+                row["az"] = floats[5]
+            elif len(floats) >= 4:
+                if not math.isnan(floats[0]):
+                    timestamp_val = floats[0]
+                row["roll"] = floats[-3]
+                row["pitch"] = floats[-2]
+                row["yaw"] = floats[-1]
+            elif len(floats) >= 3:
+                row["roll"], row["pitch"], row["yaw"] = floats[:3]
+            else:
+                continue
+            if timestamp_val is None:
+                if dt is not None:
+                    timestamp_val = idx * dt
+                else:
+                    timestamp_val = float(idx)
+            row["timestamp"] = timestamp_val
+            base_ts = block.start_ts or 0.0
+            row["time_absolute"] = base_ts + timestamp_val
+            derived = self._derive_raw_angles(row, row["time_absolute"], block_raw_state)
+            for key, val in derived.items():
+                if not math.isnan(val):
+                    row[key] = val
+            rows.append(row)
+        block.data_rows = rows
+        return rows
+    
+    def _ensure_unique_folder(self, base_path):
+        if not os.path.exists(base_path):
+            return base_path
+        counter = 1
+        while True:
+            candidate = f"{base_path}_{counter}"
+            if not os.path.exists(candidate):
+                return candidate
+            counter += 1
+    
+    def _format_export_value(self, value):
+        if value is None:
+            return ""
+        if isinstance(value, float):
+            if math.isnan(value):
+                return ""
+            return f"{value:.6f}"
+        return str(value)
+    
+    def _write_export_artifacts(self, filtered_blocks, base_name, range_mode,
+                                include_metadata, include_stats, include_chart,
+                                include_3d, export_root):
+        os.makedirs(export_root, exist_ok=True)
+        folder = self._ensure_unique_folder(os.path.join(export_root, base_name))
+        os.makedirs(folder, exist_ok=True)
+        
+        csv_path = os.path.join(folder, f"{base_name}.csv")
+        header_lines = [
+            "# IMU Data Export",
+            f"# Exported: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            f"# Blocks: {len(filtered_blocks)}",
+            f"# Range: {range_mode}",
+        ]
+        if include_metadata:
+            for block, rows in filtered_blocks:
+                header_lines.append(f"# Block {block.block_id}: Mode={block.metadata.get('MODE', 'UNKNOWN')} Rate={block.metadata.get('RATE', 'n/a')} Samples={len(rows)} Duration={block.duration():.2f}s")
+                for key, value in block.metadata.items():
+                    header_lines.append(f"#   {key}={value}")
+                if block.warnings:
+                    header_lines.append(f"#   WARNINGS: {'; '.join(block.warnings)}")
+        
+        columns = ["block_id", "timestamp_s", "datetime", "roll", "pitch", "yaw",
+                   "gx", "gy", "gz", "ax", "ay", "az",
+                   "roll_raw", "pitch_raw", "yaw_raw",
+                   "roll_gyro_raw", "pitch_gyro_raw", "yaw_gyro_raw"]
+        with open(csv_path, "w", encoding="utf-8", newline="") as f:
+            for line in header_lines:
+                f.write(line + "\n")
+            f.write(",".join(columns) + "\n")
+            for block, rows in filtered_blocks:
+                for row in rows:
+                    timestamp = row["timestamp"]
+                    dt_str = ""
+                    if block.start_ts:
+                        try:
+                            dt_obj = datetime.fromtimestamp(row["time_absolute"])
+                            dt_str = dt_obj.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+                        except Exception:
+                            dt_str = ""
+                    values = [
+                        str(block.block_id),
+                        self._format_export_value(timestamp),
+                        dt_str,
+                        self._format_export_value(row["roll"]),
+                        self._format_export_value(row["pitch"]),
+                        self._format_export_value(row["yaw"]),
+                        self._format_export_value(row["gx"]),
+                        self._format_export_value(row["gy"]),
+                        self._format_export_value(row["gz"]),
+                        self._format_export_value(row["ax"]),
+                        self._format_export_value(row["ay"]),
+                        self._format_export_value(row["az"]),
+                        self._format_export_value(row["roll_raw"]),
+                        self._format_export_value(row["pitch_raw"]),
+                        self._format_export_value(row["yaw_raw"]),
+                        self._format_export_value(row["roll_gyro_raw"]),
+                        self._format_export_value(row["pitch_gyro_raw"]),
+                        self._format_export_value(row["yaw_gyro_raw"]),
+                    ]
+                    f.write(",".join(values) + "\n")
+        
+        if include_stats:
+            stats_path = os.path.join(folder, f"{base_name}_stats.txt")
+            with open(stats_path, "w", encoding="utf-8") as stats_file:
+                stats_file.write(f"Samples: {self.stats_samples}\n")
+                stats_file.write(f"{self.stats_current_var.get()}\n")
+                stats_file.write(f"{self.stats_mean_var.get()}\n")
+                stats_file.write(f"{self.stats_std_var.get()}\n")
+                stats_file.write(f"{self.stats_min_var.get()}\n")
+                stats_file.write(f"{self.stats_max_var.get()}\n")
+                stats_file.write(f"{self.stats_drift_var.get()}\n")
+                stats_file.write(f"{self.stats_quality_var.get()}\n")
+                stats_file.write(f"{self.stats_rate_var.get()}\n")
+        
+        if include_chart:
+            chart_png = os.path.join(folder, f"{base_name}_chart.png")
+            chart_svg = os.path.join(folder, f"{base_name}_chart.svg")
+            try:
+                self.fig_chart.savefig(chart_png, dpi=150, facecolor=self.fig_chart.get_facecolor())
+                self.fig_chart.savefig(chart_svg, format="svg", facecolor=self.fig_chart.get_facecolor())
+            except Exception as e:
+                self.logger.warning(f"Chart export failed: {e}")
+        if include_3d:
+            orientation_png = os.path.join(folder, f"{base_name}_orientation.png")
+            try:
+                self.fig_3d.savefig(orientation_png, dpi=150, facecolor=self.fig_3d.get_facecolor())
+            except Exception as e:
+                self.logger.warning(f"3D export failed: {e}")
+        
+        return folder
     
     def process_sent(self, timestamp, cmd):
         """Process sent command"""
         self.log_data.append(("TX", timestamp, cmd))
         self.sent_commands.append((timestamp, cmd))
         
-        # Queue text updates
         time_str = datetime.fromtimestamp(timestamp).strftime("%H:%M:%S.%f")[:-3]
         self.pending_log_lines.append(f"[{time_str}] >> {cmd}\n")
+    
+    def parse_status_message(self, line):
+        """Parse ESP32 status messages"""
+        # Expected format: [STATUS] Mode=FILTERED Rate=100Hz Alpha=0.98
+        try:
+            parts = line.replace("[STATUS]", "").strip().split()
+            for part in parts:
+                if "=" in part:
+                    key, val = part.split("=", 1)
+                    if key == "Mode":
+                        self.esp_mode = val
+                    elif key == "Rate":
+                        cleaned = val.replace("Hz", "")
+                        self.esp_rate = cleaned
+                        rate_val = self._parse_float(cleaned)
+                        if rate_val:
+                            self.expected_sample_rate = rate_val
+                    elif key == "Alpha":
+                        self.esp_alpha = val
+        except:
+            pass
+    
+    def show_calibration_popup(self, line):
+        """Show calibration results in a popup"""
+        try:
+            # Extract calibration data from line like:
+            # [STATUS] Calibration complete: AccErr=(1.234,5.678) GyroErr=(0.123,0.456,0.789)
+            if "Calibration complete" in line:
+                # Extract the values
+                acc_match = re.search(r'AccErr=\(([^)]+)\)', line)
+                gyro_match = re.search(r'GyroErr=\(([^)]+)\)', line)
+                
+                acc_text = acc_match.group(1) if acc_match else "N/A"
+                gyro_text = gyro_match.group(1) if gyro_match else "N/A"
+                
+                message = f"Calibration Complete!\n\n"
+                message += f"Accelerometer Errors:\n  {acc_text}\n\n"
+                message += f"Gyroscope Errors:\n  {gyro_text}"
+                
+                messagebox.showinfo("Calibration Results", message)
+        except Exception as e:
+            self.logger.error(f"Error showing calibration popup: {e}")
+    
+    def _create_raw_angle_state(self):
+        return {
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "last_timestamp": None,
+        }
+    
+    def _derive_raw_angles(self, values, timestamp, state):
+        """Return accel- and gyro-based raw angles"""
+        result = {
+            "roll_raw": math.nan,
+            "pitch_raw": math.nan,
+            "yaw_raw": math.nan,
+            "roll_gyro_raw": state["roll"],
+            "pitch_gyro_raw": state["pitch"],
+            "yaw_gyro_raw": state["yaw"],
+        }
+        ax = values.get("ax")
+        ay = values.get("ay")
+        az = values.get("az")
+        if ax is not None and ay is not None and az is not None:
+            if not any(math.isnan(v) for v in (ax, ay, az)):
+                denom_roll = math.sqrt(ax * ax + az * az)
+                denom_pitch = math.sqrt(ay * ay + az * az)
+                if denom_roll > 1e-6:
+                    result["roll_raw"] = math.degrees(math.atan2(ay, denom_roll))
+                if denom_pitch > 1e-6:
+                    result["pitch_raw"] = math.degrees(math.atan2(-ax, denom_pitch))
+        last_ts = state.get("last_timestamp")
+        if last_ts is not None:
+            dt = timestamp - last_ts
+            if 0 < dt < 2.0:  # guard against pauses
+                for axis, rate_key in [("roll", "gx"), ("pitch", "gy"), ("yaw", "gz")]:
+                    rate = values.get(rate_key)
+                    if rate is not None and not math.isnan(rate):
+                        state[axis] += rate * dt
+                        result[f"{axis}_gyro_raw"] = state[axis]
+            else:
+                for axis in ("roll", "pitch", "yaw"):
+                    result[f"{axis}_gyro_raw"] = state[axis]
+        state["last_timestamp"] = timestamp
+        return result
+    
+    def process_data_row(self, timestamp, line):
+        """Parse incoming numeric data rows for charts and stats"""
+        # Allow optional "[DATA]" prefix (added for readability in logs)
+        if line.startswith("[DATA]"):
+            line = line.split("]", 1)[-1].strip()
+        parts = [p.strip() for p in line.split(",")]
+        if len(parts) < 3:
+            return
+        floats = []
+        for part in parts:
+            try:
+                floats.append(float(part))
+            except ValueError:
+                return
+        detected_format = self.data_format
+        if len(floats) >= 13:
+            detected_format = "Filtered + Raw"
+        elif len(floats) >= 10:
+            detected_format = "Full Sensors"
+        elif len(floats) == 9:
+            detected_format = "Both (Angles + Sensors)"
+        elif len(floats) == 6:
+            detected_format = "Raw Sensors"
+        elif len(floats) >= 4:
+            detected_format = "Timestamp + Angles"
+        elif len(floats) >= 3:
+            detected_format = "Angles"
+        if detected_format != self.data_format:
+            self.data_format = detected_format
+        rel_time = timestamp - self.chart_start_time
+        self.chart_data["time"].append(rel_time)
         
-        # Update sent commands immediately
-        self.sent_text.config(state="normal")
-        self.sent_text.insert(tk.END, f"[{time_str}] {cmd}\n")
-        self.sent_text.config(state="disabled")
-        self.sent_text.see(tk.END)
+        values = {key: math.nan for key in self.chart_keys}
+        if len(floats) == 3:
+            values["roll"], values["pitch"], values["yaw"] = floats
+        elif len(floats) == 6:
+            # RAW mode: GyroX, GyroY, GyroZ, AccX, AccY, AccZ
+            values["gx"] = floats[0]
+            values["gy"] = floats[1]
+            values["gz"] = floats[2]
+            values["ax"] = floats[3]
+            values["ay"] = floats[4]
+            values["az"] = floats[5]
+        elif len(floats) == 9:
+            # BOTH mode: roll, pitch, yaw, gx, gy, gz, ax, ay, az
+            values["roll"] = floats[0]
+            values["pitch"] = floats[1]
+            values["yaw"] = floats[2]
+            values["gx"] = floats[3]
+            values["gy"] = floats[4]
+            values["gz"] = floats[5]
+            values["ax"] = floats[6]
+            values["ay"] = floats[7]
+            values["az"] = floats[8]
+        elif len(floats) >= 10:
+            values["roll"] = floats[1]
+            values["pitch"] = floats[2]
+            values["yaw"] = floats[3]
+            values["gx"] = floats[4]
+            values["gy"] = floats[5]
+            values["gz"] = floats[6]
+            values["ax"] = floats[7]
+            values["ay"] = floats[8]
+            values["az"] = floats[9]
+            if len(floats) >= 13:
+                values["roll_raw"] = floats[10]
+                values["pitch_raw"] = floats[11]
+                values["yaw_raw"] = floats[12]
+        elif len(floats) >= 4:
+            values["roll"] = floats[-3]
+            values["pitch"] = floats[-2]
+            values["yaw"] = floats[-1]
+        
+        derived_angles = self._derive_raw_angles(values, timestamp, self.live_raw_angle_state)
+        for key, val in derived_angles.items():
+            current = values.get(key, math.nan)
+            if math.isnan(current) and not math.isnan(val):
+                values[key] = val
+        
+        for key in self.chart_keys:
+            self.chart_data[key].append(values.get(key, math.nan))
+            self.latest_sample[key] = values.get(key, math.nan)
+        self.latest_sample["time"] = rel_time
+        
+        roll_val = values.get("roll")
+        pitch_val = values.get("pitch")
+        yaw_val = values.get("yaw")
+        updated = False
+        if roll_val is not None and not math.isnan(roll_val):
+            self.roll = roll_val
+            self.stats_sum_roll += roll_val
+            self.stats_sum_sq_roll += roll_val ** 2
+            self.stats_min_roll = min(self.stats_min_roll, roll_val)
+            self.stats_max_roll = max(self.stats_max_roll, roll_val)
+            updated = True
+        if pitch_val is not None and not math.isnan(pitch_val):
+            self.pitch = pitch_val
+            self.stats_sum_pitch += pitch_val
+            self.stats_sum_sq_pitch += pitch_val ** 2
+            self.stats_min_pitch = min(self.stats_min_pitch, pitch_val)
+            self.stats_max_pitch = max(self.stats_max_pitch, pitch_val)
+            updated = True
+        if yaw_val is not None and not math.isnan(yaw_val):
+            self.yaw = yaw_val
+            self.stats_sum_yaw += yaw_val
+            self.stats_sum_sq_yaw += yaw_val ** 2
+            self.stats_min_yaw = min(self.stats_min_yaw, yaw_val)
+            self.stats_max_yaw = max(self.stats_max_yaw, yaw_val)
+            updated = True
+        
+        if updated:
+            self.stats_samples += 1
+            now = time.time()
+            if self.last_sample_timestamp:
+                interval = timestamp - self.last_sample_timestamp
+                if interval > 0:
+                    self.sample_interval_history.append(interval)
+            self.last_sample_timestamp = timestamp
+            if self.auto_update_3d.get():
+                if now - self.last_3d_update >= self.min_3d_interval:
+                    self.update_3d()
+                    self.last_3d_update = now
+            else:
+                self.update_orientation_text()
+    
+    def update_3d(self):
+        """Update 3D orientation"""
+        try:
+            r = math.radians(self.roll)
+            p = math.radians(self.pitch)
+            y = math.radians(self.yaw)
+            
+            Rx = np.array([[1, 0, 0], [0, np.cos(r), -np.sin(r)], [0, np.sin(r), np.cos(r)]])
+            Ry = np.array([[np.cos(p), 0, np.sin(p)], [0, 1, 0], [-np.sin(p), 0, np.cos(p)]])
+            Rz = np.array([[np.cos(y), -np.sin(y), 0], [np.sin(y), np.cos(y), 0], [0, 0, 1]])
+            R = Rz @ Ry @ Rx
+            
+            rot_body = self.body_vertices_base @ R.T
+            body_faces_idx = [
+                [0, 1, 5, 4],
+                [1, 2, 6, 5],
+                [2, 3, 7, 6],
+                [3, 0, 4, 7],
+                [4, 5, 6, 7],
+                [0, 1, 2, 3],
+            ]
+            faces = [[rot_body[idx] for idx in face] for face in body_faces_idx]
+            self.drone_body.set_verts(faces)
+            
+            rot_arms = [segment @ R.T for segment in self.arm_segments_base]
+            self.arm_collection.set_segments(rot_arms)
+            
+            # Update rotor circles and spokes separately
+            rot_rotor_circles = [circle @ R.T for circle in self.rotor_circles_base]
+            rot_rotor_spokes = [spoke @ R.T for spoke in self.rotor_spokes_base]
+            self.rotor_circle_collection.set_segments(rot_rotor_circles)
+            self.rotor_spoke_collection.set_segments(rot_rotor_spokes)
+            
+            # Update vectors
+            self.x_vec.remove()
+            self.y_vec.remove()
+            self.z_vec.remove()
+            
+            vec_length = 1.8
+            x = R @ np.array([vec_length, 0, 0])
+            y = R @ np.array([0, vec_length, 0])
+            z = R @ np.array([0, 0, vec_length])
+            
+            self.x_vec = self.ax_3d.quiver(0,0,0,x[0],x[1],x[2], color='#ef4444', arrow_length_ratio=0.25, linewidth=4, alpha=0.9)
+            self.y_vec = self.ax_3d.quiver(0,0,0,y[0],y[1],y[2], color='#22c55e', arrow_length_ratio=0.25, linewidth=4, alpha=0.9)
+            self.z_vec = self.ax_3d.quiver(0,0,0,z[0],z[1],z[2], color='#06b6d4', arrow_length_ratio=0.25, linewidth=4, alpha=0.9)
+            
+            self.update_orientation_text()
+            self.canvas_3d.draw_idle()
+        except Exception as e:
+            self.logger.error(f"3D update error: {e}")
+
+    def update_orientation_text(self):
+        if hasattr(self, "orientation_label"):
+            self.orientation_label.config(
+                text=f"Roll: {self.roll:.1f}°  Pitch: {self.pitch:.1f}°  Yaw: {self.yaw:.1f}°"
+            )
+
+    def update_test_time_display(self):
+        now = time.time()
+        self.current_time_var.set("Local Time: " + datetime.now().strftime("%H:%M:%S"))
+        if self.test_start_time:
+            elapsed = now - self.test_start_time
+            if self.test_duration_target:
+                remaining = max(self.test_duration_target - elapsed, 0.0)
+                self.test_time_var.set(f"Test Time: {elapsed:.1f}s (target {self.test_duration_target:.1f}s, remaining {remaining:.1f}s)")
+            else:
+                self.test_time_var.set(f"Test Time: {elapsed:.1f}s")
+        else:
+            if not self.data_blocks:
+                self.test_time_var.set("Test Time: --")
+
+    def compute_block_metrics(self, block: DataBlock, rows: List[dict]):
+        metrics = {
+            "samples": len(rows),
+            "duration": block.duration() if block.duration() > 0 else 0.0,
+            "mean_roll": 0.0,
+            "mean_pitch": 0.0,
+            "mean_yaw": 0.0,
+            "std_roll": 0.0,
+            "std_pitch": 0.0,
+            "std_yaw": 0.0,
+            "drift_rate": 0.0,
+        }
+        if not rows:
+            return metrics
+        time_values = np.array([row.get("timestamp", np.nan) for row in rows], dtype=float)
+        roll_values = np.array([row.get("roll", np.nan) for row in rows], dtype=float)
+        pitch_values = np.array([row.get("pitch", np.nan) for row in rows], dtype=float)
+        yaw_values = np.array([row.get("yaw", np.nan) for row in rows], dtype=float)
+
+        def safe_stat(values, func, default=0.0):
+            valid = values[np.isfinite(values)]
+            if valid.size == 0:
+                return default
+            return float(func(valid))
+
+        metrics["mean_roll"] = safe_stat(roll_values, np.nanmean)
+        metrics["mean_pitch"] = safe_stat(pitch_values, np.nanmean)
+        metrics["mean_yaw"] = safe_stat(yaw_values, np.nanmean)
+        metrics["std_roll"] = safe_stat(roll_values, np.nanstd)
+        metrics["std_pitch"] = safe_stat(pitch_values, np.nanstd)
+        metrics["std_yaw"] = safe_stat(yaw_values, np.nanstd)
+
+        valid_time = time_values[np.isfinite(time_values)]
+        if valid_time.size >= 2:
+            duration = valid_time[-1] - valid_time[0]
+            if duration > 0:
+                metrics["duration"] = duration
+
+        mask = np.isfinite(time_values) & np.isfinite(yaw_values)
+        if np.count_nonzero(mask) >= 5:
+            t_rel = time_values[mask] - time_values[mask][0]
+            if np.ptp(t_rel) > 0:
+                try:
+                    slope, _ = np.polyfit(t_rel, yaw_values[mask], 1)
+                    metrics["drift_rate"] = float(slope * 60.0)
+                except Exception:
+                    metrics["drift_rate"] = 0.0
+        return metrics
+
+    def show_block_analysis(self, block: DataBlock, rows: List[dict]):
+        metrics = self.compute_block_metrics(block, rows)
+        lines = [
+            f"Mode: {block.metadata.get('MODE', 'UNKNOWN')}  Rate: {block.metadata.get('RATE', 'n/a')} Hz",
+            f"Samples: {metrics['samples']}  Duration: {metrics['duration']:.2f}s",
+            f"Roll mean/std: {metrics['mean_roll']:.2f}° / {metrics['std_roll']:.2f}°",
+            f"Pitch mean/std: {metrics['mean_pitch']:.2f}° / {metrics['std_pitch']:.2f}°",
+            f"Yaw mean/std: {metrics['mean_yaw']:.2f}° / {metrics['std_yaw']:.2f}°",
+            f"Drift rate: {metrics['drift_rate']:.2f}°/min",
+        ]
+        if block.warnings:
+            lines.append("Warnings: " + "; ".join(block.warnings))
+        messagebox.showinfo("Test Analysis", "\n".join(lines))
+    
+    def _series_visible(self, key):
+        var = self.series_visibility.get(key)
+        if var is None:
+            return True
+        return bool(var.get())
+    
+    def update_chart(self, force=False):
+        """Update real-time chart"""
+        if not force and (not self.show_chart.get() or self.chart_paused.get()):
+            return
+        
+        try:
+            self.ax_chart.clear()
+            self.ax_chart.set_facecolor("#0d0d0d")
+            self.ax_chart.grid(True, color="#333", linestyle="--", alpha=0.5)
+            self.ax_chart.set_xlabel("Time (s)", color="white")
+            self.ax_chart.tick_params(colors="white")
+            
+            times = list(self.chart_data["time"])
+            if not times:
+                self.ax_chart.set_ylabel("")
+                self.canvas_chart.draw_idle()
+                return
+            
+            window_seconds = self.get_chart_window_seconds()
+            idx = 0
+            if window_seconds is not None:
+                start_time = times[-1] - window_seconds
+                idx = bisect.bisect_left(times, start_time)
+                if idx >= len(times):
+                    idx = max(0, len(times) - 1)
+            times_slice = times[idx:]
+            if not times_slice:
+                times_slice = times[-1:]
+                idx = len(times) - 1
+            
+            data_slices = {key: list(self.chart_data[key])[idx:] for key in self.chart_keys}
+            colors_drift = self.filtered_colors
+            raw_accel_colors = self.accel_colors
+            raw_gyro_colors = self.gyro_colors
+            gyro_colors = {"gx": "#f97316", "gy": "#facc15", "gz": "#f43f5e"}
+            accel_colors = {"ax": "#3b82f6", "ay": "#8b5cf6", "az": "#22d3ee"}
+            
+            mode = self.chart_mode.get()
+            if mode == "drift":
+                self.ax_chart.set_ylabel("Angle (°)", color="white")
+                for axis in ["roll", "pitch", "yaw"]:
+                    if not self._series_visible(axis):
+                        continue
+                    self.ax_chart.plot(times_slice, data_slices[axis], label=axis.upper(), color=colors_drift[axis], linewidth=1.5)
+                self.ax_chart.legend(loc='upper right', facecolor='#1e1e1e', edgecolor='white', labelcolor='white')
+            elif mode == "raw":
+                self.ax_chart.set_ylabel("Sensor Outputs", color="white")
+                has_data = False
+                # Check if we have gyro data
+                if self._series_visible("sensor_gyro"):
+                    for axis, color in gyro_colors.items():
+                        values = data_slices.get(axis, [])
+                        if values and any(not math.isnan(v) for v in values):
+                            self.ax_chart.plot(times_slice, values, label=f"{axis.upper()} (gyro)", color=color, linewidth=1.5)
+                            has_data = True
+                # Check if we have accel data
+                if self._series_visible("sensor_accel"):
+                    for axis, color in accel_colors.items():
+                        values = data_slices.get(axis, [])
+                        if values and any(not math.isnan(v) for v in values):
+                            self.ax_chart.plot(times_slice, values, label=f"{axis.upper()} (accel)", color=color, linewidth=1.5, linestyle="--")
+                            has_data = True
+                if not has_data:
+                    self.ax_chart.text(0.5, 0.5, "Raw sensor data not available.\nUse MODE:BOTH or MODE:RAW to enable.", 
+                                     transform=self.ax_chart.transAxes, ha="center", va="center", color="white", fontsize=11)
+            elif mode == "comparison":
+                self.ax_chart.set_ylabel("Angle (°)", color="white")
+                plotted = False
+                show_accel_raw = self._series_visible("raw_accel")
+                show_gyro_raw = self._series_visible("raw_gyro")
+                
+                for axis in ["roll", "pitch", "yaw"]:
+                    if not self._series_visible(axis):
+                        continue
+                    series = data_slices[axis]
+                    if any(not math.isnan(v) for v in series):
+                        self.ax_chart.plot(times_slice, series, label=f"{axis.capitalize()} Filtered", color=colors_drift[axis], linewidth=2)
+                        plotted = True
+                    accel_key = f"{axis}_raw"
+                    if show_accel_raw:
+                        accel_series = data_slices.get(accel_key, [])
+                        if accel_series and any(not math.isnan(v) for v in accel_series):
+                            self.ax_chart.plot(
+                                times_slice,
+                                accel_series,
+                                label=f"{axis.capitalize()} Accel",
+                                color=raw_accel_colors[axis],
+                                linestyle="--",
+                                linewidth=1.3,
+                                alpha=0.7
+                            )
+                            plotted = True
+                    gyro_key = f"{axis}_gyro_raw"
+                    if show_gyro_raw:
+                        gyro_series = data_slices.get(gyro_key, [])
+                        if gyro_series and any(not math.isnan(v) for v in gyro_series):
+                            self.ax_chart.plot(
+                                times_slice,
+                                gyro_series,
+                                label=f"{axis.capitalize()} Gyro",
+                                color=raw_gyro_colors[axis],
+                                linestyle=":",
+                                linewidth=1.3,
+                                alpha=0.7
+                            )
+                            plotted = True
+                if plotted:
+                    self.ax_chart.legend(loc='upper right', facecolor='#1e1e1e', edgecolor='white', labelcolor='white')
+                else:
+                    self.ax_chart.text(0.5, 0.5, "No angle data available.\nStart a test to see comparison.", 
+                                     transform=self.ax_chart.transAxes, ha="center", va="center", color="white", fontsize=11)
+            elif mode == "axis":
+                axis_key = self.chart_axis_var.get()
+                label = self.chart_axis_options.get(axis_key, axis_key)
+                values = data_slices.get(axis_key, [])
+                if not any(not math.isnan(v) for v in values):
+                    self.ax_chart.text(0.5, 0.5, "No data for selected axis", transform=self.ax_chart.transAxes,
+                                       ha="center", va="center", color="white", fontsize=12)
+                else:
+                    self.ax_chart.set_ylabel(label, color="white")
+                    base_color = self.filtered_colors.get(axis_key, "#38bdf8")
+                    self.ax_chart.plot(times_slice, values, color=base_color, linewidth=2, label="Filtered")
+                    if self._series_visible("raw_accel"):
+                        accel_series = data_slices.get(f"{axis_key}_raw", [])
+                        if accel_series and any(not math.isnan(v) for v in accel_series):
+                            self.ax_chart.plot(times_slice, accel_series, color=self.accel_colors.get(axis_key, "#facc15"), linestyle="--", linewidth=1.6, label="Accel Raw")
+                    if self._series_visible("raw_gyro"):
+                        gyro_series = data_slices.get(f"{axis_key}_gyro_raw", [])
+                        if gyro_series and any(not math.isnan(v) for v in gyro_series):
+                            self.ax_chart.plot(times_slice, gyro_series, color=self.gyro_colors.get(axis_key, "#fb923c"), linestyle=":", linewidth=1.6, label="Gyro Raw")
+                    self.ax_chart.legend(loc='upper right', facecolor='#1e1e1e', edgecolor='white', labelcolor='white')
+            else:
+                self.ax_chart.text(0.5, 0.5, "Unknown chart mode", transform=self.ax_chart.transAxes,
+                                   ha="center", va="center", color="white", fontsize=12)
+            
+            if window_seconds is not None and times_slice:
+                self.ax_chart.set_xlim(times_slice[0], times_slice[-1])
+            if not self.chart_autoscale.get():
+                try:
+                    ymin = float(self.chart_manual_min.get())
+                    ymax = float(self.chart_manual_max.get())
+                    if ymin < ymax:
+                        self.ax_chart.set_ylim(ymin, ymax)
+                except ValueError:
+                    pass
+            
+            self.canvas_chart.draw_idle()
+        except Exception as e:
+            self.logger.error(f"Chart update error: {e}")
+    
+    def clear_chart(self):
+        """Clear chart buffers"""
+        for key in self.chart_data:
+            self.chart_data[key].clear()
+        self.chart_start_time = time.time()
+        self.live_raw_angle_state = self._create_raw_angle_state()
+        self.stats_samples = 0
+        self.stats_sum_roll = 0
+        self.stats_sum_pitch = 0
+        self.stats_sum_yaw = 0
+        self.stats_sum_sq_roll = 0
+        self.stats_sum_sq_pitch = 0
+        self.stats_sum_sq_yaw = 0
+        self.sample_interval_history.clear()
+        self.last_sample_timestamp = None
+        self.latest_sample = {"time": 0.0}
+        for key in self.chart_keys:
+            self.latest_sample[key] = math.nan
+        self.sample_rate_warning_active = False
+        self.ax_chart.clear()
+        self.canvas_chart.draw_idle()
+        self.update_stats_display()
+    
+    def get_chart_window_seconds(self):
+        mapping = {"10s": 10, "30s": 30, "1min": 60, "5min": 300}
+        value = self.chart_window_var.get()
+        return mapping.get(value)
+    
+    def on_chart_autoscale_toggle(self):
+        state = "disabled" if self.chart_autoscale.get() else "normal"
+        if hasattr(self, "chart_min_entry"):
+            self.chart_min_entry.config(state=state)
+        if hasattr(self, "chart_max_entry"):
+            self.chart_max_entry.config(state=state)
+        self.update_chart(force=True)
+    
+    def on_chart_axis_selected(self, event=None):
+        label = self.chart_axis_label_var.get()
+        key = self.chart_axis_label_map.get(label, "roll")
+        self.chart_axis_var.set(key)
+        if self.chart_mode.get() == "axis":
+            self.update_chart(force=True)
+    
+    def on_chart_mode_changed(self, *args):
+        is_axis = self.chart_mode.get() == "axis"
+        state = "readonly" if is_axis else "disabled"
+        if hasattr(self, "chart_axis_combo"):
+            self.chart_axis_combo.config(state=state)
+        self.update_chart(force=True)
+    
+    def toggle_chart_pause(self):
+        new_state = not self.chart_paused.get()
+        self.chart_paused.set(new_state)
+        if hasattr(self, "chart_pause_btn"):
+            self.chart_pause_btn.config(text="Resume" if new_state else "Pause")
+        if not new_state:
+            self.update_chart()
+    
+    def reset_chart_scale(self):
+        self.chart_autoscale.set(True)
+        self.chart_manual_min.set("-180")
+        self.chart_manual_max.set("180")
+        self.on_chart_autoscale_toggle()
+    
+    def update_recording_timer(self):
+        if self.record_timer_job:
+            self.root.after_cancel(self.record_timer_job)
+            self.record_timer_job = None
+        if self.recording_active and self.recording_start_time:
+            elapsed = max(0.0, time.time() - self.recording_start_time)
+            minutes = int(elapsed // 60)
+            seconds = int(elapsed % 60)
+            self.record_elapsed_var.set(f"Elapsed: {minutes:02d}:{seconds:02d}")
+            self.record_timer_job = self.root.after(1000, self.update_recording_timer)
+        else:
+            self.record_elapsed_var.set("Elapsed: 00:00")
+    
+    def stop_recording_timer(self):
+        if self.record_timer_job:
+            self.root.after_cancel(self.record_timer_job)
+            self.record_timer_job = None
+        self.record_elapsed_var.set("Elapsed: 00:00")
+    
+    def _finalize_recording_if_pending(self):
+        if self.pending_recording_finalize:
+            self.finalize_recording_session()
+    
+    def finalize_recording_session(self):
+        self.pending_recording_finalize = False
+        self.recording_capture_active = False
+        self.recording_start_time = None
+        self.stop_recording_timer()
+        self.record_btn.config(text="⬤ Start Recording", bg="#bb2244")
+        self.recording_indicator.set("⚪ Not Recording")
+        self.recording_light_color.set("#444444")
+        self.refresh_recording_indicator()
+        self.recording_start_block_id = None
+        block_ids = list(dict.fromkeys(self.recording_current_blocks))
+        self.recording_current_blocks = []
+        if not block_ids:
+            self.recording_indicator.set("⚪ Not Recording")
+            self.recording_light_color.set("#444444")
+            self.refresh_recording_indicator()
+            self.logger.info("Recording stopped with no completed data blocks.")
+            return
+        blocks = []
+        for block_id in block_ids:
+            block = self.data_block_index.get(block_id)
+            if block:
+                blocks.append(block)
+        if not blocks:
+            self.logger.info("Recording stopped but associated data blocks were not found.")
+            return
+        filtered_blocks = []
+        for block in blocks:
+            rows = block.data_rows if block.data_rows else self.collect_block_rows(block)
+            filtered_blocks.append((block, rows))
+        base_name = datetime.now().strftime("drift_test_%Y-%m-%d_%H-%M")
+        export_root = self.recording_folder
+        try:
+            folder = self._write_export_artifacts(
+                filtered_blocks,
+                base_name,
+                "markers",
+                True,
+                True,
+                False,
+                False,
+                export_root,
+            )
+        except Exception as exc:
+            self.logger.error(f"Recording export failed: {exc}")
+            return
+        total_samples = sum(len(rows) for _, rows in filtered_blocks)
+        total_duration = sum(block.duration() for block, _ in filtered_blocks)
+        session_info = {
+            "id": self.recording_session_counter,
+            "name": base_name,
+            "folder": folder,
+            "timestamp": datetime.now(),
+            "samples": total_samples,
+            "duration": total_duration,
+            "block_ids": block_ids,
+        }
+        self.recordings.append(session_info)
+        self.recording_session_counter += 1
+        self.recording_indicator.set("⚪ Saved")
+        self.recording_light_color.set("#33bb66")
+        self.refresh_recording_indicator()
+        self.logger.info(f"Recording auto-saved to {folder}")
+    
+    def update_session_list(self):
+        # Session manager removed - this is now a no-op
+        return
+        if not hasattr(self, "session_list"):
+            return
+        self.session_list.delete(0, tk.END)
+        for session in self.recordings:
+            duration = session.get("duration", 0.0)
+            samples = session.get("samples", 0)
+            label = f"{session['name']} ({samples} samples, {duration:.1f}s)"
+            self.session_list.insert(tk.END, label)
+    
+    def _get_selected_session(self):
+        if not hasattr(self, "session_list"):
+            return None
+        selection = self.session_list.curselection()
+        if not selection:
+            messagebox.showinfo("No Selection", "Select a recording from the list.")
+            return None
+        index = selection[0]
+        if index >= len(self.recordings):
+            return None
+        return self.recordings[index], index
+    
+    def _get_selected_sessions_list(self):
+        if not hasattr(self, "session_list"):
+            return []
+        indices = self.session_list.curselection()
+        sessions = []
+        for idx in indices:
+            if idx < len(self.recordings):
+                sessions.append(self.recordings[idx])
+        return sessions
+    
+    def open_selected_session_folder(self):
+        result = self._get_selected_session()
+        if not result:
+            return
+        session, _ = result
+        folder = session.get("folder")
+        if not folder or not os.path.exists(folder):
+            messagebox.showerror("Missing Folder", "Recorded folder not found on disk.")
+            return
+        try:
+            if sys.platform.startswith("win"):
+                os.startfile(folder)
+            elif sys.platform == "darwin":
+                subprocess.call(["open", folder])
+            else:
+                subprocess.call(["xdg-open", folder])
+        except Exception as exc:
+            messagebox.showerror("Open Folder", f"Failed to open folder:\n{exc}")
+    
+    def export_selected_session(self):
+        result = self._get_selected_session()
+        if not result:
+            return
+        session, _ = result
+        block_ids = session.get("block_ids", [])
+        if not block_ids:
+            messagebox.showinfo("No Data", "Recording does not reference any data blocks.")
+            return
+        new_name = simpledialog.askstring("Export Recording", "Enter export name:", initialvalue=f"{session['name']}_export")
+        if not new_name:
+            return
+        blocks = []
+        for block_id in block_ids:
+            block = self.data_block_index.get(block_id)
+            if block:
+                blocks.append(block)
+        if not blocks:
+            messagebox.showerror("Export Failed", "Original data blocks are no longer available in memory.")
+            return
+        filtered_blocks = [(block, self.collect_block_rows(block)) for block in blocks]
+        folder = self._write_export_artifacts(
+            filtered_blocks,
+            new_name,
+            "markers",
+            True,
+            True,
+            True,
+            False,
+            os.path.join(os.getcwd(), "imu_exports"),
+        )
+        messagebox.showinfo("Export Complete", f"Recording exported to:\n{folder}")
+    
+    def delete_selected_session(self):
+        result = self._get_selected_session()
+        if not result:
+            return
+        session, index = result
+        if not messagebox.askyesno("Delete Recording", f"Delete recording '{session['name']}'? This cannot be undone."):
+            return
+        folder = session.get("folder")
+        if folder and os.path.exists(folder):
+            try:
+                shutil.rmtree(folder)
+            except Exception as exc:
+                self.logger.warning(f"Failed to remove folder {folder}: {exc}")
+        del self.recordings[index]
+        self.update_session_list()
+    
+    def load_selected_session(self):
+        result = self._get_selected_session()
+        if not result:
+            return
+        session, _ = result
+        folder = session.get("folder")
+        if not folder or not os.path.exists(folder):
+            messagebox.showerror("Missing Folder", "Recorded folder not found on disk.")
+            return
+        csv_path = os.path.join(folder, f"{session['name']}.csv")
+        if not os.path.exists(csv_path):
+            messagebox.showerror("Missing File", f"Recording file not found:\n{csv_path}")
+            return
+        try:
+            parsed_rows = self._load_rows_from_csv(csv_path)
+            self._display_loaded_rows(parsed_rows)
+            self.last_block_summary = f"Loaded recording '{session['name']}'"
+            messagebox.showinfo("Recording Loaded", f"Recording '{session['name']}' loaded into the viewer.")
+        except Exception as exc:
+            messagebox.showerror("Load Failed", f"Unable to load recording:\n{exc}")
+            self.logger.error(f"Load recording error: {exc}")
+    
+    def compare_selected_sessions(self):
+        sessions = self._get_selected_sessions_list()
+        if len(sessions) < 2:
+            messagebox.showinfo("Select Sessions", "Select at least two recordings to compare.")
+            return
+        data_sets = []
+        for session in sessions:
+            folder = session.get("folder")
+            if not folder or not os.path.exists(folder):
+                continue
+            csv_path = os.path.join(folder, f"{session['name']}.csv")
+            if not os.path.exists(csv_path):
+                continue
+            try:
+                rows = self._load_rows_from_csv(csv_path)
+                if rows:
+                    data_sets.append((session["name"], rows))
+            except Exception as exc:
+                self.logger.warning(f"Comparison load failed for {session['name']}: {exc}")
+        if len(data_sets) < 2:
+            messagebox.showerror("Comparison Failed", "Unable to load sufficient data for comparison.")
+            return
+        
+        compare_window = tk.Toplevel(self.root)
+        compare_window.title("Session Comparison")
+        fig = plt.Figure(figsize=(8, 6), facecolor="#0d0d0d")
+        axes = [
+            fig.add_subplot(311),
+            fig.add_subplot(312),
+            fig.add_subplot(313),
+        ]
+        labels = ["Roll (°)", "Pitch (°)", "Yaw (°)"]
+        colors = ["#ef4444", "#22c55e", "#3b82f6", "#f97316", "#8b5cf6", "#22d3ee"]
+        for idx, (name, rows) in enumerate(data_sets):
+            base_time = rows[0]["timestamp"] if rows else 0.0
+            times = [row.get("timestamp", 0.0) - base_time for row in rows]
+            roll_vals = [row.get("roll", math.nan) for row in rows]
+            pitch_vals = [row.get("pitch", math.nan) for row in rows]
+            yaw_vals = [row.get("yaw", math.nan) for row in rows]
+            color = colors[idx % len(colors)]
+            axes[0].plot(times, roll_vals, label=name, color=color, linewidth=1.2)
+            axes[1].plot(times, pitch_vals, label=name, color=color, linewidth=1.2)
+            axes[2].plot(times, yaw_vals, label=name, color=color, linewidth=1.2)
+        for ax, label in zip(axes, labels):
+            ax.set_facecolor("#0d0d0d")
+            ax.grid(True, color="#333333", linestyle="--", alpha=0.5)
+            ax.set_ylabel(label, color="white")
+            ax.tick_params(colors="white")
+        axes[-1].set_xlabel("Time (s)", color="white")
+        axes[0].legend(loc="upper right")
+        fig.tight_layout()
+        canvas = FigureCanvasTkAgg(fig, master=compare_window)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill="both", expand=True)
+    
+    def _load_rows_from_csv(self, file_path):
+        parsed_rows = []
+        header = None
+        with open(file_path, encoding="utf-8") as f:
+            for raw in f:
+                line = raw.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if header is None:
+                    header = [h.strip() for h in line.split(",")]
+                    continue
+                values = line.split(",")
+                row_dict = dict(zip(header, values))
+                def to_float(key):
+                    value = row_dict.get(key, "")
+                    try:
+                        return float(value) if value != "" else math.nan
+                    except ValueError:
+                        return math.nan
+                parsed_rows.append({
+                    "timestamp": to_float("timestamp_s"),
+                    "roll": to_float("roll"),
+                    "pitch": to_float("pitch"),
+                    "yaw": to_float("yaw"),
+                    "gx": to_float("gx"),
+                    "gy": to_float("gy"),
+                    "gz": to_float("gz"),
+                    "ax": to_float("ax"),
+                    "ay": to_float("ay"),
+                    "az": to_float("az"),
+                    "roll_raw": to_float("roll_raw"),
+                    "pitch_raw": to_float("pitch_raw"),
+                    "yaw_raw": to_float("yaw_raw"),
+                })
+        return parsed_rows
+    
+    def _display_loaded_rows(self, rows):
+        self.clear_chart()
+        if not rows:
+            return
+        self.chart_start_time = time.time()
+        previous_timestamp = None
+        for row in rows:
+            timestamp = row.get("timestamp", math.nan)
+            if math.isnan(timestamp):
+                if previous_timestamp is None:
+                    timestamp = 0.0
+                else:
+                    timestamp = previous_timestamp
+            self.chart_data["time"].append(timestamp)
+            for key in self.chart_keys:
+                self.chart_data[key].append(row.get(key, math.nan))
+            if previous_timestamp is not None:
+                interval = timestamp - previous_timestamp
+                if interval > 0:
+                    self.sample_interval_history.append(interval)
+            previous_timestamp = timestamp
+            
+            roll_val = row.get("roll", math.nan)
+            pitch_val = row.get("pitch", math.nan)
+            yaw_val = row.get("yaw", math.nan)
+            if not math.isnan(roll_val):
+                self.roll = roll_val
+                self.stats_sum_roll += roll_val
+                self.stats_sum_sq_roll += roll_val ** 2
+                self.stats_min_roll = min(self.stats_min_roll, roll_val)
+                self.stats_max_roll = max(self.stats_max_roll, roll_val)
+            if not math.isnan(pitch_val):
+                self.pitch = pitch_val
+                self.stats_sum_pitch += pitch_val
+                self.stats_sum_sq_pitch += pitch_val ** 2
+                self.stats_min_pitch = min(self.stats_min_pitch, pitch_val)
+                self.stats_max_pitch = max(self.stats_max_pitch, pitch_val)
+            if not math.isnan(yaw_val):
+                self.yaw = yaw_val
+                self.stats_sum_yaw += yaw_val
+                self.stats_sum_sq_yaw += yaw_val ** 2
+                self.stats_min_yaw = min(self.stats_min_yaw, yaw_val)
+                self.stats_max_yaw = max(self.stats_max_yaw, yaw_val)
+            if (not math.isnan(roll_val)) or (not math.isnan(pitch_val)) or (not math.isnan(yaw_val)):
+                # Only collect statistics if not in free run mode
+                if not self.free_run_var.get():
+                    self.stats_samples += 1
+        self.update_chart()
+        if not self.free_run_var.get():
+            self.update_stats_display()
+        self.sample_counter_var.set(f"Samples: {self.stats_samples}")
+    
+    def export_chart(self):
+        if not self.chart_data["time"]:
+            messagebox.showinfo("No Data", "No chart data available to export.")
+            return
+        filetypes = [
+            ("PNG Image", "*.png"),
+            ("SVG Vector", "*.svg"),
+        ]
+        default_name = datetime.now().strftime("imu_chart_%Y-%m-%d_%H-%M-%S.png")
+        path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=filetypes, initialfile=default_name)
+        if not path:
+            return
+        try:
+            self.fig_chart.savefig(path, facecolor=self.fig_chart.get_facecolor())
+            messagebox.showinfo("Export Complete", f"Chart saved to:\n{path}")
+        except Exception as e:
+            messagebox.showerror("Export Error", f"Failed to save chart:\n{e}")
+    
+    def open_serial_monitor_window(self):
+        """Open serial monitor in a separate window"""
+        if hasattr(self, 'serial_monitor_window') and self.serial_monitor_window and self.serial_monitor_window.winfo_exists():
+            # Window already exists, just bring it to front
+            self.serial_monitor_window.lift()
+            self.serial_monitor_window.focus_force()
+            return
+        
+        # Create new window
+        self.serial_monitor_window = tk.Toplevel(self.root)
+        self.serial_monitor_window.title("Serial Monitor")
+        self.serial_monitor_window.geometry("900x600")
+        self.serial_monitor_window.minsize(600, 400)
+        self.serial_monitor_window.configure(bg="#1e1e1e")
+        
+        # Controls frame
+        controls_frame = ttk.Frame(self.serial_monitor_window, padding=10)
+        controls_frame.pack(fill="x")
+        
+        ttk.Button(controls_frame, text="Clear", command=self.clear_serial_monitor).pack(side="left", padx=(0, 5))
+        ttk.Button(controls_frame, text="Pause", command=self.toggle_serial_pause).pack(side="left", padx=(0, 5))
+        self.serial_paused = tk.BooleanVar(value=False)
+        self.serial_pause_label = ttk.Label(controls_frame, text="", foreground="gray")
+        self.serial_pause_label.pack(side="left", padx=(5, 0))
+        
+        # Auto-scroll checkbox
+        self.autoscroll = tk.BooleanVar(value=True)
+        ttk.Checkbutton(controls_frame, text="Auto-scroll", variable=self.autoscroll).pack(side="right")
+        
+        # Text area
+        text_frame = ttk.Frame(self.serial_monitor_window, padding=10)
+        text_frame.pack(fill="both", expand=True)
+        
+        self.log_text = scrolledtext.ScrolledText(
+            text_frame, 
+            wrap=tk.WORD, 
+            background="#0d0d0d", 
+            foreground="#00ff00",
+            insertbackground="white", 
+            font=("Consolas", 10),
+            relief=tk.FLAT,
+            borderwidth=2
+        )
+        self.log_text.pack(fill="both", expand=True)
+        self.log_text.config(state="disabled")
+        
+        # Handle window close
+        def on_close():
+            self.serial_monitor_window.destroy()
+            self.serial_monitor_window = None
+            self.log_text = None
+        
+        self.serial_monitor_window.protocol("WM_DELETE_WINDOW", on_close)
+        
+        # Add initial message
+        self.log_text.config(state="normal")
+        self.log_text.insert(tk.END, "Serial Monitor Ready\n")
+        self.log_text.insert(tk.END, "=" * 80 + "\n")
+        self.log_text.insert(tk.END, "All serial traffic will appear here...\n\n")
+        self.log_text.config(state="disabled")
+    
+    def clear_serial_monitor(self):
+        """Clear the serial monitor"""
+        if self.log_text:
+            self.log_text.config(state="normal")
+            self.log_text.delete(1.0, tk.END)
+            self.log_text.insert(tk.END, "Serial Monitor Cleared\n")
+            self.log_text.insert(tk.END, "=" * 80 + "\n\n")
+            self.log_text.config(state="disabled")
+    
+    def toggle_serial_pause(self):
+        """Toggle serial monitor pause state"""
+        if hasattr(self, 'serial_paused'):
+            self.serial_paused.set(not self.serial_paused.get())
+            if self.serial_paused.get():
+                self.serial_pause_label.config(text="(Paused)", foreground="orange")
+            else:
+                self.serial_pause_label.config(text="", foreground="gray")
+    
+    def update_stats_display(self):
+        """Update statistics display"""
+        if self.stats_samples == 0:
+            mean_r = mean_p = mean_y = 0.0
+            std_r = std_p = std_y = 0.0
+            min_r = min_p = min_y = 0.0
+            max_r = max_p = max_y = 0.0
+        else:
+            mean_r = self.stats_sum_roll / self.stats_samples
+            mean_p = self.stats_sum_pitch / self.stats_samples
+            mean_y = self.stats_sum_yaw / self.stats_samples
+            
+            var_r = (self.stats_sum_sq_roll / self.stats_samples) - (mean_r ** 2)
+            var_p = (self.stats_sum_sq_pitch / self.stats_samples) - (mean_p ** 2)
+            var_y = (self.stats_sum_sq_yaw / self.stats_samples) - (mean_y ** 2)
+            
+            std_r = math.sqrt(max(0.0, var_r))
+            std_p = math.sqrt(max(0.0, var_p))
+            std_y = math.sqrt(max(0.0, var_y))
+            
+            min_r = self.stats_min_roll if self.stats_min_roll != float("inf") else mean_r
+            min_p = self.stats_min_pitch if self.stats_min_pitch != float("inf") else mean_p
+            min_y = self.stats_min_yaw if self.stats_min_yaw != float("inf") else mean_y
+            max_r = self.stats_max_roll if self.stats_max_roll != float("-inf") else mean_r
+            max_p = self.stats_max_pitch if self.stats_max_pitch != float("-inf") else mean_p
+            max_y = self.stats_max_yaw if self.stats_max_yaw != float("-inf") else mean_y
+        
+        if self.sample_interval_history:
+            avg_interval = sum(self.sample_interval_history) / len(self.sample_interval_history)
+            sample_rate = 1.0 / avg_interval if avg_interval > 0 else 0.0
+        else:
+            sample_rate = 0.0
+        
+        drift_rate = 0.0
+        times = list(self.chart_data["time"])
+        yaw_values = list(self.chart_data["yaw"])
+        if len(times) >= 10:
+            window_seconds = self.get_chart_window_seconds()
+            idx = 0
+            if window_seconds is not None:
+                start_time = times[-1] - window_seconds
+                idx = bisect.bisect_left(times, start_time)
+            times_slice = np.array(times[idx:], dtype=float)
+            yaw_slice = np.array(yaw_values[idx:], dtype=float)
+            mask = np.isfinite(yaw_slice)
+            if mask.sum() >= 5 and times_slice.size > 0:
+                rel_time = times_slice[mask] - times_slice[mask][0]
+                if np.ptp(rel_time) > 0:
+                    try:
+                        slope, _ = np.polyfit(rel_time, yaw_slice[mask], 1)
+                        drift_rate = slope * 60.0
+                    except Exception:
+                        drift_rate = 0.0
+        
+        abs_drift = abs(drift_rate)
+        if abs_drift < 1.0:
+            quality_color = "#22c55e"
+            quality_text = "Quality: green (<1°/min)"
+        elif abs_drift <= 5.0:
+            quality_color = "#facc15"
+            quality_text = "Quality: yellow (1-5°/min)"
+        else:
+            quality_color = "#ef4444"
+            quality_text = "Quality: red (>5°/min)"
+        
+        rate_warning = False
+        if self.expected_sample_rate and self.expected_sample_rate > 0 and sample_rate > 0:
+            if sample_rate < 0.8 * self.expected_sample_rate:
+                rate_warning = True
+                if not self.sample_rate_warning_active:
+                    self.sample_rate_warning_active = True
+                    self.pending_log_lines.append("⚠ Sample rate below expected threshold.\n")
+            else:
+                self.sample_rate_warning_active = False
+        else:
+            self.sample_rate_warning_active = False
+        
+        self.stats_samples_var.set(f"Samples: {self.stats_samples}")
+        self.stats_mean_var.set(f"Mean: R={mean_r:.2f}° P={mean_p:.2f}° Y={mean_y:.2f}°")
+        self.stats_std_var.set(f"StdDev: R={std_r:.2f}° P={std_p:.2f}° Y={std_y:.2f}°")
+        self.stats_drift_var.set(f"Drift Rate: {drift_rate:.2f}°/min")
+        
+        if self.expected_sample_rate and self.expected_sample_rate > 0:
+            rate_text = f"Rate: {sample_rate:.1f} Hz (target {self.expected_sample_rate:.0f} Hz)"
+            if rate_warning:
+                rate_text += " ⚠"
+        else:
+            rate_text = f"Rate: {sample_rate:.1f} Hz"
+        self.data_rate_var.set(rate_text)
     
     def flush_log_updates(self):
-        """Batch update log text widget"""
+        """Batch update log text"""
         if not self.pending_log_lines:
+            return
+        if not self.log_text:
+            return
+        if hasattr(self, 'serial_paused') and self.serial_paused.get():
             return
         
         self.log_text.config(state="normal")
         self.log_text.insert(tk.END, "".join(self.pending_log_lines))
         self.log_text.config(state="disabled")
         
-        if self.autoscroll.get():
+        if hasattr(self, 'autoscroll') and self.autoscroll.get():
             self.log_text.see(tk.END)
         
         self.pending_log_lines.clear()
     
-    def parse_and_update_orientation(self, line):
-        """Parse orientation data"""
-        try:
-            parts = line.split(",")
-            if len(parts) == 3:
-                self.roll = float(parts[0].strip())
-                self.pitch = float(parts[1].strip())
-                self.yaw = float(parts[2].strip())
-                
-                # Throttle 3D updates
-                current_time = time.time()
-                if current_time - self.last_3d_update >= self.min_3d_interval:
-                    self.update_3d_orientation()
-                    self.last_3d_update = current_time
-                    
-                self.values_label.config(
-                    text=f"Roll: {self.roll:.3f}°\nPitch: {self.pitch:.3f}°\nYaw: {self.yaw:.3f}°"
-                )
-        except ValueError:
-            pass  # Ignore parse errors silently
-    
-    def update_3d_orientation(self):
-        """Update 3D visualization"""
-        try:
-            # Convert to radians
-            r = math.radians(self.roll)
-            p = math.radians(self.pitch)
-            y = math.radians(self.yaw)
-            
-            # Rotation matrices
-            Rx = np.array([[1, 0, 0],
-                          [0, np.cos(r), -np.sin(r)],
-                          [0, np.sin(r), np.cos(r)]])
-            
-            Ry = np.array([[np.cos(p), 0, np.sin(p)],
-                          [0, 1, 0],
-                          [-np.sin(p), 0, np.cos(p)]])
-            
-            Rz = np.array([[np.cos(y), -np.sin(y), 0],
-                          [np.sin(y), np.cos(y), 0],
-                          [0, 0, 1]])
-            
-            # Combined rotation
-            R = Rz @ Ry @ Rx
-            
-            # Position offset
-            offset = np.array([self.pos_x, self.pos_y, self.pos_z])
-            
-            # Update body with beveled edges
-            s = 0.6
-            h = 0.35
-            bevel = 0.08
-            
-            body_verts = np.array([
-                # Bottom face
-                [-s+bevel, -s, -h], [s-bevel, -s, -h], [s, -s+bevel, -h], [s, s-bevel, -h],
-                [s-bevel, s, -h], [-s+bevel, s, -h], [-s, s-bevel, -h], [-s, -s+bevel, -h],
-                # Top face
-                [-s+bevel, -s, h], [s-bevel, -s, h], [s, -s+bevel, h], [s, s-bevel, h],
-                [s-bevel, s, h], [-s+bevel, s, h], [-s, s-bevel, h], [-s, -s+bevel, h],
-            ])
-            
-            rotated_body = (body_verts @ R.T) + offset
-            body_faces = [
-                # Bottom and top
-                [rotated_body[0], rotated_body[1], rotated_body[2], rotated_body[3],
-                 rotated_body[4], rotated_body[5], rotated_body[6], rotated_body[7]],
-                [rotated_body[8], rotated_body[9], rotated_body[10], rotated_body[11],
-                 rotated_body[12], rotated_body[13], rotated_body[14], rotated_body[15]],
-                # Sides
-                [rotated_body[0], rotated_body[1], rotated_body[9], rotated_body[8]],
-                [rotated_body[1], rotated_body[2], rotated_body[10], rotated_body[9]],
-                [rotated_body[2], rotated_body[3], rotated_body[11], rotated_body[10]],
-                [rotated_body[3], rotated_body[4], rotated_body[12], rotated_body[11]],
-                [rotated_body[4], rotated_body[5], rotated_body[13], rotated_body[12]],
-                [rotated_body[5], rotated_body[6], rotated_body[14], rotated_body[13]],
-                [rotated_body[6], rotated_body[7], rotated_body[15], rotated_body[14]],
-                [rotated_body[7], rotated_body[0], rotated_body[8], rotated_body[15]],
-            ]
-            self.drone_body.set_verts(body_faces)
-            
-            # Update top marker
-            marker_size = s * 0.6
-            marker_verts = np.array([
-                [0, -marker_size, h+0.01], [marker_size*0.866, marker_size*0.5, h+0.01],
-                [-marker_size*0.866, marker_size*0.5, h+0.01]
-            ])
-            rotated_marker = (marker_verts @ R.T) + offset
-            marker_faces = [[rotated_marker[0], rotated_marker[1], rotated_marker[2]]]
-            self.top_marker.set_verts(marker_faces)
-            
-            # Update arms and motors
-            arm_length = 2.2
-            arm_width = 0.15
-            arm_height = 0.1
-            motor_radius = 0.3
-            motor_height = 0.18
-            prop_radius = 0.45
-            arm_positions = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
-            
-            for i, (dx, dy) in enumerate(arm_positions):
-                start = np.array([dx * s, dy * s, 0])
-                end = np.array([dx * arm_length, dy * arm_length, 0])
-                
-                start = (start @ R.T) + offset
-                end = (end @ R.T) + offset
-                
-                arm_dir = end - start
-                arm_dir = arm_dir / np.linalg.norm(arm_dir)
-                
-                perp_local = np.array([-dy, dx, 0]) * arm_width
-                perp = (perp_local @ R.T)
-                
-                up_local = np.array([0, 0, arm_height])
-                up = (up_local @ R.T)
-                
-                arm_verts = np.array([
-                    start - perp - up, start + perp - up, start + perp + up, start - perp + up,
-                    end - perp - up, end + perp - up, end + perp + up, end - perp + up
-                ])
-                
-                arm_faces = [
-                    [arm_verts[0], arm_verts[1], arm_verts[5], arm_verts[4]],
-                    [arm_verts[2], arm_verts[3], arm_verts[7], arm_verts[6]],
-                    [arm_verts[0], arm_verts[3], arm_verts[7], arm_verts[4]],
-                    [arm_verts[1], arm_verts[2], arm_verts[6], arm_verts[5]],
-                    [arm_verts[4], arm_verts[5], arm_verts[6], arm_verts[7]]
-                ]
-                self.arms[i].set_verts(arm_faces)
-                
-                # Update motor
-                motor_center = end
-                theta = np.linspace(0, 2*np.pi, 16)
-                z_bottom = np.full(16, -motor_height/2)
-                z_top = np.full(16, motor_height/2)
-                x_circle = motor_radius * np.cos(theta)
-                y_circle = motor_radius * np.sin(theta)
-                
-                motor_verts = []
-                for j in range(16):
-                    bottom_local = np.array([x_circle[j], y_circle[j], z_bottom[j]])
-                    top_local = np.array([x_circle[j], y_circle[j], z_top[j]])
-                    motor_verts.append(motor_center + (bottom_local @ R.T))
-                    motor_verts.append(motor_center + (top_local @ R.T))
-                
-                motor_verts = np.array(motor_verts)
-                motor_faces = []
-                for j in range(0, 30, 2):
-                    k = (j + 2) % 32
-                    motor_faces.append([motor_verts[j], motor_verts[k], motor_verts[k+1], motor_verts[j+1]])
-                
-                self.motors[i][0].set_verts(motor_faces)
-                
-                # Update propeller
-                prop_z_offset = motor_height/2 + 0.05
-                prop_center_local = np.array([0, 0, prop_z_offset])
-                prop_center_rotated = prop_center_local @ R.T
-                
-                prop_theta = np.linspace(0, 2*np.pi, 20)
-                prop_verts = []
-                for j in range(20):
-                    prop_local = np.array([
-                        prop_radius * np.cos(prop_theta[j]),
-                        prop_radius * np.sin(prop_theta[j]),
-                        prop_z_offset
-                    ])
-                    prop_verts.append(motor_center + (prop_local @ R.T))
-                prop_verts.append(motor_center + prop_center_rotated)
-                
-                prop_verts = np.array(prop_verts)
-                prop_faces = []
-                for j in range(20):
-                    k = (j + 1) % 20
-                    prop_faces.append([prop_verts[20], prop_verts[j], prop_verts[k]])
-                
-                self.props[i].set_verts(prop_faces)
-            
-            # Update vectors
-            self.x_vector.remove()
-            self.y_vector.remove()
-            self.z_vector.remove()
-            
-            vec_length = 1.8
-            label_offset = 0.4
-            x_vec = R @ np.array([vec_length, 0, 0])
-            y_vec = R @ np.array([0, vec_length, 0])
-            z_vec = R @ np.array([0, 0, vec_length])
-            
-            self.x_vector = self.ax.quiver(offset[0], offset[1], offset[2], 
-                                          x_vec[0], x_vec[1], x_vec[2],
-                                          color='#ef4444', arrow_length_ratio=0.15, linewidth=4)
-            self.y_vector = self.ax.quiver(offset[0], offset[1], offset[2],
-                                          y_vec[0], y_vec[1], y_vec[2],
-                                          color='#22c55e', arrow_length_ratio=0.15, linewidth=4)
-            self.z_vector = self.ax.quiver(offset[0], offset[1], offset[2],
-                                          z_vec[0], z_vec[1], z_vec[2],
-                                          color='#06b6d4', arrow_length_ratio=0.15, linewidth=4)
-            
-            # Update labels to follow vector tips
-            x_label_pos = offset + x_vec * (1 + label_offset/vec_length)
-            y_label_pos = offset + y_vec * (1 + label_offset/vec_length)
-            z_label_pos = offset + z_vec * (1 + label_offset/vec_length)
-            
-            self.x_label.set_position((x_label_pos[0], x_label_pos[1]))
-            self.x_label.set_3d_properties(x_label_pos[2])
-            
-            self.y_label.set_position((y_label_pos[0], y_label_pos[1]))
-            self.y_label.set_3d_properties(y_label_pos[2])
-            
-            self.z_label.set_position((z_label_pos[0], z_label_pos[1]))
-            self.z_label.set_3d_properties(z_label_pos[2])
-            
-            self.canvas.draw_idle()
-            
-        except Exception as e:
-            self.logger.error(f"3D update error: {e}")
-    
     def clear_log(self):
-        """Clear log display and data"""
-        self.log_text.config(state="normal")
-        self.log_text.delete(1.0, tk.END)
-        self.log_text.config(state="disabled")
-        
-        self.sent_text.config(state="normal")
-        self.sent_text.delete(1.0, tk.END)
-        self.sent_text.config(state="disabled")
-        
+        """Clear all logs"""
+        if self.log_text:
+            self.log_text.config(state="normal")
+            self.log_text.delete(1.0, tk.END)
+            self.log_text.config(state="disabled")
         self.log_data.clear()
         self.sent_commands.clear()
         self.pending_log_lines.clear()
     
-    def show_export_settings(self):
-        """Show export settings dialog"""
-        dialog = tk.Toplevel(self.root)
-        dialog.title("Export Settings")
-        dialog.geometry("400x320")
-        dialog.configure(bg="#1e1e1e")
-        dialog.transient(self.root)
-        dialog.grab_set()
-        
-        # Center dialog
-        dialog.update_idletasks()
-        x = (dialog.winfo_screenwidth() // 2) - (dialog.winfo_width() // 2)
-        y = (dialog.winfo_screenheight() // 2) - (dialog.winfo_height() // 2)
-        dialog.geometry(f"+{x}+{y}")
-        
-        # Main container
-        main_frame = tk.Frame(dialog, bg="#1e1e1e", padx=20, pady=20)
-        main_frame.pack(fill="both", expand=True)
-        
-        # Title
-        title_label = tk.Label(main_frame, text="Configure Export Range", 
-                              bg="#1e1e1e", fg="white",
-                              font=("Segoe UI", 11, "bold"))
-        title_label.pack(pady=(0, 15))
-        
-        # Options
-        options_frame = tk.Frame(main_frame, bg="#1e1e1e")
-        options_frame.pack(fill="x", pady=(0, 10))
-        
-        tk.Radiobutton(options_frame, text="All data", variable=self.export_range, 
-                      value="all", bg="#1e1e1e", fg="white", 
-                      selectcolor="#333", activebackground="#1e1e1e",
-                      activeforeground="white", font=("Segoe UI", 10)).pack(anchor="w", pady=4)
-        tk.Radiobutton(options_frame, text="Last 1 minute", variable=self.export_range, 
-                      value="1min", bg="#1e1e1e", fg="white",
-                      selectcolor="#333", activebackground="#1e1e1e",
-                      activeforeground="white", font=("Segoe UI", 10)).pack(anchor="w", pady=4)
-        tk.Radiobutton(options_frame, text="Last 5 minutes", variable=self.export_range, 
-                      value="5min", bg="#1e1e1e", fg="white",
-                      selectcolor="#333", activebackground="#1e1e1e",
-                      activeforeground="white", font=("Segoe UI", 10)).pack(anchor="w", pady=4)
-        tk.Radiobutton(options_frame, text="Last 10 minutes", variable=self.export_range, 
-                      value="10min", bg="#1e1e1e", fg="white",
-                      selectcolor="#333", activebackground="#1e1e1e",
-                      activeforeground="white", font=("Segoe UI", 10)).pack(anchor="w", pady=4)
-        tk.Radiobutton(options_frame, text="Custom time range", variable=self.export_range, 
-                      value="custom", bg="#1e1e1e", fg="white",
-                      selectcolor="#333", activebackground="#1e1e1e",
-                      activeforeground="white", font=("Segoe UI", 10)).pack(anchor="w", pady=4)
-        
-        # Custom time inputs
-        custom_frame = tk.Frame(main_frame, bg="#1e1e1e")
-        custom_frame.pack(fill="x", pady=15)
-        
-        tk.Label(custom_frame, text="From (HH:MM:SS):", 
-                bg="#1e1e1e", fg="white", font=("Segoe UI", 9)).grid(row=0, column=0, sticky="w", padx=(20, 10), pady=5)
-        from_entry = tk.Entry(custom_frame, width=15, bg="#2b2b2b", fg="white", 
-                             insertbackground="white", relief=tk.FLAT, bd=2, font=("Consolas", 10))
-        from_entry.insert(0, self.export_from_time)
-        from_entry.grid(row=0, column=1, padx=5, pady=5)
-        
-        tk.Label(custom_frame, text="To (HH:MM:SS):", 
-                bg="#1e1e1e", fg="white", font=("Segoe UI", 9)).grid(row=1, column=0, sticky="w", padx=(20, 10), pady=5)
-        to_entry = tk.Entry(custom_frame, width=15, bg="#2b2b2b", fg="white", 
-                           insertbackground="white", relief=tk.FLAT, bd=2, font=("Consolas", 10))
-        to_entry.insert(0, self.export_to_time)
-        to_entry.grid(row=1, column=1, padx=5, pady=5)
-        
-        # Reference times
-        if self.log_data:
-            first_ts = datetime.fromtimestamp(self.log_data[0][1]).strftime("%H:%M:%S")
-            last_ts = datetime.fromtimestamp(self.log_data[-1][1]).strftime("%H:%M:%S")
-            tk.Label(custom_frame, text=f"Available: {first_ts} - {last_ts}", 
-                    bg="#1e1e1e", fg="#888",
-                    font=("Consolas", 8)).grid(row=2, column=0, columnspan=2, pady=8)
-        
-        # Save button
-        def save_settings():
-            self.export_from_time = from_entry.get().strip()
-            self.export_to_time = to_entry.get().strip()
-            messagebox.showinfo("Settings Saved", "Export settings have been saved.\nUse 'Export Data Now' to export with these settings.")
-            dialog.destroy()
-        
-        btn_frame = tk.Frame(main_frame, bg="#1e1e1e")
-        btn_frame.pack(fill="x", pady=(10, 0))
-        
-        save_btn = tk.Button(btn_frame, text="Save Settings", command=save_settings,
-                            bg="#22aa55", fg="white", font=("Segoe UI", 10, "bold"),
-                            relief=tk.RAISED, bd=2, cursor="hand2",
-                            activebackground="#33bb66", padx=25, pady=8)
-        save_btn.pack(side="left", padx=(0, 10))
-        
-        cancel_btn = tk.Button(btn_frame, text="Cancel", command=dialog.destroy,
-                              bg="#555", fg="white", font=("Segoe UI", 10),
-                              relief=tk.RAISED, bd=2, cursor="hand2",
-                              activebackground="#666", padx=20, pady=8)
-        cancel_btn.pack(side="left")
-    
-    def export_data_now(self):
-        """Export data using saved settings"""
+    def export_data_simple(self):
+        """Simple export all data"""
         if not self.log_data:
-            messagebox.showinfo("No Data", "No data to export. Connect and collect data first.")
+            messagebox.showinfo("No Data", "No data to export")
             return
         
-        range_type = self.export_range.get()
-        
-        if range_type == "custom":
-            if not self.export_from_time or not self.export_to_time:
-                result = messagebox.askyesno("Custom Range Not Set", 
-                                            "Custom time range is not configured.\n\nOpen Export Settings?")
-                if result:
-                    self.show_export_settings()
-                return
-            try:
-                self.export_data(range_type, self.export_from_time, self.export_to_time)
-            except Exception as e:
-                messagebox.showerror("Export Error", f"Failed to export:\n{e}")
-        else:
-            self.export_data(range_type)
-    
-    def export_data(self, time_window, from_time=None, to_time=None):
-        """Export logged data to file"""
-        if not self.log_data:
-            return
-        
-        # Create export folder
         now = datetime.now()
-        folder_name = now.strftime("imu_export_%Y-%m-%d_%H-%M-%S")
+        folder = now.strftime("imu_export_%Y-%m-%d_%H-%M-%S")
         
         try:
-            os.makedirs(folder_name, exist_ok=True)
-        except Exception as e:
-            messagebox.showerror("Export Error", f"Failed to create folder:\n{e}")
-            return
-        
-        # Filter data
-        current_time = time.time()
-        
-        if time_window == "custom":
-            today = datetime.now().date()
-            from_dt = datetime.strptime(from_time, "%H:%M:%S")
-            to_dt = datetime.strptime(to_time, "%H:%M:%S")
+            os.makedirs(folder, exist_ok=True)
+            filename = os.path.join(folder, now.strftime("imu_log_%Y-%m-%d_%H-%M-%S.csv"))
             
-            from_timestamp = datetime.combine(today, from_dt.time()).timestamp()
-            to_timestamp = datetime.combine(today, to_dt.time()).timestamp()
-            
-            filtered_data = [(t, ts, d) for t, ts, d in self.log_data 
-                           if from_timestamp <= ts <= to_timestamp]
-        elif time_window == "1min":
-            cutoff = current_time - 60
-            filtered_data = [(t, ts, d) for t, ts, d in self.log_data if ts >= cutoff]
-        elif time_window == "5min":
-            cutoff = current_time - 300
-            filtered_data = [(t, ts, d) for t, ts, d in self.log_data if ts >= cutoff]
-        elif time_window == "10min":
-            cutoff = current_time - 600
-            filtered_data = [(t, ts, d) for t, ts, d in self.log_data if ts >= cutoff]
-        else:  # all
-            filtered_data = list(self.log_data)
-        
-        # Create filename
-        filename = os.path.join(folder_name, now.strftime("imu_log_%Y-%m-%d_%H-%M-%S.csv"))
-        
-        try:
             with open(filename, "w", encoding="utf-8") as f:
+                f.write("# IMU Data Export\n")
+                f.write(f"# Exported: {now.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"# Total Samples: {len(self.log_data)}\n")
+                f.write("#\n")
                 f.write("Type,Timestamp,Time,Data\n")
-                for msg_type, ts, data in filtered_data:
+                
+                for msg_type, ts, data in self.log_data:
                     time_str = datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-                    # Escape data that might contain commas
                     data_escaped = data.replace('"', '""')
                     f.write(f'{msg_type},{ts},{time_str},"{data_escaped}"\n')
             
-            rx_count = sum(1 for t, _, _ in filtered_data if t == "RX")
-            tx_count = sum(1 for t, _, _ in filtered_data if t == "TX")
-            
-            messagebox.showinfo("Export Complete", 
-                              f"Data saved to:\n{filename}\n\n"
-                              f"Received: {rx_count} records\n"
-                              f"Sent: {tx_count} records\n"
-                              f"Total: {len(filtered_data)} records")
+            messagebox.showinfo("Export Complete", f"Data saved to:\n{filename}\n\nTotal: {len(self.log_data)} records")
         except Exception as e:
-            messagebox.showerror("Export Error", f"Failed to save:\n{e}")
+            messagebox.showerror("Export Error", f"Failed:\n{e}")
     
     def on_close(self):
-        """Clean up on window close"""
-        self.logger.info("Application closing")
+        """Cleanup"""
+        self.logger.info("Closing")
         self.disconnect()
         self.root.destroy()
-    
-    def show_debug_log(self):
-        """Show debug log window"""
-        debug_window = tk.Toplevel(self.root)
-        debug_window.title("Debug Log")
-        debug_window.geometry("800x600")
-        debug_window.configure(bg="#1e1e1e")
-        
-        frame = ttk.Frame(debug_window, padding=10)
-        frame.pack(fill="both", expand=True)
-        
-        ttk.Label(frame, text="Debug Log (Console output):", 
-                 font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 5))
-        
-        text_area = scrolledtext.ScrolledText(
-            frame, wrap=tk.WORD,
-            background="#0d0d0d", foreground="#ffaa00",
-            insertbackground="white", font=("Consolas", 9)
-        )
-        text_area.pack(fill="both", expand=True)
-        
-        # Insert logs
-        text_area.insert(tk.END, self.logger.get_logs())
-        text_area.config(state="disabled")
-        
-        # Buttons
-        btn_frame = ttk.Frame(frame)
-        btn_frame.pack(fill="x", pady=(10, 0))
-        
-        def refresh_log():
-            text_area.config(state="normal")
-            text_area.delete(1.0, tk.END)
-            text_area.insert(tk.END, self.logger.get_logs())
-            text_area.config(state="disabled")
-            text_area.see(tk.END)
-        
-        def save_log():
-            filename = f"debug_log_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt"
-            try:
-                with open(filename, "w", encoding="utf-8") as f:
-                    f.write(self.logger.get_logs())
-                messagebox.showinfo("Saved", f"Debug log saved to:\n{filename}")
-            except Exception as e:
-                messagebox.showerror("Error", f"Failed to save log:\n{e}")
-        
-        ttk.Button(btn_frame, text="Refresh", command=refresh_log).pack(side="left", padx=(0, 5))
-        ttk.Button(btn_frame, text="Save Log", command=save_log).pack(side="left")
-        ttk.Button(btn_frame, text="Close", command=debug_window.destroy).pack(side="right")
 
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = DroneIMUMonitor(root)
+    app = EnhancedIMUMonitor(root)
     root.mainloop()
