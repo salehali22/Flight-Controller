@@ -1,0 +1,9 @@
+Samples: 339
+Current: R=0.00° P=0.00° Y=0.00°
+Mean: R=0.03° P=0.66° Y=-0.00°
+StdDev: R=0.01° P=0.02° Y=0.00°
+Min: R=0.00° P=0.00° Y=0.00°
+Max: R=0.00° P=0.00° Y=0.00°
+Drift Rate: -0.02°/min
+Quality: n/a
+Sample Rate: 0.0 Hz

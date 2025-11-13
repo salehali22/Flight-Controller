@@ -12,7 +12,7 @@ const int MPU_ADDR = 0x68;
 bool streaming = false;
 String mode = "FILTERED";  // RAW, FILTERED, BOTH
 int sample_rate = 100;     // Hz
-float alpha = 0.98;        // Complementary filter
+float alpha = 0.90;        // Complementary filter (90% gyro, 10% accel)
 int duration = 0;          // seconds (0 = infinite)
 int target_samples = 0;    // specific sample count (0 = use duration)
 unsigned long stream_start_time = 0;
@@ -28,7 +28,6 @@ float GyroX, GyroY, GyroZ;
 
 // Calculated angles
 float accAngleX, accAngleY;
-float gyroAngleX, gyroAngleY;
 float roll, pitch, yaw;
 
 // Error correction values
@@ -63,15 +62,14 @@ void calculate_acc_angles() {
   accAngleY = (atan(-AccX / sqrt(pow(AccY, 2) + pow(AccZ, 2))) * 180 / PI) - AccErrorY;
 }
 
-void integrate_gyro(float dt) {
-  gyroAngleX += GyroX * dt;
-  gyroAngleY += GyroY * dt;
-  yaw += GyroZ * dt;
-}
+void apply_complementary_filter(float dt) {
+  if (dt <= 0) {
+    dt = sample_interval / 1000.0;
+  }
 
-void apply_complementary_filter() {
-  roll = alpha * gyroAngleX + (1.0 - alpha) * accAngleX;
-  pitch = alpha * gyroAngleY + (1.0 - alpha) * accAngleY;
+  roll = alpha * (roll + GyroX * dt) + (1.0 - alpha) * accAngleX;
+  pitch = alpha * (pitch + GyroY * dt) + (1.0 - alpha) * accAngleY;
+  yaw += GyroZ * dt;
 }
 
 void print_data() {
@@ -170,9 +168,11 @@ void start_streaming() {
   stream_start_time = millis();
   sample_count = 0;
   
-  // Reset angles
-  gyroAngleX = accAngleX;
-  gyroAngleY = accAngleY;
+  // Reset angles based on latest accelerometer reading
+  read_accelerometer();
+  calculate_acc_angles();
+  roll = accAngleX;
+  pitch = accAngleY;
   yaw = 0;
   
   // Send data block start marker with metadata
@@ -268,11 +268,9 @@ void handle_command(String cmd) {
   }
   else if (cmd == "RESET") {
     // Reset filter state
-    gyroAngleX = 0;
-    gyroAngleY = 0;
+    roll = accAngleX;
+    pitch = accAngleY;
     yaw = 0;
-    roll = 0;
-    pitch = 0;
     Serial.println("[STATUS] Filter state reset");
   }
   else {
@@ -339,16 +337,16 @@ void loop() {
     }
     
     // Sample at specified rate
-    if (current_time - last_sample_time >= sample_interval) {
+    unsigned long elapsed = current_time - last_sample_time;
+    if (elapsed >= sample_interval) {
       last_sample_time = current_time;
       
       read_accelerometer();
       read_gyroscope();
       calculate_acc_angles();
       
-      float dt = sample_interval / 1000.0;
-      integrate_gyro(dt);
-      apply_complementary_filter();
+      float dt = elapsed / 1000.0;
+      apply_complementary_filter(dt);
       
       print_data();
       sample_count++;
