@@ -257,6 +257,12 @@ void handle_command(String cmd) {
   else if (cmd == "STOP") {
     stop_streaming();
   }
+  else if (cmd == "FREE") {
+    duration = 0;
+    target_samples = 0;
+    Serial.println("[STATUS] Free run mode enabled");
+    start_streaming();
+  }
   else if (cmd == "STATUS") {
     send_status();
   }
@@ -305,7 +311,7 @@ void setup() {
   
   send_status();
   Serial.println("[STATUS] Ready for commands");
-  Serial.println("[INFO] Commands: MODE:FILTERED/RAW/BOTH, RATE:100, ALPHA:0.98, DURATION:60, SAMPLES:1000, CALIBRATE:1000, START, STOP, STATUS, RESET");
+  Serial.println("[INFO] Commands: MODE:FILTERED/RAW/BOTH, RATE:100, ALPHA:0.98, DURATION:60, SAMPLES:1000, CALIBRATE:1000, START, STOP, FREE, STATUS, RESET");
   
   sample_interval = 1000 / sample_rate;
 }
