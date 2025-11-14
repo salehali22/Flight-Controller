@@ -5,4 +5,6 @@
   (lib (name "BMP388")(type "KiCad")(uri "${KIPRJMOD}/symbols/BMP388.kicad_sym")(options "")(descr ""))
   (lib (name "USB-C")(type "KiCad")(uri "${KIPRJMOD}/symbols/USB4110GFA.kicad_sym")(options "")(descr ""))
   (lib (name "OSD")(type "KiCad")(uri "${KIPRJMOD}/symbols/AT7456E.kicad_sym")(options "")(descr ""))
+  (lib (name "Magneto")(type "KiCad")(uri "${KIPRJMOD}/symbols/QMC5883P.kicad_sym")(options "")(descr ""))
+  (lib (name "flash")(type "KiCad")(uri "${KIPRJMOD}/symbols/W25Q128JVSIQ.kicad_sym")(options "")(descr ""))
 )
