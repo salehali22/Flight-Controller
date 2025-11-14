@@ -79,24 +79,30 @@ class DroneIMUMonitor:
         self.data_queue = queue.Queue(maxsize=1000)  # Limit queue size
         
         # Data storage (use deque for better performance)
-        self.log_data = deque(maxlen=10000)  # Keep last 10k entries
+        self.log_data = deque(maxlen=6000)  # Keep last entries bounded
         
         # UI state
         self.auto_update_3d = tk.BooleanVar(value=True)
-        self.autoscroll = tk.BooleanVar(value=True)
         self.paused = False
         self.connected = False
         self.serial_monitor_window = None
         self.log_text = None
+        self.max_log_lines = 3000
+        self.log_line_count = 0
+        self.auto_scroll_log = tk.BooleanVar(value=True)
+        self.drone_scale = tk.DoubleVar(value=1.4)
         
         self.cmd_var = tk.StringVar()
         self.cmd_entry = None
         self.cal_samples_var = tk.IntVar(value=1000)
         self.alpha_factor_var = tk.DoubleVar(value=0.83)
         self.run_duration_var = tk.IntVar(value=0)
+        self.sample_rate_var = tk.IntVar(value=100)  # Default: 100 Hz
+        self.esp_paused = False
+        self.waiting_for_calibration = False
         
         # Chart data
-        self.chart_history = deque(maxlen=2000)
+        self.chart_history = deque()
         self.chart_lines = {}
         self.chart_colors = {
             "roll": "#ef4444",
@@ -109,6 +115,18 @@ class DroneIMUMonitor:
             "yaw": tk.BooleanVar(value=True)
         }
         self.chart_paused = False
+        self.chart_auto_scale = tk.BooleanVar(value=True)
+        self.chart_y_min = tk.DoubleVar(value=-180.0)
+        self.chart_y_max = tk.DoubleVar(value=180.0)
+        self.chart_window_var = tk.IntVar(value=30)
+        self.chart_window_options = [("10s", 10), ("30s", 30), ("2min", 120), ("10min", 600), ("All", 0)]
+        self.chart_window_choice = tk.StringVar(value="30s")
+        self.chart_history_limit = 180000
+        self.chart_scale_entries = []
+        self.chart_setting_updating = False
+        self.chart_y_min.trace_add("write", self._chart_setting_changed)
+        self.chart_y_max.trace_add("write", self._chart_setting_changed)
+        self.chart_window_choice.trace_add("write", self.on_window_choice_change)
         self.chart_ax = None
         self.chart_canvas = None
         self.chart_fig = None
@@ -196,7 +214,7 @@ class DroneIMUMonitor:
         self.port_combo.grid(row=0, column=1, padx=(0, 5), sticky="w")
         
         ttk.Button(selection_frame, text="Refresh", width=12, 
-                  command=self.refresh_ports).grid(row=0, column=2, padx=(0, 15), sticky="w")
+                  command=self.refresh_ports).grid(row=0, column=2, padx=(0, 15), sticky="ew")
         
         ttk.Label(selection_frame, text="Baud:").grid(row=0, column=3, padx=(0, 5), sticky="w")
         self.baud_var = tk.StringVar(value="115200")
@@ -224,64 +242,78 @@ class DroneIMUMonitor:
                                     activebackground="#ff9922", state="disabled")
         self.pause_btn.pack(fill="x")
         
-        # Options
-        opt_frame = ttk.Frame(frame)
-        opt_frame.pack(fill="x", pady=5)
-        
-        ttk.Checkbutton(opt_frame, text="Auto-update 3D", 
-                       variable=self.auto_update_3d).pack(anchor="w")
-        ttk.Checkbutton(opt_frame, text="Auto-scroll", 
-                       variable=self.autoscroll).pack(anchor="w")
-        
-        # Debug mode indicator
-        if DEBUG_MODE:
-            debug_label = ttk.Label(opt_frame, text="🔧 Debug Mode ON", 
-                                   foreground="#ff8800", font=("Segoe UI", 8, "bold"))
-            debug_label.pack(anchor="w", pady=(5, 0))
-        
         # Action buttons
         action_frame = ttk.Frame(frame)
         action_frame.pack(fill="x", pady=5)
         
         ttk.Button(action_frame, text="Serial Monitor", 
                   command=self.open_serial_monitor).pack(fill="x", pady=(0, 5))
-        
-        ttk.Button(action_frame, text="Clear Log", 
-                  command=self.clear_log).pack(fill="x", pady=(0, 5))
-        
+
         if DEBUG_MODE:
             ttk.Button(action_frame, text="Debug Log", 
                       command=self.show_debug_log).pack(fill="x")
+            ttk.Label(action_frame, text="🔧 Debug Mode ON",
+                      foreground="#ff8800", font=("Segoe UI", 8, "bold")).pack(anchor="w", pady=(6, 0))
         
         # IMU configuration
         settings_frame = ttk.LabelFrame(parent, text="IMU Settings", padding=10)
         settings_frame.pack(fill="x", pady=(0, 10))
+        for col in range(1, 4):
+            settings_frame.columnconfigure(col, weight=1)
         
         ttk.Label(settings_frame, text="Calibration samples").grid(row=0, column=0, sticky="w")
-        ttk.Entry(settings_frame, textvariable=self.cal_samples_var, width=10).grid(row=0, column=1, padx=(8, 0), sticky="w")
+        ttk.Entry(settings_frame, textvariable=self.cal_samples_var, width=10).grid(
+            row=0, column=1, padx=(8, 0), sticky="ew"
+        )
+        ttk.Button(settings_frame, text="Calibrate", width=12,
+                   command=self.start_calibration_sequence).grid(
+            row=0, column=2, padx=6, sticky="ew"
+        )
         
         ttk.Label(settings_frame, text="Alpha factor (0-1)").grid(row=1, column=0, sticky="w", pady=(6, 0))
-        ttk.Entry(settings_frame, textvariable=self.alpha_factor_var, width=10).grid(row=1, column=1, padx=(8, 0), sticky="w", pady=(6, 0))
-        
-        ttk.Label(settings_frame, text="Run duration (s)").grid(row=2, column=0, sticky="w", pady=(6, 0))
-        ttk.Entry(settings_frame, textvariable=self.run_duration_var, width=10).grid(row=2, column=1, padx=(8, 0), sticky="w", pady=(6, 0))
-        
-        button_grid = ttk.Frame(settings_frame)
-        button_grid.grid(row=3, column=0, columnspan=2, pady=(12, 0), sticky="ew")
-        button_grid.columnconfigure(0, weight=1, uniform="imu_btns")
-        button_grid.columnconfigure(1, weight=1, uniform="imu_btns")
-        
-        ttk.Button(button_grid, text="Apply", command=self.apply_calibration_settings).grid(
-            row=0, column=0, sticky="nsew", padx=(0, 6), pady=(0, 6)
+        ttk.Entry(settings_frame, textvariable=self.alpha_factor_var, width=10).grid(
+            row=1, column=1, padx=(8, 0), sticky="ew", pady=(6, 0)
         )
-        ttk.Button(button_grid, text="Calibrate", command=self.start_calibration_sequence).grid(
-            row=0, column=1, sticky="nsew", padx=(6, 0), pady=(0, 6)
+        ttk.Button(settings_frame, text="Set Alpha", width=12,
+                   command=self.apply_alpha_setting).grid(
+            row=1, column=2, padx=6, sticky="ew", pady=(6, 0)
         )
-        ttk.Button(button_grid, text="Wipe Calibration", command=self.wipe_calibration_values).grid(
-            row=1, column=0, sticky="nsew", padx=(0, 6)
+        
+        ttk.Label(settings_frame, text="Sample rate (Hz)").grid(row=2, column=0, sticky="w", pady=(6, 0))
+        ttk.Entry(settings_frame, textvariable=self.sample_rate_var, width=10).grid(
+            row=2, column=1, padx=(8, 0), sticky="ew", pady=(6, 0)
         )
-        ttk.Button(button_grid, text="Run Timed Session", command=self.start_timed_run).grid(
-            row=1, column=1, sticky="nsew", padx=(6, 0)
+        ttk.Button(settings_frame, text="Set Rate", width=12,
+                   command=self.apply_sample_rate).grid(
+            row=2, column=2, padx=6, sticky="ew", pady=(6, 0)
+        )
+        
+        ttk.Label(settings_frame, text="Run duration (s)").grid(row=3, column=0, sticky="w", pady=(6, 0))
+        ttk.Entry(settings_frame, textvariable=self.run_duration_var, width=10).grid(
+            row=3, column=1, padx=(8, 0), sticky="ew", pady=(6, 0)
+        )
+        run_button_row = ttk.Frame(settings_frame)
+        run_button_row.grid(row=4, column=0, columnspan=4, sticky="ew", pady=(6, 0))
+        run_button_row.columnconfigure(0, weight=1)
+        run_button_row.columnconfigure(1, weight=1)
+        ttk.Button(run_button_row, text="Run Timed",
+                   command=self.start_timed_run).grid(
+            row=0, column=0, sticky="ew", padx=(0, 4)
+        )
+        ttk.Button(run_button_row, text="Free Run",
+                   command=self.start_free_run).grid(
+            row=0, column=1, sticky="ew", padx=(4, 0)
+        )
+        
+        self.esp_pause_btn = ttk.Button(settings_frame, text="⏸ Pause ESP32",
+                   command=self.toggle_esp_pause)
+        self.esp_pause_btn.grid(
+            row=5, column=0, columnspan=4, padx=(0, 0), sticky="ew", pady=(6, 0)
+        )
+        
+        ttk.Button(settings_frame, text="Wipe Calibration",
+                   command=self.wipe_calibration_values).grid(
+            row=6, column=0, columnspan=4, padx=(0, 0), sticky="ew", pady=(6, 0)
         )
         
         self.refresh_ports()
@@ -308,20 +340,46 @@ class DroneIMUMonitor:
         ttk.Button(control_frame, text="Reset", width=8,
                   command=self.reset_drone).pack(side="left", padx=2)
         
-        # Container for 3D canvas
-        view_container = tk.Frame(frame, bg="#1e1e1e", highlightthickness=0)
-        view_container.pack(fill="both", expand=True)
+        # Drone size slider next to view buttons
+        ttk.Label(control_frame, text="Size:").pack(side="left", padx=(20, 6))
+        self.drone_scale_slider = ttk.Scale(
+            control_frame,
+            orient=tk.HORIZONTAL,
+            from_=3.75,
+            to=0.6,
+            variable=self.drone_scale,
+            command=self.on_drone_scale_change,
+            length=150
+        )
+        self.drone_scale_slider.pack(side="left", padx=(0, 10))
+        
+        ttk.Checkbutton(control_frame, text="Auto-update 3D",
+                        variable=self.auto_update_3d).pack(side="right")
+        
+        # Container for 3D canvas and chart
+        body_frame = tk.Frame(frame, bg="#1e1e1e", highlightthickness=0)
+        body_frame.pack(fill="both", expand=True)
+        body_frame.columnconfigure(0, weight=1)
+        body_frame.rowconfigure(0, weight=2)
+        body_frame.rowconfigure(1, weight=3)
+        
+        view_container = tk.Frame(body_frame, bg="#1e1e1e", highlightthickness=0)
+        view_container.grid(row=0, column=0, sticky="nsew")
         
         # Create matplotlib figure
         self.fig = plt.Figure(figsize=(8, 8), facecolor="#000000", dpi=80)
         self.ax = self.fig.add_subplot(111, projection="3d")
         self.ax.set_facecolor("#000000")
         
-        # Set limits
-        self.ax.set_xlim(-4, 4)
-        self.ax.set_ylim(-4, 4)
-        self.ax.set_zlim(-3, 3)
-        self.ax.set_box_aspect([4, 4, 3])
+        # Set initial limits (will be adjusted by scale handler)
+        # Default scale is 1.4, so calculate initial limits
+        default_scale = 1.4
+        max_extent = (2.2 * default_scale) + (0.6 * default_scale) + 0.5
+        z_extent = (0.35 * default_scale) + 0.5
+        self.ax.set_xlim(-max_extent, max_extent)
+        self.ax.set_ylim(-max_extent, max_extent)
+        self.ax.set_zlim(-z_extent, z_extent)
+        self.ax.set_box_aspect([max_extent*2, max_extent*2, z_extent*2])
         self.ax.view_init(elev=self.view_elev, azim=self.view_azim)
         
         # Remove labels
@@ -368,14 +426,22 @@ class DroneIMUMonitor:
         self.values_label.place(relx=0.98, rely=0.0, anchor="ne")
         
         # Chart section
-        chart_frame = ttk.LabelFrame(frame, text="Angle Data", padding=10)
-        chart_frame.pack(fill="x", pady=(10, 0))
+        chart_frame = ttk.LabelFrame(body_frame, text="Angle Data", padding=10)
+        chart_frame.grid(row=1, column=0, sticky="nsew", pady=(10, 0))
         
         chart_controls = tk.Frame(chart_frame, bg="#1e1e1e")
         chart_controls.pack(fill="x", pady=(0, 10))
+        chart_controls.columnconfigure(0, weight=0)
+        chart_controls.columnconfigure(1, weight=1)
+        chart_controls.columnconfigure(2, weight=0)
+        chart_controls.columnconfigure(3, weight=0)
+        chart_controls.columnconfigure(4, weight=0)
+        
+        button_group = tk.Frame(chart_controls, bg="#1e1e1e")
+        button_group.grid(row=0, column=0, sticky="w")
         
         self.chart_pause_btn = tk.Button(
-            chart_controls,
+            button_group,
             text="Pause",
             command=self.toggle_chart_pause,
             bg="#ff8800",
@@ -389,7 +455,7 @@ class DroneIMUMonitor:
         self.chart_pause_btn.pack(side="left")
         
         tk.Button(
-            chart_controls,
+            button_group,
             text="Clear",
             command=self.clear_chart_history,
             bg="#444",
@@ -402,7 +468,7 @@ class DroneIMUMonitor:
         ).pack(side="left", padx=(8, 0))
         
         tk.Button(
-            chart_controls,
+            button_group,
             text="Export",
             command=self.export_chart_image,
             bg="#2563eb",
@@ -415,8 +481,7 @@ class DroneIMUMonitor:
         ).pack(side="left", padx=(8, 0))
         
         axis_toggle_frame = tk.Frame(chart_controls, bg="#1e1e1e")
-        axis_toggle_frame.pack(side="right")
-        
+        axis_toggle_frame.grid(row=0, column=1, sticky="w", padx=(16, 0))
         for axis in ["roll", "pitch", "yaw"]:
             tk.Checkbutton(
                 axis_toggle_frame,
@@ -432,10 +497,41 @@ class DroneIMUMonitor:
                 padx=6
             ).pack(side="left")
         
-        chart_canvas_frame = ttk.Frame(chart_frame)
-        chart_canvas_frame.pack(fill="x")
+        auto_frame = tk.Frame(chart_controls, bg="#1e1e1e")
+        auto_frame.grid(row=0, column=2, sticky="w", padx=(16, 0))
+        ttk.Checkbutton(
+            auto_frame,
+            text="Auto-scale Y",
+            variable=self.chart_auto_scale,
+            command=self.on_chart_scale_toggle
+        ).pack(side="left")
         
-        self.chart_fig = plt.Figure(figsize=(8, 5.1), facecolor="#000000", dpi=80)
+        y_frame = tk.Frame(chart_controls, bg="#1e1e1e")
+        y_frame.grid(row=0, column=3, sticky="w", padx=(16, 0))
+        ttk.Label(y_frame, text="Y min").pack(side="left")
+        self.y_min_entry = ttk.Entry(y_frame, textvariable=self.chart_y_min, width=8)
+        self.y_min_entry.pack(side="left", padx=(4, 8))
+        ttk.Label(y_frame, text="Y max").pack(side="left")
+        self.y_max_entry = ttk.Entry(y_frame, textvariable=self.chart_y_max, width=8)
+        self.y_max_entry.pack(side="left", padx=(4, 0))
+        self.chart_scale_entries = [self.y_min_entry, self.y_max_entry]
+        
+        window_frame = tk.Frame(chart_controls, bg="#1e1e1e")
+        window_frame.grid(row=0, column=4, sticky="w", padx=(16, 0))
+        ttk.Label(window_frame, text="Window").pack(side="left")
+        self.window_combo = ttk.Combobox(
+            window_frame,
+            textvariable=self.chart_window_choice,
+            values=[label for label, _ in self.chart_window_options],
+            state="readonly",
+            width=8
+        )
+        self.window_combo.pack(side="left", padx=(4, 0))
+        
+        chart_canvas_frame = ttk.Frame(chart_frame)
+        chart_canvas_frame.pack(fill="both", expand=True)
+        
+        self.chart_fig = plt.Figure(figsize=(11, 11), facecolor="#000000", dpi=80)
         self.chart_ax = self.chart_fig.add_subplot(111)
         self.chart_ax.set_facecolor("#050505")
         self.chart_ax.grid(True, color="#222", linestyle="--", linewidth=0.6)
@@ -444,7 +540,8 @@ class DroneIMUMonitor:
         self.chart_ax.tick_params(colors="white")
         
         self.chart_canvas = FigureCanvasTkAgg(self.chart_fig, chart_canvas_frame)
-        self.chart_canvas.get_tk_widget().pack(fill="x")
+        self.chart_canvas.get_tk_widget().pack(fill="both", expand=True)
+        self.on_chart_scale_toggle()
         self.refresh_chart()
     
     def open_serial_monitor(self):
@@ -474,6 +571,14 @@ class DroneIMUMonitor:
         self.log_text.pack(fill="both", expand=True)
         self.log_text.config(state="disabled")
         self.populate_log_history()
+        
+        scroll_frame = ttk.Frame(frame)
+        scroll_frame.pack(fill="x", pady=(6, 0))
+        ttk.Checkbutton(
+            scroll_frame,
+            text="Auto-scroll",
+            variable=self.auto_scroll_log
+        ).pack(anchor="w")
         
         cmd_frame = ttk.LabelFrame(frame, text="Send Command", padding=10)
         cmd_frame.pack(fill="x", pady=(10, 0))
@@ -515,16 +620,35 @@ class DroneIMUMonitor:
             time_str = datetime.fromtimestamp(ts).strftime("%H:%M:%S.%f")[:-3]
             prefix = ">> " if msg_type == "TX" else ""
             self.log_text.insert(tk.END, f"[{time_str}] {prefix}{data}\n")
+        self.trim_log_widget()
         self.log_text.config(state="disabled")
-        if self.autoscroll.get():
+        if self.auto_scroll_log.get():
+            self.log_text.see(tk.END)
+    
+    def trim_log_widget(self):
+        """Limit the number of lines retained in the log widget"""
+        if not self.log_text:
+            self.log_line_count = 0
+            return
+        max_lines = self.max_log_lines
+        try:
+            total_lines = int(float(self.log_text.index("end-1c").split(".")[0]))
+        except tk.TclError:
+            total_lines = 0
+        if total_lines > max_lines:
+            excess = total_lines - max_lines
+            self.log_text.delete("1.0", f"{excess + 1}.0")
+            total_lines = max_lines
+        self.log_line_count = total_lines
+        if self.auto_scroll_log.get():
             self.log_text.see(tk.END)
     
     def create_drone_body(self):
         """Create quadcopter visualization"""
-        # Center body - more detailed with beveled edges
-        s = 0.6
-        h = 0.35
-        bevel = 0.08
+        scale = self.drone_scale.get()
+        s = 0.6 * scale
+        h = 0.35 * scale
+        bevel = 0.08 * scale
         
         # Main body vertices with beveled corners
         body_verts = np.array([
@@ -573,12 +697,12 @@ class DroneIMUMonitor:
         self.ax.add_collection3d(self.top_marker)
         
         # Arms and motors
-        arm_length = 2.2
-        arm_width = 0.15
-        arm_height = 0.1
-        motor_radius = 0.3
-        motor_height = 0.18
-        prop_radius = 0.45
+        arm_length = 2.2 * scale
+        arm_width = 0.15 * scale
+        arm_height = 0.1 * scale
+        motor_radius = 0.3 * scale
+        motor_height = 0.18 * scale
+        prop_radius = 0.45 * scale
         
         self.arms = []
         self.motors = []
@@ -664,7 +788,7 @@ class DroneIMUMonitor:
             self.props.append(prop_poly)
         
         # Orientation vectors
-        vec_length = 1.8
+        vec_length = 1.8 * scale
         self.x_vector = self.ax.quiver(0, 0, 0, vec_length, 0, 0, 
                                       color='#ef4444', arrow_length_ratio=0.15, linewidth=4)
         self.y_vector = self.ax.quiver(0, 0, 0, 0, vec_length, 0, 
@@ -693,9 +817,109 @@ class DroneIMUMonitor:
         self.chart_history.clear()
         self.refresh_chart()
     
+    def on_drone_scale_change(self, value=None):
+        """Handle drone scale slider movement"""
+        try:
+            scale = float(self.drone_scale.get())
+        except (tk.TclError, ValueError):
+            scale = 1.0
+            self.drone_scale.set(scale)
+        scale = max(0.4, min(3.0, scale))
+        if self.drone_scale.get() != scale:
+            self.drone_scale.set(scale)
+        
+        # Adjust axis limits based on scale to prevent clipping
+        # Maximum extent: arm_length (2.2 * scale) + body half-size (0.6 * scale) + margin
+        max_extent = (2.2 * scale) + (0.6 * scale) + 0.5
+        z_extent = (0.35 * scale) + 0.5  # body height + margin
+        
+        if self.ax:
+            self.ax.set_xlim(-max_extent, max_extent)
+            self.ax.set_ylim(-max_extent, max_extent)
+            self.ax.set_zlim(-z_extent, z_extent)
+            self.ax.set_box_aspect([max_extent*2, max_extent*2, z_extent*2])
+        
+        self.update_3d_orientation()
+    
+    def _chart_setting_changed(self, *args):
+        """Trace callback for chart setting vars"""
+        self.apply_chart_settings()
+    
+    def apply_chart_settings(self):
+        """Validate and apply chart scale settings"""
+        if self.chart_setting_updating:
+            return
+        self.chart_setting_updating = True
+        try:
+            try:
+                window = int(self.chart_window_var.get())
+            except (tk.TclError, ValueError):
+                window = 30
+            if window < 0:
+                window = 0
+            elif window != 0:
+                window = max(5, window)
+            if self.chart_window_var.get() != window:
+                self.chart_window_var.set(window)
+            matching = next((label for label, val in self.chart_window_options if val == window), None)
+            if matching and self.chart_window_choice.get() != matching:
+                self.chart_window_choice.set(matching)
+            
+            try:
+                y_min = float(self.chart_y_min.get())
+                y_max = float(self.chart_y_max.get())
+            except tk.TclError:
+                y_min, y_max = -180.0, 180.0
+            if y_max <= y_min:
+                y_max = y_min + 1.0
+                self.chart_y_max.set(y_max)
+                self.chart_y_min.set(y_min)
+            self.trim_chart_history()
+            self.refresh_chart()
+        finally:
+            self.chart_setting_updating = False
+    
+    def on_chart_scale_toggle(self):
+        """Enable/disable manual scale inputs"""
+        state = "disabled" if self.chart_auto_scale.get() else "normal"
+        for entry in getattr(self, "chart_scale_entries", []):
+            entry.config(state=state)
+        self.apply_chart_settings()
+    
+    def on_window_choice_change(self, *args):
+        """Handle window preset selection"""
+        if self.chart_setting_updating:
+            return
+        label = self.chart_window_choice.get()
+        value = next((val for lbl, val in self.chart_window_options if lbl == label), None)
+        if value is None:
+            return
+        self.chart_window_var.set(value)
+        self.apply_chart_settings()
+    
+    def trim_chart_history(self):
+        """Keep history bounded to configured time window"""
+        if not self.chart_history:
+            return
+        window = self.chart_window_var.get()
+        if window <= 0:
+            return
+        cutoff = self.chart_history[-1][0] - window
+        while self.chart_history and self.chart_history[0][0] < cutoff:
+            self.chart_history.popleft()
+    
+    def enforce_chart_limit(self):
+        """Prevent unbounded chart history growth even in 'All' mode"""
+        if self.chart_history_limit <= 0:
+            return
+        while len(self.chart_history) > self.chart_history_limit:
+            self.chart_history.popleft()
+    
     def append_chart_data(self, timestamp):
         """Append the latest angle data for charting"""
         self.chart_history.append((timestamp, self.roll, self.pitch, self.yaw))
+        self.trim_chart_history()
+        self.enforce_chart_limit()
         if not self.chart_paused:
             self.refresh_chart()
     
@@ -713,7 +937,7 @@ class DroneIMUMonitor:
                 line = self.chart_lines.get(axis)
                 if line:
                     line.set_data([], [])
-            self.chart_ax.set_xlim(0, 10)
+            self.chart_ax.set_xlim(0, max(5, self.chart_window_var.get()))
             self.chart_ax.set_ylim(-1, 1)
             self.chart_canvas.draw_idle()
             return
@@ -727,6 +951,7 @@ class DroneIMUMonitor:
         }
         
         visible_values = []
+        window = self.chart_window_var.get()
         for axis in ["roll", "pitch", "yaw"]:
             if axis not in self.chart_lines or self.chart_lines[axis] is None:
                 line, = self.chart_ax.plot([], [], color=self.chart_colors[axis], linewidth=1.8, label=axis.title())
@@ -738,12 +963,16 @@ class DroneIMUMonitor:
             if is_visible:
                 visible_values.extend(axis_data[axis])
         
-        if visible_values:
-            x_end = times[-1]
-            x_start = max(0, x_end - 30)
+        x_end = times[-1]
+        if window <= 0:
+            x_start = 0
+        else:
+            x_start = max(0, x_end - window)
             if x_end - x_start < 1:
                 x_end = x_start + 1
-            self.chart_ax.set_xlim(x_start, x_end)
+        self.chart_ax.set_xlim(x_start, x_end)
+        
+        if self.chart_auto_scale.get() and visible_values:
             y_min = min(visible_values)
             y_max = max(visible_values)
             if y_min == y_max:
@@ -751,13 +980,19 @@ class DroneIMUMonitor:
             else:
                 y_padding = max(2, (y_max - y_min) * 0.1)
             self.chart_ax.set_ylim(y_min - y_padding, y_max + y_padding)
-            visible_lines = [self.chart_lines[axis] for axis in self.chart_lines if self.chart_lines[axis].get_visible()]
-            if visible_lines:
-                self.chart_legend = self.chart_ax.legend(handles=visible_lines, loc="upper left")
         else:
-            x_end = times[-1]
-            self.chart_ax.set_xlim(max(0, x_end - 30), x_end if x_end > 0 else 30)
-            self.chart_ax.set_ylim(-1, 1)
+            y_min = float(self.chart_y_min.get())
+            y_max = float(self.chart_y_max.get())
+            if y_max <= y_min:
+                y_max = y_min + 1
+                self.chart_y_max.set(y_max)
+            self.chart_ax.set_ylim(y_min, y_max)
+        
+        visible_lines = [self.chart_lines[axis] for axis in self.chart_lines if self.chart_lines[axis].get_visible()]
+        if visible_lines:
+            self.chart_legend = self.chart_ax.legend(handles=visible_lines, loc="upper left")
+        else:
+            self.chart_legend = None
         
         self.chart_canvas.draw_idle()
     
@@ -863,6 +1098,9 @@ class DroneIMUMonitor:
         self.pause_btn.config(state="disabled")
         self.paused = False
         self.pause_btn.config(text="⏸ Pause", bg="#ff8800", activebackground="#ff9922")
+        self.esp_paused = False
+        if hasattr(self, 'esp_pause_btn') and self.esp_pause_btn:
+            self.esp_pause_btn.config(text="⏸ Pause ESP32")
         self.logger.info("Disconnected")
     
     def read_serial(self):
@@ -915,23 +1153,71 @@ class DroneIMUMonitor:
         if self.send_device_command(cmd):
             self.cmd_var.set("")
     
-    def apply_calibration_settings(self):
-        """Apply calibration sample count and alpha factor"""
-        samples = max(10, min(20000, self.cal_samples_var.get()))
+    def apply_calibration_samples(self):
+        """Apply calibration sample count"""
+        try:
+            samples = int(self.cal_samples_var.get())
+        except (tk.TclError, ValueError):
+            samples = 1000
+        samples = max(10, min(20000, samples))
         self.cal_samples_var.set(samples)
-        
+        self.send_device_command(f"SET_SAMPLES {samples}")
+    
+    def apply_alpha_setting(self):
+        """Apply complementary filter alpha"""
         try:
             alpha = float(self.alpha_factor_var.get())
         except tk.TclError:
             alpha = 0.83
         alpha = max(0.0, min(0.999, alpha))
         self.alpha_factor_var.set(round(alpha, 4))
+        self.send_device_command(f"SET_ALPHA {alpha:.4f}")
+    
+    def apply_sample_rate(self):
+        """Apply sample rate setting (converts Hz to milliseconds)"""
+        try:
+            rate_hz = int(self.sample_rate_var.get())
+        except (tk.TclError, ValueError):
+            rate_hz = 100
+        rate_hz = max(1, min(1000, rate_hz))
+        self.sample_rate_var.set(rate_hz)
         
-        if self.send_device_command(f"SET_SAMPLES {samples}"):
-            self.send_device_command(f"SET_ALPHA {alpha:.4f}")
+        # Convert Hz to milliseconds: ms = 1000 / Hz
+        rate_ms = int(1000 / rate_hz)
+        if rate_ms < 1:
+            rate_ms = 1
+        self.send_device_command(f"SET_SAMPLE_RATE {rate_ms}")
+    
+    def toggle_esp_pause(self):
+        """Toggle ESP32 pause/resume and chart pause"""
+        if not self.connected:
+            messagebox.showwarning("Not Connected", "Please connect to a port first")
+            return
+        
+        self.esp_paused = not self.esp_paused
+        if self.esp_paused:
+            # Pause ESP32 and chart
+            self.send_device_command("PAUSE")
+            if self.esp_pause_btn:
+                self.esp_pause_btn.config(text="▶ Resume ESP32")
+            if not self.chart_paused:
+                self.chart_paused = True
+                if self.chart_pause_btn:
+                    self.chart_pause_btn.config(text="Resume", bg="#22aa55", activebackground="#33bb66")
+        else:
+            # Resume ESP32 and chart
+            self.send_device_command("RESUME")
+            if self.esp_pause_btn:
+                self.esp_pause_btn.config(text="⏸ Pause ESP32")
+            if self.chart_paused:
+                self.chart_paused = False
+                if self.chart_pause_btn:
+                    self.chart_pause_btn.config(text="Pause", bg="#ff8800", activebackground="#ff9922")
+                self.refresh_chart()
     
     def start_calibration_sequence(self):
         """Trigger calibration routine on the device"""
+        self.apply_calibration_samples()
         self.send_device_command("CALIBRATE")
     
     def wipe_calibration_values(self):
@@ -940,8 +1226,78 @@ class DroneIMUMonitor:
     
     def start_timed_run(self):
         """Start a timed streaming session"""
-        duration = max(0, self.run_duration_var.get())
-        self.send_device_command(f"RUN_FOR {duration}")
+        try:
+            duration = int(self.run_duration_var.get())
+        except (tk.TclError, ValueError):
+            duration = 0
+        if duration <= 0:
+            messagebox.showwarning("Timed Run", "Please enter a duration greater than zero.")
+            return
+        
+        # Pause chart first
+        if not self.chart_paused:
+            self.chart_paused = True
+            if self.chart_pause_btn:
+                self.chart_pause_btn.config(text="Resume", bg="#22aa55", activebackground="#33bb66")
+        
+        # Set flag to wait for calibration completion
+        self.waiting_for_calibration = True
+        
+        # Clear chart and logs
+        self.clear_chart_history()
+        self.log_data.clear()
+        self.pending_log_lines.clear()
+        if self.log_text:
+            self.log_text.config(state="normal")
+            self.log_text.delete(1.0, tk.END)
+            self.log_text.config(state="disabled")
+        
+        messagebox.showinfo(
+            "Timed Run",
+            f"Preparing device for a {duration}-second run.\n"
+            "Calibration will be performed, then streaming will resume."
+        )
+        
+        # Start calibration sequence (will trigger resume after ACK:CALIBRATE_DONE)
+        self.start_calibration_sequence()
+        self.timed_run_duration = duration
+    
+    def start_free_run(self):
+        """Switch device to continuous streaming"""
+        self.run_duration_var.set(0)
+        self.send_device_command("RUN_FOR 0")
+    
+    def handle_calibration_done(self):
+        """Handle calibration completion during timed run"""
+        if not self.waiting_for_calibration:
+            return
+        
+        self.waiting_for_calibration = False
+        
+        # Clear chart again after calibration
+        self.clear_chart_history()
+        
+        # Resume chart and start timed run
+        self.chart_paused = False
+        if self.chart_pause_btn:
+            self.chart_pause_btn.config(text="Pause", bg="#ff8800", activebackground="#ff9922")
+        
+        # Start the timed run
+        self.send_device_command(f"RUN_FOR {self.timed_run_duration}")
+    
+    def handle_run_complete(self):
+        """Handle timed run completion"""
+        messagebox.showinfo(
+            "Timed Run Complete",
+            "The timed run has finished.\n"
+            "Chart has been paused."
+        )
+        
+        # Pause chart if not already paused
+        if not self.chart_paused:
+            self.chart_paused = True
+            if self.chart_pause_btn:
+                self.chart_pause_btn.config(text="Resume", bg="#22aa55", activebackground="#33bb66")
     
     def update_loop(self):
         """Main update loop"""
@@ -980,6 +1336,14 @@ class DroneIMUMonitor:
         time_str = datetime.fromtimestamp(timestamp).strftime("%H:%M:%S.%f")[:-3]
         self.pending_log_lines.append(f"[{time_str}] {line}\n")
         
+        # Check for calibration completion during timed run
+        if "ACK:CALIBRATE_DONE" in line and self.waiting_for_calibration:
+            self.root.after(0, self.handle_calibration_done)
+        
+        # Check for timed run completion
+        if "INFO:RUN_COMPLETE" in line:
+            self.root.after(0, self.handle_run_complete)
+        
         # Parse orientation
         if self.auto_update_3d.get():
             self.parse_and_update_orientation(line, timestamp)
@@ -1003,11 +1367,10 @@ class DroneIMUMonitor:
         
         self.log_text.config(state="normal")
         self.log_text.insert(tk.END, "".join(self.pending_log_lines))
+        self.trim_log_widget()
         self.log_text.config(state="disabled")
-        
-        if self.autoscroll.get():
+        if self.auto_scroll_log.get():
             self.log_text.see(tk.END)
-        
         self.pending_log_lines.clear()
     
     def parse_and_update_orientation(self, line, timestamp=None):
@@ -1059,10 +1422,10 @@ class DroneIMUMonitor:
             # Position offset
             offset = np.array([self.pos_x, self.pos_y, self.pos_z])
             
-            # Update body with beveled edges
-            s = 0.6
-            h = 0.35
-            bevel = 0.08
+            scale = self.drone_scale.get()
+            s = 0.6 * scale
+            h = 0.35 * scale
+            bevel = 0.08 * scale
             
             body_verts = np.array([
                 # Bottom face
@@ -1103,12 +1466,12 @@ class DroneIMUMonitor:
             self.top_marker.set_verts(marker_faces)
             
             # Update arms and motors
-            arm_length = 2.2
-            arm_width = 0.15
-            arm_height = 0.1
-            motor_radius = 0.3
-            motor_height = 0.18
-            prop_radius = 0.45
+            arm_length = 2.2 * scale
+            arm_width = 0.15 * scale
+            arm_height = 0.1 * scale
+            motor_radius = 0.3 * scale
+            motor_height = 0.18 * scale
+            prop_radius = 0.45 * scale
             arm_positions = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
             
             for i, (dx, dy) in enumerate(arm_positions):
@@ -1193,8 +1556,8 @@ class DroneIMUMonitor:
             self.y_vector.remove()
             self.z_vector.remove()
             
-            vec_length = 1.8
-            label_offset = 0.4
+            vec_length = 1.8 * scale
+            label_offset = 0.4 * scale
             x_vec = R @ np.array([vec_length, 0, 0])
             y_vec = R @ np.array([0, vec_length, 0])
             z_vec = R @ np.array([0, 0, vec_length])
@@ -1227,15 +1590,6 @@ class DroneIMUMonitor:
             
         except Exception as e:
             self.logger.error(f"3D update error: {e}")
-    
-    def clear_log(self):
-        """Clear log display and data"""
-        if self.log_text:
-            self.log_text.config(state="normal")
-            self.log_text.delete(1.0, tk.END)
-            self.log_text.config(state="disabled")
-        self.log_data.clear()
-        self.pending_log_lines.clear()
     
     
     def on_close(self):

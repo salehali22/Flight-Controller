@@ -7,7 +7,7 @@
 #define SCL_PIN 26
 
 const uint8_t MPU_ADDR = 0x68;
-const uint16_t SAMPLE_INTERVAL = 10;  // milliseconds
+uint16_t SAMPLE_INTERVAL = 10;  // milliseconds
 
 float AccX = 0.0f, AccY = 0.0f, AccZ = 0.0f;
 float GyroX = 0.0f, GyroY = 0.0f, GyroZ = 0.0f;
@@ -162,6 +162,25 @@ void handleCommand(String line) {
     value = constrain(value, 0.0f, 0.999f);
     alphaFactor = value;
     Serial.printf("ACK:SET_ALPHA %.4f\n", alphaFactor);
+  } else if (keyword == "SET_SAMPLE_RATE") {
+    if (arg.length() == 0) {
+      Serial.println("ERR:SET_SAMPLE_RATE missing value");
+      return;
+    }
+    int value = arg.toInt();
+    if (value < 1 || value > 1000) {
+      Serial.println("ERR:SET_SAMPLE_RATE range 1-1000");
+      return;
+    }
+    SAMPLE_INTERVAL = value;
+    Serial.printf("ACK:SET_SAMPLE_RATE %d\n", SAMPLE_INTERVAL);
+  } else if (keyword == "PAUSE") {
+    streamingEnabled = false;
+    Serial.println("ACK:PAUSED");
+  } else if (keyword == "RESUME") {
+    streamingEnabled = true;
+    sample_time = millis();
+    Serial.println("ACK:RESUMED");
   } else if (keyword == "CLEAR_CAL") {
     clear_calibration_values();
     Serial.println("ACK:CLEAR_CAL");
