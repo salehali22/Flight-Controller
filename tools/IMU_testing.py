@@ -1,3 +1,4 @@
+# V1.1
 """
 Drone IMU Serial Monitor
 ------------------------
@@ -10,14 +11,13 @@ Run with --debug flag for detailed console logging
 """
 
 import tkinter as tk
-from tkinter import ttk, scrolledtext, messagebox
+from tkinter import ttk, scrolledtext, messagebox, filedialog
 import serial
 import serial.tools.list_ports
 import threading
 import queue
 import time
 import math
-import os
 import sys
 from datetime import datetime
 from collections import deque
@@ -80,18 +80,40 @@ class DroneIMUMonitor:
         
         # Data storage (use deque for better performance)
         self.log_data = deque(maxlen=10000)  # Keep last 10k entries
-        self.sent_commands = deque(maxlen=1000)
         
         # UI state
         self.auto_update_3d = tk.BooleanVar(value=True)
         self.autoscroll = tk.BooleanVar(value=True)
         self.paused = False
         self.connected = False
+        self.serial_monitor_window = None
+        self.log_text = None
         
-        # Export settings
-        self.export_range = tk.StringVar(value="all")
-        self.export_from_time = ""
-        self.export_to_time = ""
+        self.cmd_var = tk.StringVar()
+        self.cmd_entry = None
+        self.cal_samples_var = tk.IntVar(value=1000)
+        self.alpha_factor_var = tk.DoubleVar(value=0.83)
+        self.run_duration_var = tk.IntVar(value=0)
+        
+        # Chart data
+        self.chart_history = deque(maxlen=2000)
+        self.chart_lines = {}
+        self.chart_colors = {
+            "roll": "#ef4444",
+            "pitch": "#22c55e",
+            "yaw": "#06b6d4"
+        }
+        self.chart_axis_enabled = {
+            "roll": tk.BooleanVar(value=True),
+            "pitch": tk.BooleanVar(value=True),
+            "yaw": tk.BooleanVar(value=True)
+        }
+        self.chart_paused = False
+        self.chart_ax = None
+        self.chart_canvas = None
+        self.chart_fig = None
+        self.chart_pause_btn = None
+        self.chart_legend = None
         
         # IMU angles
         self.roll = 0
@@ -155,8 +177,6 @@ class DroneIMUMonitor:
         main.add(right)
         
         self.create_controls(left)
-        self.create_log_view(left)
-        self.create_command_view(left)
         self.create_3d_view(right)
     
     def create_controls(self, parent):
@@ -164,29 +184,26 @@ class DroneIMUMonitor:
         frame = ttk.LabelFrame(parent, text="Connection", padding=10)
         frame.pack(fill="x", pady=(0, 10))
         
-        # Port selection
-        port_frame = ttk.Frame(frame)
-        port_frame.pack(fill="x", pady=5)
+        # Port and baud selection
+        selection_frame = ttk.Frame(frame)
+        selection_frame.pack(fill="x", pady=5)
+        selection_frame.columnconfigure(5, weight=1)
         
-        ttk.Label(port_frame, text="Port:").pack(side="left", padx=(0, 5))
+        ttk.Label(selection_frame, text="Port:").grid(row=0, column=0, padx=(0, 5), sticky="w")
         self.port_var = tk.StringVar()
-        self.port_combo = ttk.Combobox(port_frame, textvariable=self.port_var, 
+        self.port_combo = ttk.Combobox(selection_frame, textvariable=self.port_var, 
                                        width=12, state="readonly")
-        self.port_combo.pack(side="left", padx=(0, 5))
+        self.port_combo.grid(row=0, column=1, padx=(0, 5), sticky="w")
         
-        ttk.Button(port_frame, text="↻", width=3, 
-                  command=self.refresh_ports).pack(side="left")
+        ttk.Button(selection_frame, text="Refresh", width=12, 
+                  command=self.refresh_ports).grid(row=0, column=2, padx=(0, 15), sticky="w")
         
-        # Baud rate
-        baud_frame = ttk.Frame(frame)
-        baud_frame.pack(fill="x", pady=5)
-        
-        ttk.Label(baud_frame, text="Baud:").pack(side="left", padx=(0, 5))
+        ttk.Label(selection_frame, text="Baud:").grid(row=0, column=3, padx=(0, 5), sticky="w")
         self.baud_var = tk.StringVar(value="115200")
-        baud_combo = ttk.Combobox(baud_frame, textvariable=self.baud_var,
+        baud_combo = ttk.Combobox(selection_frame, textvariable=self.baud_var,
                                   values=["9600", "57600", "115200", "230400"],
                                   width=12, state="readonly")
-        baud_combo.pack(side="left")
+        baud_combo.grid(row=0, column=4, sticky="w")
         
         # Connect button
         btn_frame = ttk.Frame(frame)
@@ -222,78 +239,53 @@ class DroneIMUMonitor:
                                    foreground="#ff8800", font=("Segoe UI", 8, "bold"))
             debug_label.pack(anchor="w", pady=(5, 0))
         
-        # Current values
-        values_frame = ttk.Frame(frame)
-        values_frame.pack(fill="x", pady=10)
-        
-        ttk.Label(values_frame, text="Current Values:", 
-                 font=("Segoe UI", 9, "bold")).pack(anchor="w")
-        self.values_label = ttk.Label(values_frame, 
-                                     text="Roll: 0.0°\nPitch: 0.0°\nYaw: 0.0°",
-                                     font=("Consolas", 9))
-        self.values_label.pack(anchor="w", padx=(10, 0))
-        
         # Action buttons
         action_frame = ttk.Frame(frame)
         action_frame.pack(fill="x", pady=5)
         
+        ttk.Button(action_frame, text="Serial Monitor", 
+                  command=self.open_serial_monitor).pack(fill="x", pady=(0, 5))
+        
         ttk.Button(action_frame, text="Clear Log", 
                   command=self.clear_log).pack(fill="x", pady=(0, 5))
-        
-        ttk.Button(action_frame, text="📤 Export Data Now", 
-                  command=self.export_data_now).pack(fill="x", pady=(0, 5))
-        
-        ttk.Button(action_frame, text="⚙ Export Settings", 
-                  command=self.show_export_settings).pack(fill="x", pady=(0, 5))
         
         if DEBUG_MODE:
             ttk.Button(action_frame, text="Debug Log", 
                       command=self.show_debug_log).pack(fill="x")
         
+        # IMU configuration
+        settings_frame = ttk.LabelFrame(parent, text="IMU Settings", padding=10)
+        settings_frame.pack(fill="x", pady=(0, 10))
+        
+        ttk.Label(settings_frame, text="Calibration samples").grid(row=0, column=0, sticky="w")
+        ttk.Entry(settings_frame, textvariable=self.cal_samples_var, width=10).grid(row=0, column=1, padx=(8, 0), sticky="w")
+        
+        ttk.Label(settings_frame, text="Alpha factor (0-1)").grid(row=1, column=0, sticky="w", pady=(6, 0))
+        ttk.Entry(settings_frame, textvariable=self.alpha_factor_var, width=10).grid(row=1, column=1, padx=(8, 0), sticky="w", pady=(6, 0))
+        
+        ttk.Label(settings_frame, text="Run duration (s)").grid(row=2, column=0, sticky="w", pady=(6, 0))
+        ttk.Entry(settings_frame, textvariable=self.run_duration_var, width=10).grid(row=2, column=1, padx=(8, 0), sticky="w", pady=(6, 0))
+        
+        button_grid = ttk.Frame(settings_frame)
+        button_grid.grid(row=3, column=0, columnspan=2, pady=(12, 0), sticky="ew")
+        button_grid.columnconfigure(0, weight=1, uniform="imu_btns")
+        button_grid.columnconfigure(1, weight=1, uniform="imu_btns")
+        
+        ttk.Button(button_grid, text="Apply", command=self.apply_calibration_settings).grid(
+            row=0, column=0, sticky="nsew", padx=(0, 6), pady=(0, 6)
+        )
+        ttk.Button(button_grid, text="Calibrate", command=self.start_calibration_sequence).grid(
+            row=0, column=1, sticky="nsew", padx=(6, 0), pady=(0, 6)
+        )
+        ttk.Button(button_grid, text="Wipe Calibration", command=self.wipe_calibration_values).grid(
+            row=1, column=0, sticky="nsew", padx=(0, 6)
+        )
+        ttk.Button(button_grid, text="Run Timed Session", command=self.start_timed_run).grid(
+            row=1, column=1, sticky="nsew", padx=(6, 0)
+        )
+        
         self.refresh_ports()
     
-    def create_log_view(self, parent):
-        """Data log display"""
-        frame = ttk.LabelFrame(parent, text="Serial Data", padding=10)
-        frame.pack(fill="both", expand=True, pady=(0, 10))
-        
-        self.log_text = scrolledtext.ScrolledText(
-            frame, wrap=tk.WORD, height=20,
-            background="#0d0d0d", foreground="#00ff00",
-            insertbackground="white", font=("Consolas", 9)
-        )
-        self.log_text.pack(fill="both", expand=True)
-        self.log_text.config(state="disabled")
-    
-    def create_command_view(self, parent):
-        """Command sending interface"""
-        cmd_frame = ttk.LabelFrame(parent, text="Send Command", padding=10)
-        cmd_frame.pack(fill="x", pady=(0, 10))
-        
-        input_frame = ttk.Frame(cmd_frame)
-        input_frame.pack(fill="x")
-        
-        self.cmd_var = tk.StringVar()
-        cmd_entry = tk.Entry(input_frame, textvariable=self.cmd_var,
-                            bg="#2b2b2b", fg="white", insertbackground="white",
-                            font=("Consolas", 10), relief=tk.FLAT, bd=2)
-        cmd_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
-        cmd_entry.bind("<Return>", lambda e: self.send_command())
-        
-        ttk.Button(input_frame, text="Send", 
-                  command=self.send_command).pack(side="left")
-        
-        # Sent commands log
-        sent_frame = ttk.LabelFrame(parent, text="Sent Commands", padding=10)
-        sent_frame.pack(fill="x")
-        
-        self.sent_text = scrolledtext.ScrolledText(
-            sent_frame, wrap=tk.WORD, height=4,
-            background="#0d0d0d", foreground="#ffaa00",
-            insertbackground="white", font=("Consolas", 9)
-        )
-        self.sent_text.pack(fill="x")
-        self.sent_text.config(state="disabled")
     
     def create_3d_view(self, parent):
         """3D orientation visualization"""
@@ -315,6 +307,10 @@ class DroneIMUMonitor:
                   command=lambda: self.set_view(20, 45)).pack(side="left", padx=2)
         ttk.Button(control_frame, text="Reset", width=8,
                   command=self.reset_drone).pack(side="left", padx=2)
+        
+        # Container for 3D canvas
+        view_container = tk.Frame(frame, bg="#1e1e1e", highlightthickness=0)
+        view_container.pack(fill="both", expand=True)
         
         # Create matplotlib figure
         self.fig = plt.Figure(figsize=(8, 8), facecolor="#000000", dpi=80)
@@ -357,8 +353,171 @@ class DroneIMUMonitor:
         self.create_drone_body()
         
         # Embed
-        self.canvas = FigureCanvasTkAgg(self.fig, frame)
+        self.canvas = FigureCanvasTkAgg(self.fig, view_container)
         self.canvas.get_tk_widget().pack(fill="both", expand=True)
+        
+        # Overlay current values in top-right corner
+        self.values_label = tk.Label(
+            view_container,
+            text="Roll: 0.0°\nPitch: 0.0°\nYaw: 0.0°",
+            bg="#000000",
+            fg="white",
+            font=("Consolas", 14, "bold"),
+            justify="right"
+        )
+        self.values_label.place(relx=0.98, rely=0.0, anchor="ne")
+        
+        # Chart section
+        chart_frame = ttk.LabelFrame(frame, text="Angle Data", padding=10)
+        chart_frame.pack(fill="x", pady=(10, 0))
+        
+        chart_controls = tk.Frame(chart_frame, bg="#1e1e1e")
+        chart_controls.pack(fill="x", pady=(0, 10))
+        
+        self.chart_pause_btn = tk.Button(
+            chart_controls,
+            text="Pause",
+            command=self.toggle_chart_pause,
+            bg="#ff8800",
+            fg="white",
+            font=("Segoe UI", 9, "bold"),
+            relief=tk.RAISED,
+            bd=2,
+            cursor="hand2",
+            activebackground="#ff9922"
+        )
+        self.chart_pause_btn.pack(side="left")
+        
+        tk.Button(
+            chart_controls,
+            text="Clear",
+            command=self.clear_chart_history,
+            bg="#444",
+            fg="white",
+            font=("Segoe UI", 9, "bold"),
+            relief=tk.RAISED,
+            bd=2,
+            cursor="hand2",
+            activebackground="#555"
+        ).pack(side="left", padx=(8, 0))
+        
+        tk.Button(
+            chart_controls,
+            text="Export",
+            command=self.export_chart_image,
+            bg="#2563eb",
+            fg="white",
+            font=("Segoe UI", 9, "bold"),
+            relief=tk.RAISED,
+            bd=2,
+            cursor="hand2",
+            activebackground="#1d4ed8"
+        ).pack(side="left", padx=(8, 0))
+        
+        axis_toggle_frame = tk.Frame(chart_controls, bg="#1e1e1e")
+        axis_toggle_frame.pack(side="right")
+        
+        for axis in ["roll", "pitch", "yaw"]:
+            tk.Checkbutton(
+                axis_toggle_frame,
+                text=axis.title(),
+                variable=self.chart_axis_enabled[axis],
+                command=self.refresh_chart,
+                bg="#1e1e1e",
+                fg=self.chart_colors[axis],
+                activebackground="#1e1e1e",
+                activeforeground=self.chart_colors[axis],
+                selectcolor="#2b2b2b",
+                font=("Segoe UI", 9, "bold"),
+                padx=6
+            ).pack(side="left")
+        
+        chart_canvas_frame = ttk.Frame(chart_frame)
+        chart_canvas_frame.pack(fill="x")
+        
+        self.chart_fig = plt.Figure(figsize=(8, 5.1), facecolor="#000000", dpi=80)
+        self.chart_ax = self.chart_fig.add_subplot(111)
+        self.chart_ax.set_facecolor("#050505")
+        self.chart_ax.grid(True, color="#222", linestyle="--", linewidth=0.6)
+        self.chart_ax.set_xlabel("Seconds", color="white")
+        self.chart_ax.set_ylabel("Angle (°)", color="white")
+        self.chart_ax.tick_params(colors="white")
+        
+        self.chart_canvas = FigureCanvasTkAgg(self.chart_fig, chart_canvas_frame)
+        self.chart_canvas.get_tk_widget().pack(fill="x")
+        self.refresh_chart()
+    
+    def open_serial_monitor(self):
+        """Open or focus the serial monitor window"""
+        if self.serial_monitor_window and self.serial_monitor_window.winfo_exists():
+            self.serial_monitor_window.deiconify()
+            self.serial_monitor_window.lift()
+            return
+        
+        self.serial_monitor_window = tk.Toplevel(self.root)
+        self.serial_monitor_window.title("Serial Monitor")
+        self.serial_monitor_window.geometry("800x600")
+        self.serial_monitor_window.configure(bg="#1e1e1e")
+        self.serial_monitor_window.protocol("WM_DELETE_WINDOW", self.close_serial_monitor)
+        
+        frame = ttk.Frame(self.serial_monitor_window, padding=10)
+        frame.pack(fill="both", expand=True)
+        
+        self.log_text = scrolledtext.ScrolledText(
+            frame,
+            wrap=tk.WORD,
+            background="#0d0d0d",
+            foreground="#00ff00",
+            insertbackground="white",
+            font=("Consolas", 10)
+        )
+        self.log_text.pack(fill="both", expand=True)
+        self.log_text.config(state="disabled")
+        self.populate_log_history()
+        
+        cmd_frame = ttk.LabelFrame(frame, text="Send Command", padding=10)
+        cmd_frame.pack(fill="x", pady=(10, 0))
+        
+        input_frame = ttk.Frame(cmd_frame)
+        input_frame.pack(fill="x")
+        
+        self.cmd_entry = tk.Entry(
+            input_frame,
+            textvariable=self.cmd_var,
+            bg="#2b2b2b",
+            fg="white",
+            insertbackground="white",
+            font=("Consolas", 11),
+            relief=tk.FLAT,
+            bd=2
+        )
+        self.cmd_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
+        self.cmd_entry.bind("<Return>", lambda e: self.send_command())
+        
+        ttk.Button(input_frame, text="Send", command=self.send_command).pack(side="left")
+    
+    def close_serial_monitor(self):
+        """Close the serial monitor window"""
+        if self.serial_monitor_window and self.serial_monitor_window.winfo_exists():
+            self.serial_monitor_window.destroy()
+        self.serial_monitor_window = None
+        self.log_text = None
+        self.cmd_entry = None
+    
+    def populate_log_history(self):
+        """Fill the serial monitor with existing log data"""
+        if not self.log_text:
+            return
+        
+        self.log_text.config(state="normal")
+        self.log_text.delete(1.0, tk.END)
+        for msg_type, ts, data in self.log_data:
+            time_str = datetime.fromtimestamp(ts).strftime("%H:%M:%S.%f")[:-3]
+            prefix = ">> " if msg_type == "TX" else ""
+            self.log_text.insert(tk.END, f"[{time_str}] {prefix}{data}\n")
+        self.log_text.config(state="disabled")
+        if self.autoscroll.get():
+            self.log_text.see(tk.END)
     
     def create_drone_body(self):
         """Create quadcopter visualization"""
@@ -518,6 +677,112 @@ class DroneIMUMonitor:
         self.y_label = self.ax.text(0, vec_length + 0.4, 0, "Y", color="#22c55e", fontsize=16, weight='bold')
         self.z_label = self.ax.text(0, 0, vec_length + 0.4, "Z", color="#06b6d4", fontsize=16, weight='bold')
     
+    def toggle_chart_pause(self):
+        """Pause or resume chart updates"""
+        self.chart_paused = not self.chart_paused
+        if self.chart_pause_btn:
+            if self.chart_paused:
+                self.chart_pause_btn.config(text="Resume", bg="#22aa55", activebackground="#33bb66")
+            else:
+                self.chart_pause_btn.config(text="Pause", bg="#ff8800", activebackground="#ff9922")
+        if not self.chart_paused:
+            self.refresh_chart()
+    
+    def clear_chart_history(self):
+        """Clear stored chart data"""
+        self.chart_history.clear()
+        self.refresh_chart()
+    
+    def append_chart_data(self, timestamp):
+        """Append the latest angle data for charting"""
+        self.chart_history.append((timestamp, self.roll, self.pitch, self.yaw))
+        if not self.chart_paused:
+            self.refresh_chart()
+    
+    def refresh_chart(self):
+        """Refresh the angle history chart"""
+        if not self.chart_ax or not self.chart_canvas:
+            return
+        
+        if self.chart_legend:
+            self.chart_legend.remove()
+            self.chart_legend = None
+        
+        if not self.chart_history:
+            for axis in self.chart_colors:
+                line = self.chart_lines.get(axis)
+                if line:
+                    line.set_data([], [])
+            self.chart_ax.set_xlim(0, 10)
+            self.chart_ax.set_ylim(-1, 1)
+            self.chart_canvas.draw_idle()
+            return
+        
+        base_time = self.chart_history[0][0]
+        times = [entry[0] - base_time for entry in self.chart_history]
+        axis_data = {
+            "roll": [entry[1] for entry in self.chart_history],
+            "pitch": [entry[2] for entry in self.chart_history],
+            "yaw": [entry[3] for entry in self.chart_history]
+        }
+        
+        visible_values = []
+        for axis in ["roll", "pitch", "yaw"]:
+            if axis not in self.chart_lines or self.chart_lines[axis] is None:
+                line, = self.chart_ax.plot([], [], color=self.chart_colors[axis], linewidth=1.8, label=axis.title())
+                self.chart_lines[axis] = line
+            line = self.chart_lines[axis]
+            line.set_data(times, axis_data[axis])
+            is_visible = self.chart_axis_enabled[axis].get()
+            line.set_visible(is_visible)
+            if is_visible:
+                visible_values.extend(axis_data[axis])
+        
+        if visible_values:
+            x_end = times[-1]
+            x_start = max(0, x_end - 30)
+            if x_end - x_start < 1:
+                x_end = x_start + 1
+            self.chart_ax.set_xlim(x_start, x_end)
+            y_min = min(visible_values)
+            y_max = max(visible_values)
+            if y_min == y_max:
+                y_padding = 5
+            else:
+                y_padding = max(2, (y_max - y_min) * 0.1)
+            self.chart_ax.set_ylim(y_min - y_padding, y_max + y_padding)
+            visible_lines = [self.chart_lines[axis] for axis in self.chart_lines if self.chart_lines[axis].get_visible()]
+            if visible_lines:
+                self.chart_legend = self.chart_ax.legend(handles=visible_lines, loc="upper left")
+        else:
+            x_end = times[-1]
+            self.chart_ax.set_xlim(max(0, x_end - 30), x_end if x_end > 0 else 30)
+            self.chart_ax.set_ylim(-1, 1)
+        
+        self.chart_canvas.draw_idle()
+    
+    def export_chart_image(self):
+        """Export the chart as an image"""
+        if not self.chart_fig:
+            messagebox.showwarning("Export Chart", "Chart is not available yet.")
+            return
+        
+        default_name = datetime.now().strftime("angle_chart_%Y-%m-%d_%H-%M-%S.png")
+        file_path = filedialog.asksaveasfilename(
+            title="Save Chart",
+            defaultextension=".png",
+            initialfile=default_name,
+            filetypes=[("PNG Image", "*.png"), ("All Files", "*.*")]
+        )
+        if not file_path:
+            return
+        
+        try:
+            self.chart_fig.savefig(file_path, facecolor=self.chart_fig.get_facecolor(), dpi=120)
+            messagebox.showinfo("Export Complete", f"Chart saved to:\n{file_path}")
+        except Exception as e:
+            messagebox.showerror("Export Error", f"Failed to save chart:\n{e}")
+    
     def set_view(self, elev, azim):
         """Set 3D view angle"""
         self.view_elev = elev
@@ -623,23 +888,60 @@ class DroneIMUMonitor:
         finally:
             self.logger.info("Serial read thread stopped")
     
-    def send_command(self):
-        """Send command over serial"""
-        if not self.connected:
+    def send_device_command(self, command):
+        """Send a command string to the device"""
+        if not self.connected or not self.serial_port:
             messagebox.showwarning("Not Connected", "Please connect to a port first")
-            return
+            return False
         
-        cmd = self.cmd_var.get().strip()
+        cmd = command.strip()
         if not cmd:
-            return
+            return False
         
         try:
             self.serial_port.write((cmd + "\n").encode())
             timestamp = time.time()
             self.data_queue.put(("sent", timestamp, cmd))
-            self.cmd_var.set("")
+            return True
         except Exception as e:
             messagebox.showerror("Send Error", f"Failed to send:\n{e}")
+            return False
+    
+    def send_command(self):
+        """Send command from input over serial"""
+        cmd = self.cmd_var.get().strip()
+        if not cmd:
+            return
+        if self.send_device_command(cmd):
+            self.cmd_var.set("")
+    
+    def apply_calibration_settings(self):
+        """Apply calibration sample count and alpha factor"""
+        samples = max(10, min(20000, self.cal_samples_var.get()))
+        self.cal_samples_var.set(samples)
+        
+        try:
+            alpha = float(self.alpha_factor_var.get())
+        except tk.TclError:
+            alpha = 0.83
+        alpha = max(0.0, min(0.999, alpha))
+        self.alpha_factor_var.set(round(alpha, 4))
+        
+        if self.send_device_command(f"SET_SAMPLES {samples}"):
+            self.send_device_command(f"SET_ALPHA {alpha:.4f}")
+    
+    def start_calibration_sequence(self):
+        """Trigger calibration routine on the device"""
+        self.send_device_command("CALIBRATE")
+    
+    def wipe_calibration_values(self):
+        """Clear calibration values on the device"""
+        self.send_device_command("CLEAR_CAL")
+    
+    def start_timed_run(self):
+        """Start a timed streaming session"""
+        duration = max(0, self.run_duration_var.get())
+        self.send_device_command(f"RUN_FOR {duration}")
     
     def update_loop(self):
         """Main update loop"""
@@ -680,26 +982,23 @@ class DroneIMUMonitor:
         
         # Parse orientation
         if self.auto_update_3d.get():
-            self.parse_and_update_orientation(line)
+            self.parse_and_update_orientation(line, timestamp)
     
     def process_sent(self, timestamp, cmd):
         """Process sent command"""
         self.log_data.append(("TX", timestamp, cmd))
-        self.sent_commands.append((timestamp, cmd))
         
         # Queue text updates
         time_str = datetime.fromtimestamp(timestamp).strftime("%H:%M:%S.%f")[:-3]
         self.pending_log_lines.append(f"[{time_str}] >> {cmd}\n")
-        
-        # Update sent commands immediately
-        self.sent_text.config(state="normal")
-        self.sent_text.insert(tk.END, f"[{time_str}] {cmd}\n")
-        self.sent_text.config(state="disabled")
-        self.sent_text.see(tk.END)
     
     def flush_log_updates(self):
         """Batch update log text widget"""
         if not self.pending_log_lines:
+            return
+        
+        if not self.log_text:
+            self.pending_log_lines.clear()
             return
         
         self.log_text.config(state="normal")
@@ -711,7 +1010,7 @@ class DroneIMUMonitor:
         
         self.pending_log_lines.clear()
     
-    def parse_and_update_orientation(self, line):
+    def parse_and_update_orientation(self, line, timestamp=None):
         """Parse orientation data"""
         try:
             parts = line.split(",")
@@ -729,6 +1028,7 @@ class DroneIMUMonitor:
                 self.values_label.config(
                     text=f"Roll: {self.roll:.3f}°\nPitch: {self.pitch:.3f}°\nYaw: {self.yaw:.3f}°"
                 )
+                self.append_chart_data(timestamp or time.time())
         except ValueError:
             pass  # Ignore parse errors silently
     
@@ -930,200 +1230,13 @@ class DroneIMUMonitor:
     
     def clear_log(self):
         """Clear log display and data"""
-        self.log_text.config(state="normal")
-        self.log_text.delete(1.0, tk.END)
-        self.log_text.config(state="disabled")
-        
-        self.sent_text.config(state="normal")
-        self.sent_text.delete(1.0, tk.END)
-        self.sent_text.config(state="disabled")
-        
+        if self.log_text:
+            self.log_text.config(state="normal")
+            self.log_text.delete(1.0, tk.END)
+            self.log_text.config(state="disabled")
         self.log_data.clear()
-        self.sent_commands.clear()
         self.pending_log_lines.clear()
     
-    def show_export_settings(self):
-        """Show export settings dialog"""
-        dialog = tk.Toplevel(self.root)
-        dialog.title("Export Settings")
-        dialog.geometry("400x320")
-        dialog.configure(bg="#1e1e1e")
-        dialog.transient(self.root)
-        dialog.grab_set()
-        
-        # Center dialog
-        dialog.update_idletasks()
-        x = (dialog.winfo_screenwidth() // 2) - (dialog.winfo_width() // 2)
-        y = (dialog.winfo_screenheight() // 2) - (dialog.winfo_height() // 2)
-        dialog.geometry(f"+{x}+{y}")
-        
-        # Main container
-        main_frame = tk.Frame(dialog, bg="#1e1e1e", padx=20, pady=20)
-        main_frame.pack(fill="both", expand=True)
-        
-        # Title
-        title_label = tk.Label(main_frame, text="Configure Export Range", 
-                              bg="#1e1e1e", fg="white",
-                              font=("Segoe UI", 11, "bold"))
-        title_label.pack(pady=(0, 15))
-        
-        # Options
-        options_frame = tk.Frame(main_frame, bg="#1e1e1e")
-        options_frame.pack(fill="x", pady=(0, 10))
-        
-        tk.Radiobutton(options_frame, text="All data", variable=self.export_range, 
-                      value="all", bg="#1e1e1e", fg="white", 
-                      selectcolor="#333", activebackground="#1e1e1e",
-                      activeforeground="white", font=("Segoe UI", 10)).pack(anchor="w", pady=4)
-        tk.Radiobutton(options_frame, text="Last 1 minute", variable=self.export_range, 
-                      value="1min", bg="#1e1e1e", fg="white",
-                      selectcolor="#333", activebackground="#1e1e1e",
-                      activeforeground="white", font=("Segoe UI", 10)).pack(anchor="w", pady=4)
-        tk.Radiobutton(options_frame, text="Last 5 minutes", variable=self.export_range, 
-                      value="5min", bg="#1e1e1e", fg="white",
-                      selectcolor="#333", activebackground="#1e1e1e",
-                      activeforeground="white", font=("Segoe UI", 10)).pack(anchor="w", pady=4)
-        tk.Radiobutton(options_frame, text="Last 10 minutes", variable=self.export_range, 
-                      value="10min", bg="#1e1e1e", fg="white",
-                      selectcolor="#333", activebackground="#1e1e1e",
-                      activeforeground="white", font=("Segoe UI", 10)).pack(anchor="w", pady=4)
-        tk.Radiobutton(options_frame, text="Custom time range", variable=self.export_range, 
-                      value="custom", bg="#1e1e1e", fg="white",
-                      selectcolor="#333", activebackground="#1e1e1e",
-                      activeforeground="white", font=("Segoe UI", 10)).pack(anchor="w", pady=4)
-        
-        # Custom time inputs
-        custom_frame = tk.Frame(main_frame, bg="#1e1e1e")
-        custom_frame.pack(fill="x", pady=15)
-        
-        tk.Label(custom_frame, text="From (HH:MM:SS):", 
-                bg="#1e1e1e", fg="white", font=("Segoe UI", 9)).grid(row=0, column=0, sticky="w", padx=(20, 10), pady=5)
-        from_entry = tk.Entry(custom_frame, width=15, bg="#2b2b2b", fg="white", 
-                             insertbackground="white", relief=tk.FLAT, bd=2, font=("Consolas", 10))
-        from_entry.insert(0, self.export_from_time)
-        from_entry.grid(row=0, column=1, padx=5, pady=5)
-        
-        tk.Label(custom_frame, text="To (HH:MM:SS):", 
-                bg="#1e1e1e", fg="white", font=("Segoe UI", 9)).grid(row=1, column=0, sticky="w", padx=(20, 10), pady=5)
-        to_entry = tk.Entry(custom_frame, width=15, bg="#2b2b2b", fg="white", 
-                           insertbackground="white", relief=tk.FLAT, bd=2, font=("Consolas", 10))
-        to_entry.insert(0, self.export_to_time)
-        to_entry.grid(row=1, column=1, padx=5, pady=5)
-        
-        # Reference times
-        if self.log_data:
-            first_ts = datetime.fromtimestamp(self.log_data[0][1]).strftime("%H:%M:%S")
-            last_ts = datetime.fromtimestamp(self.log_data[-1][1]).strftime("%H:%M:%S")
-            tk.Label(custom_frame, text=f"Available: {first_ts} - {last_ts}", 
-                    bg="#1e1e1e", fg="#888",
-                    font=("Consolas", 8)).grid(row=2, column=0, columnspan=2, pady=8)
-        
-        # Save button
-        def save_settings():
-            self.export_from_time = from_entry.get().strip()
-            self.export_to_time = to_entry.get().strip()
-            messagebox.showinfo("Settings Saved", "Export settings have been saved.\nUse 'Export Data Now' to export with these settings.")
-            dialog.destroy()
-        
-        btn_frame = tk.Frame(main_frame, bg="#1e1e1e")
-        btn_frame.pack(fill="x", pady=(10, 0))
-        
-        save_btn = tk.Button(btn_frame, text="Save Settings", command=save_settings,
-                            bg="#22aa55", fg="white", font=("Segoe UI", 10, "bold"),
-                            relief=tk.RAISED, bd=2, cursor="hand2",
-                            activebackground="#33bb66", padx=25, pady=8)
-        save_btn.pack(side="left", padx=(0, 10))
-        
-        cancel_btn = tk.Button(btn_frame, text="Cancel", command=dialog.destroy,
-                              bg="#555", fg="white", font=("Segoe UI", 10),
-                              relief=tk.RAISED, bd=2, cursor="hand2",
-                              activebackground="#666", padx=20, pady=8)
-        cancel_btn.pack(side="left")
-    
-    def export_data_now(self):
-        """Export data using saved settings"""
-        if not self.log_data:
-            messagebox.showinfo("No Data", "No data to export. Connect and collect data first.")
-            return
-        
-        range_type = self.export_range.get()
-        
-        if range_type == "custom":
-            if not self.export_from_time or not self.export_to_time:
-                result = messagebox.askyesno("Custom Range Not Set", 
-                                            "Custom time range is not configured.\n\nOpen Export Settings?")
-                if result:
-                    self.show_export_settings()
-                return
-            try:
-                self.export_data(range_type, self.export_from_time, self.export_to_time)
-            except Exception as e:
-                messagebox.showerror("Export Error", f"Failed to export:\n{e}")
-        else:
-            self.export_data(range_type)
-    
-    def export_data(self, time_window, from_time=None, to_time=None):
-        """Export logged data to file"""
-        if not self.log_data:
-            return
-        
-        # Create export folder
-        now = datetime.now()
-        folder_name = now.strftime("imu_export_%Y-%m-%d_%H-%M-%S")
-        
-        try:
-            os.makedirs(folder_name, exist_ok=True)
-        except Exception as e:
-            messagebox.showerror("Export Error", f"Failed to create folder:\n{e}")
-            return
-        
-        # Filter data
-        current_time = time.time()
-        
-        if time_window == "custom":
-            today = datetime.now().date()
-            from_dt = datetime.strptime(from_time, "%H:%M:%S")
-            to_dt = datetime.strptime(to_time, "%H:%M:%S")
-            
-            from_timestamp = datetime.combine(today, from_dt.time()).timestamp()
-            to_timestamp = datetime.combine(today, to_dt.time()).timestamp()
-            
-            filtered_data = [(t, ts, d) for t, ts, d in self.log_data 
-                           if from_timestamp <= ts <= to_timestamp]
-        elif time_window == "1min":
-            cutoff = current_time - 60
-            filtered_data = [(t, ts, d) for t, ts, d in self.log_data if ts >= cutoff]
-        elif time_window == "5min":
-            cutoff = current_time - 300
-            filtered_data = [(t, ts, d) for t, ts, d in self.log_data if ts >= cutoff]
-        elif time_window == "10min":
-            cutoff = current_time - 600
-            filtered_data = [(t, ts, d) for t, ts, d in self.log_data if ts >= cutoff]
-        else:  # all
-            filtered_data = list(self.log_data)
-        
-        # Create filename
-        filename = os.path.join(folder_name, now.strftime("imu_log_%Y-%m-%d_%H-%M-%S.csv"))
-        
-        try:
-            with open(filename, "w", encoding="utf-8") as f:
-                f.write("Type,Timestamp,Time,Data\n")
-                for msg_type, ts, data in filtered_data:
-                    time_str = datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-                    # Escape data that might contain commas
-                    data_escaped = data.replace('"', '""')
-                    f.write(f'{msg_type},{ts},{time_str},"{data_escaped}"\n')
-            
-            rx_count = sum(1 for t, _, _ in filtered_data if t == "RX")
-            tx_count = sum(1 for t, _, _ in filtered_data if t == "TX")
-            
-            messagebox.showinfo("Export Complete", 
-                              f"Data saved to:\n{filename}\n\n"
-                              f"Received: {rx_count} records\n"
-                              f"Sent: {tx_count} records\n"
-                              f"Total: {len(filtered_data)} records")
-        except Exception as e:
-            messagebox.showerror("Export Error", f"Failed to save:\n{e}")
     
     def on_close(self):
         """Clean up on window close"""

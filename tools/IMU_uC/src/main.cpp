@@ -1,40 +1,41 @@
+// V1.1
+
 #include <Arduino.h>
 #include <Wire.h>
 
-// Pin definitions
 #define SDA_PIN 25
 #define SCL_PIN 26
 
-// MPU6050 settings
-const int MPU_ADDR = 0x68;
-const int SAMPLE_INTERVAL = 10; // ms
+const uint8_t MPU_ADDR = 0x68;
+const uint16_t SAMPLE_INTERVAL = 10;  // milliseconds
 
-// Sensor data
-float AccX, AccY, AccZ;
-float GyroX, GyroY, GyroZ;
+float AccX = 0.0f, AccY = 0.0f, AccZ = 0.0f;
+float GyroX = 0.0f, GyroY = 0.0f, GyroZ = 0.0f;
 
-// Calculated angles
-float accAngleX, accAngleY;
-float gyroAngleX, gyroAngleY;
-float roll, pitch, yaw;
+float accAngleX = 0.0f, accAngleY = 0.0f;
+float gyroAngleX = 0.0f, gyroAngleY = 0.0f;
+float roll = 0.0f, pitch = 0.0f, yaw = 0.0f;
 
-// Error correction values
-float AccErrorX, AccErrorY;
-float GyroErrorX, GyroErrorY, GyroErrorZ;
+float AccErrorX = 0.0f, AccErrorY = 0.0f;
+float GyroErrorX = 0.0f, GyroErrorY = 0.0f, GyroErrorZ = 0.0f;
 
-// Timing
-long sample_time;
+unsigned long sample_time = 0;
 
+int calibrationSamples = 1000;
+float alphaFactor = 0.83f;
+bool runLimited = false;
+bool streamingEnabled = true;
+unsigned long runStopTime = 0;
 
 void read_accelerometer() {
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(0x3B);
   Wire.endTransmission(false);
   Wire.requestFrom(MPU_ADDR, 6, true);
-  
-  AccX = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0;
-  AccY = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0;
-  AccZ = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0;
+
+  AccX = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0f;
+  AccY = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0f;
+  AccZ = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0f;
 }
 
 void read_gyroscope() {
@@ -42,116 +43,197 @@ void read_gyroscope() {
   Wire.write(0x43);
   Wire.endTransmission(false);
   Wire.requestFrom(MPU_ADDR, 6, true);
-  
-  GyroX = (int16_t)(Wire.read() << 8 | Wire.read()) / 131.0 - GyroErrorX;
-  GyroY = (int16_t)(Wire.read() << 8 | Wire.read()) / 131.0 - GyroErrorY;
-  GyroZ = (int16_t)(Wire.read() << 8 | Wire.read()) / 131.0 - GyroErrorZ;
+
+  GyroX = (int16_t)(Wire.read() << 8 | Wire.read()) / 131.0f - GyroErrorX;
+  GyroY = (int16_t)(Wire.read() << 8 | Wire.read()) / 131.0f - GyroErrorY;
+  GyroZ = (int16_t)(Wire.read() << 8 | Wire.read()) / 131.0f - GyroErrorZ;
 }
 
 void calculate_acc_angles() {
-  accAngleX = (atan(AccY / sqrt(pow(AccX, 2) + pow(AccZ, 2))) * 180 / PI) - AccErrorX;
-  accAngleY = (atan(-AccX / sqrt(pow(AccY, 2) + pow(AccZ, 2))) * 180 / PI) - AccErrorY;
+  accAngleX = (atan(AccY / sqrt(pow(AccX, 2) + pow(AccZ, 2))) * 180.0f / PI) - AccErrorX;
+  accAngleY = (atan(-AccX / sqrt(pow(AccY, 2) + pow(AccZ, 2))) * 180.0f / PI) - AccErrorY;
 }
 
-void integrate_gyro(float dt) {
-  gyroAngleX += GyroX * dt;
-  gyroAngleY += GyroY * dt;
+void apply_complementary_filter(float dt) {
+  // Integrate gyro directly onto the filtered angles
+  const float beta = 1.0f - alphaFactor;
+  roll = alphaFactor * (roll + GyroX * dt) + beta * accAngleX;
+  pitch = alphaFactor * (pitch + GyroY * dt) + beta * accAngleY;
+
+  // Yaw has no accelerometer correction, so keep it as is
   yaw += GyroZ * dt;
 }
 
-void apply_complementary_filter() {
-  roll = 0.83 * gyroAngleX + 0.17 * accAngleX;
-  pitch = 0.83 * gyroAngleY + 0.17 * accAngleY;
+void print_orientation() {
+  Serial.printf("%.3f, %.3f, %.3f\n", roll, pitch, yaw);
 }
 
-void print_orientation() {
-  Serial.print(roll, 3);
-  Serial.print(", ");
-  Serial.print(pitch, 3);
-  Serial.print(", ");
-  Serial.println(yaw, 3);
+void clear_calibration_values() {
+  AccErrorX = AccErrorY = 0.0f;
+  GyroErrorX = GyroErrorY = GyroErrorZ = 0.0f;
+  gyroAngleX = gyroAngleY = 0.0f;
+  roll = pitch = yaw = 0.0f;
 }
 
 void calculate_IMU_error() {
-  Serial.println("Calibrating... Please keep sensor stationary");
-  delay(5000);
-  
-  const int NUM_SAMPLES = 1000;
-  
-  // Accelerometer calibration
-  for (int i = 0; i < NUM_SAMPLES; i++) {
+  Serial.printf("Calibrating with %d samples...\n", calibrationSamples);
+  Serial.println("Keep sensor stationary");
+  delay(3000);
+
+  AccErrorX = AccErrorY = 0.0f;
+  GyroErrorX = GyroErrorY = GyroErrorZ = 0.0f;
+
+  for (int i = 0; i < calibrationSamples; ++i) {
     read_accelerometer();
-    AccErrorX += atan(AccY / sqrt(pow(AccX, 2) + pow(AccZ, 2))) * 180 / PI;
-    AccErrorY += atan(-AccX / sqrt(pow(AccY, 2) + pow(AccZ, 2))) * 180 / PI;
+    AccErrorX += atan(AccY / sqrt(pow(AccX, 2) + pow(AccZ, 2))) * 180.0f / PI;
+    AccErrorY += atan(-AccX / sqrt(pow(AccY, 2) + pow(AccZ, 2))) * 180.0f / PI;
   }
-  AccErrorX /= NUM_SAMPLES;
-  AccErrorY /= NUM_SAMPLES;
-  
-  // Flush gyro buffers
-  for(int i = 0; i < 20; i++) {
+
+  AccErrorX /= calibrationSamples;
+  AccErrorY /= calibrationSamples;
+
+  for (int i = 0; i < 20; ++i) {
     Wire.beginTransmission(MPU_ADDR);
     Wire.write(0x43);
     Wire.endTransmission(false);
     Wire.requestFrom(MPU_ADDR, 6, true);
-    for(int j = 0; j < 6; j++) Wire.read();
+    for (int j = 0; j < 6; ++j) {
+      Wire.read();
+    }
     delay(3);
   }
-  
-  // Gyro calibration
-  for (int i = 0; i < NUM_SAMPLES; i++) {
+
+  for (int i = 0; i < calibrationSamples; ++i) {
     Wire.beginTransmission(MPU_ADDR);
     Wire.write(0x43);
     Wire.endTransmission(false);
     Wire.requestFrom(MPU_ADDR, 6, true);
-    
-    GyroErrorX += (int16_t)(Wire.read() << 8 | Wire.read()) / 131.0;
-    GyroErrorY += (int16_t)(Wire.read() << 8 | Wire.read()) / 131.0;
-    GyroErrorZ += (int16_t)(Wire.read() << 8 | Wire.read()) / 131.0;
+
+    GyroErrorX += (int16_t)(Wire.read() << 8 | Wire.read()) / 131.0f;
+    GyroErrorY += (int16_t)(Wire.read() << 8 | Wire.read()) / 131.0f;
+    GyroErrorZ += (int16_t)(Wire.read() << 8 | Wire.read()) / 131.0f;
   }
-  GyroErrorX /= NUM_SAMPLES;
-  GyroErrorY /= NUM_SAMPLES;
-  GyroErrorZ /= NUM_SAMPLES;
-  
-  Serial.print("AccErrorX: "); Serial.println(AccErrorX);
-  Serial.print("AccErrorY: "); Serial.println(AccErrorY);
-  Serial.print("GyroErrorX: "); Serial.println(GyroErrorX);
-  Serial.print("GyroErrorY: "); Serial.println(GyroErrorY);
-  Serial.print("GyroErrorZ: "); Serial.println(GyroErrorZ);
+
+  GyroErrorX /= calibrationSamples;
+  GyroErrorY /= calibrationSamples;
+  GyroErrorZ /= calibrationSamples;
+
+  Serial.println("Calibration complete");
 }
 
+void handleCommand(String line);
+
+void processSerialCommands() {
+  while (Serial.available()) {
+    String line = Serial.readStringUntil('\n');
+    line.trim();
+    if (line.length() == 0) {
+      continue;
+    }
+    handleCommand(line);
+  }
+}
+
+void handleCommand(String line) {
+  int spaceIndex = line.indexOf(' ');
+  String keyword = (spaceIndex == -1) ? line : line.substring(0, spaceIndex);
+  String arg = (spaceIndex == -1) ? "" : line.substring(spaceIndex + 1);
+  keyword.toUpperCase();
+  arg.trim();
+
+  if (keyword == "SET_SAMPLES") {
+    if (arg.length() == 0) {
+      Serial.println("ERR:SET_SAMPLES missing value");
+      return;
+    }
+    int value = arg.toInt();
+    if (value < 10 || value > 20000) {
+      Serial.println("ERR:SET_SAMPLES range 10-20000");
+      return;
+    }
+    calibrationSamples = value;
+    Serial.printf("ACK:SET_SAMPLES %d\n", calibrationSamples);
+  } else if (keyword == "SET_ALPHA") {
+    if (arg.length() == 0) {
+      Serial.println("ERR:SET_ALPHA missing value");
+      return;
+    }
+    float value = arg.toFloat();
+    value = constrain(value, 0.0f, 0.999f);
+    alphaFactor = value;
+    Serial.printf("ACK:SET_ALPHA %.4f\n", alphaFactor);
+  } else if (keyword == "CLEAR_CAL") {
+    clear_calibration_values();
+    Serial.println("ACK:CLEAR_CAL");
+  } else if (keyword == "CALIBRATE") {
+    streamingEnabled = false;
+    calculate_IMU_error();
+    streamingEnabled = true;
+    runLimited = false;
+    Serial.println("ACK:CALIBRATE_DONE");
+    sample_time = millis();
+  } else if (keyword == "RUN_FOR") {
+    if (arg.length() == 0) {
+      Serial.println("ERR:RUN_FOR missing value");
+      return;
+    }
+    long seconds = arg.toInt();
+    if (seconds <= 0) {
+      runLimited = false;
+      streamingEnabled = true;
+      Serial.println("ACK:RUN_CONTINUOUS");
+    } else {
+      runLimited = true;
+      streamingEnabled = true;
+      runStopTime = millis() + (unsigned long)seconds * 1000UL;
+      Serial.printf("ACK:RUN_FOR %ld\n", seconds);
+    }
+  } else {
+    Serial.println("ERR:UNKNOWN_COMMAND");
+  }
+}
 
 void setup() {
   Serial.begin(115200);
-  
-  while(!Wire.begin(SDA_PIN, SCL_PIN)) {
-    Serial.println("Error: I2C initialization failed");
+
+  while (!Wire.begin(SDA_PIN, SCL_PIN)) {
+    Serial.println("ERR:I2C_INIT");
     delay(1000);
   }
-  
+
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(0x6B);
   Wire.write(0x00);
   Wire.endTransmission(true);
-  
+
   calculate_IMU_error();
-  delay(20);
-  
   sample_time = millis();
 }
 
 void loop() {
-  if(millis() - sample_time >= SAMPLE_INTERVAL) {
-    sample_time = millis();
-    
+  processSerialCommands();
+
+  if (runLimited && streamingEnabled && millis() >= runStopTime) {
+    streamingEnabled = false;
+    runLimited = false;
+    Serial.println("INFO:RUN_COMPLETE");
+  }
+
+  if (!streamingEnabled) {
+    delay(5);
+    return;
+  }
+
+  unsigned long now = millis();
+  if (now - sample_time >= SAMPLE_INTERVAL) {
+    sample_time = now;
+
     read_accelerometer();
     read_gyroscope();
     calculate_acc_angles();
-    
-    float dt = SAMPLE_INTERVAL / 1000.0;
-    
-    integrate_gyro(dt);
-    apply_complementary_filter();
-    
+
+    const float dt = SAMPLE_INTERVAL / 1000.0f;
+    apply_complementary_filter(dt);
     print_orientation();
   }
 }
