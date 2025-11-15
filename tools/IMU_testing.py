@@ -101,8 +101,20 @@ class DroneIMUMonitor:
         self.esp_paused = False
         self.waiting_for_calibration = False
         
+        # Timed run data storage
+        self.timed_run_data = deque(maxlen=50000)  # Limit to 50k samples to prevent memory issues
+        self.timed_run_active = False
+        self.samples_after_calibration = 0
+        self.skip_calibration_samples = 100
+        self.timed_run_start_time = None
+        self.timed_run_elapsed_time = 0.0
+        
+        # Frequency counter for serial data
+        self.serial_data_times = deque(maxlen=100)  # Store last 100 timestamps
+        self.serial_frequency = 0.0
+        
         # Chart data
-        self.chart_history = deque()
+        self.chart_history = deque(maxlen=50000)  # Limit to prevent memory issues
         self.chart_lines = {}
         self.chart_colors = {
             "roll": "#ef4444",
@@ -305,15 +317,22 @@ class DroneIMUMonitor:
             row=0, column=1, sticky="ew", padx=(4, 0)
         )
         
+        # Frequency counter display
+        freq_frame = ttk.Frame(settings_frame)
+        freq_frame.grid(row=5, column=0, columnspan=4, sticky="ew", pady=(6, 0))
+        ttk.Label(freq_frame, text="Data Rate:").pack(side="left", padx=(0, 8))
+        self.freq_label = ttk.Label(freq_frame, text="0.0 Hz", font=("Consolas", 10))
+        self.freq_label.pack(side="left")
+        
         self.esp_pause_btn = ttk.Button(settings_frame, text="⏸ Pause ESP32",
                    command=self.toggle_esp_pause)
         self.esp_pause_btn.grid(
-            row=5, column=0, columnspan=4, padx=(0, 0), sticky="ew", pady=(6, 0)
+            row=6, column=0, columnspan=4, padx=(0, 0), sticky="ew", pady=(6, 0)
         )
         
         ttk.Button(settings_frame, text="Wipe Calibration",
                    command=self.wipe_calibration_values).grid(
-            row=6, column=0, columnspan=4, padx=(0, 0), sticky="ew", pady=(6, 0)
+            row=7, column=0, columnspan=4, padx=(0, 0), sticky="ew", pady=(6, 0)
         )
         
         self.refresh_ports()
@@ -414,16 +433,34 @@ class DroneIMUMonitor:
         self.canvas = FigureCanvasTkAgg(self.fig, view_container)
         self.canvas.get_tk_widget().pack(fill="both", expand=True)
         
-        # Overlay current values in top-right corner
-        self.values_label = tk.Label(
-            view_container,
-            text="Roll: 0.0°\nPitch: 0.0°\nYaw: 0.0°",
+        # Overlay current values in top-right corner with color coding (using Text widget)
+        values_frame = tk.Frame(view_container, bg="#000000")
+        values_frame.place(relx=0.98, rely=0.0, anchor="ne")
+        
+        self.values_text = tk.Text(
+            values_frame,
+            height=3,
+            width=15,
             bg="#000000",
             fg="white",
             font=("Consolas", 14, "bold"),
-            justify="right"
+            wrap=tk.NONE,
+            relief=tk.FLAT,
+            borderwidth=0,
+            highlightthickness=0,
+            padx=5,
+            pady=2
         )
-        self.values_label.place(relx=0.98, rely=0.0, anchor="ne")
+        self.values_text.pack()
+        self.values_text.insert("1.0", "Roll: 0.0°\nPitch: 0.0°\nYaw: 0.0°")
+        self.values_text.config(state="disabled")
+        
+        # Configure color tags
+        self.values_text.tag_config("roll", foreground="#ef4444")
+        self.values_text.tag_config("pitch", foreground="#22c55e")
+        self.values_text.tag_config("yaw", foreground="#06b6d4")
+        
+        
         
         # Chart section
         chart_frame = ttk.LabelFrame(body_frame, text="Angle Data", padding=10)
@@ -479,6 +516,17 @@ class DroneIMUMonitor:
             cursor="hand2",
             activebackground="#1d4ed8"
         ).pack(side="left", padx=(8, 0))
+        
+        # Time display for timed mode
+        self.time_label = tk.Label(
+            button_group,
+            text="",
+            bg="#1e1e1e",
+            fg="#888888",
+            font=("Segoe UI", 9),
+            padx=10
+        )
+        self.time_label.pack(side="left", padx=(16, 0))
         
         axis_toggle_frame = tk.Frame(chart_controls, bg="#1e1e1e")
         axis_toggle_frame.grid(row=0, column=1, sticky="w", padx=(16, 0))
@@ -918,8 +966,7 @@ class DroneIMUMonitor:
     def append_chart_data(self, timestamp):
         """Append the latest angle data for charting"""
         self.chart_history.append((timestamp, self.roll, self.pitch, self.yaw))
-        self.trim_chart_history()
-        self.enforce_chart_limit()
+        # No need to trim - maxlen handles it automatically
         if not self.chart_paused:
             self.refresh_chart()
     
@@ -990,7 +1037,7 @@ class DroneIMUMonitor:
         
         visible_lines = [self.chart_lines[axis] for axis in self.chart_lines if self.chart_lines[axis].get_visible()]
         if visible_lines:
-            self.chart_legend = self.chart_ax.legend(handles=visible_lines, loc="upper left")
+            self.chart_legend = self.chart_ax.legend(handles=visible_lines, loc="upper right")
         else:
             self.chart_legend = None
         
@@ -1034,7 +1081,13 @@ class DroneIMUMonitor:
         self.pos_y = 0
         self.pos_z = 0
         self.update_3d_orientation()
-        self.values_label.config(text="Roll: 0.0°\nPitch: 0.0°\nYaw: 0.0°\nPos: (0.0, 0.0, 0.0)")
+        if hasattr(self, 'values_text') and self.values_text:
+            self.values_text.config(state="normal")
+            self.values_text.delete("1.0", tk.END)
+            self.values_text.insert("1.0", "Roll: 0.0°\n", "roll")
+            self.values_text.insert(tk.END, "Pitch: 0.0°\n", "pitch")
+            self.values_text.insert(tk.END, "Yaw: 0.0°", "yaw")
+            self.values_text.config(state="disabled")
     
     def toggle_pause(self):
         """Toggle pause/resume of data processing"""
@@ -1101,6 +1154,8 @@ class DroneIMUMonitor:
         self.esp_paused = False
         if hasattr(self, 'esp_pause_btn') and self.esp_pause_btn:
             self.esp_pause_btn.config(text="⏸ Pause ESP32")
+        self.timed_run_active = False
+        self.timed_run_data.clear()
         self.logger.info("Disconnected")
     
     def read_serial(self):
@@ -1243,6 +1298,11 @@ class DroneIMUMonitor:
         # Set flag to wait for calibration completion
         self.waiting_for_calibration = True
         
+        # Initialize data storage for timed run
+        self.timed_run_data.clear()
+        self.timed_run_active = True
+        self.samples_after_calibration = 0
+        
         # Clear chart and logs
         self.clear_chart_history()
         self.log_data.clear()
@@ -1264,6 +1324,8 @@ class DroneIMUMonitor:
     
     def start_free_run(self):
         """Switch device to continuous streaming"""
+        self.timed_run_active = False
+        self.timed_run_data.clear()
         self.run_duration_var.set(0)
         self.send_device_command("RUN_FOR 0")
     
@@ -1274,6 +1336,12 @@ class DroneIMUMonitor:
         
         self.waiting_for_calibration = False
         
+        # Reset sample counter after calibration (will skip first 100 samples)
+        self.samples_after_calibration = 0
+        
+        # Set timed run start time (after calibration completes)
+        self.timed_run_start_time = time.time()
+        
         # Clear chart again after calibration
         self.clear_chart_history()
         
@@ -1282,22 +1350,229 @@ class DroneIMUMonitor:
         if self.chart_pause_btn:
             self.chart_pause_btn.config(text="Pause", bg="#ff8800", activebackground="#ff9922")
         
-        # Start the timed run
+        # Start the timed run with exact duration (skipped samples are only for data collection, not timer)
         self.send_device_command(f"RUN_FOR {self.timed_run_duration}")
     
     def handle_run_complete(self):
         """Handle timed run completion"""
-        messagebox.showinfo(
-            "Timed Run Complete",
-            "The timed run has finished.\n"
-            "Chart has been paused."
-        )
+        self.timed_run_active = False
+        self.timed_run_start_time = None
+        
+        # Clear time display
+        if hasattr(self, 'time_label') and self.time_label:
+            self.time_label.config(text="")
         
         # Pause chart if not already paused
         if not self.chart_paused:
             self.chart_paused = True
             if self.chart_pause_btn:
                 self.chart_pause_btn.config(text="Resume", bg="#22aa55", activebackground="#33bb66")
+        
+        # Calculate and display statistics
+        if self.timed_run_data:
+            self.calculate_and_display_statistics()
+        else:
+            messagebox.showinfo(
+                "Timed Run Complete",
+                "The timed run has finished.\n"
+                "No data collected (insufficient samples after calibration)."
+            )
+    
+    def calculate_and_display_statistics(self):
+        """Calculate and display statistics for timed run data"""
+        if not self.timed_run_data or len(self.timed_run_data) < 2:
+            messagebox.showwarning("Statistics", "Insufficient data for statistics calculation.")
+            return
+        
+        # Extract data arrays
+        timestamps = np.array([d[0] for d in self.timed_run_data])
+        roll_data = np.array([d[1] for d in self.timed_run_data])
+        pitch_data = np.array([d[2] for d in self.timed_run_data])
+        yaw_data = np.array([d[3] for d in self.timed_run_data])
+        
+        # Convert timestamps to relative time (seconds from start)
+        time_relative = timestamps - timestamps[0]
+        
+        # Calculate statistics for each axis
+        axes = {
+            "Roll": roll_data,
+            "Pitch": pitch_data,
+            "Yaw": yaw_data
+        }
+        
+        stats_window = tk.Toplevel(self.root)
+        stats_window.title("Timed Run Statistics")
+        stats_window.geometry("700x500")
+        stats_window.configure(bg="#1e1e1e")
+        
+        # Create scrollable frame
+        main_frame = ttk.Frame(stats_window)
+        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        canvas = tk.Canvas(main_frame, bg="#1e1e1e", highlightthickness=0)
+        scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        def on_frame_configure(event):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+        
+        scrollable_frame.bind("<Configure>", on_frame_configure)
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Mouse wheel scrolling
+        def on_mousewheel(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        
+        canvas.bind_all("<MouseWheel>", on_mousewheel)
+        
+        # Header
+        header = tk.Label(
+            scrollable_frame,
+            text=f"Timed Run Statistics\n({len(self.timed_run_data)} samples, {time_relative[-1]:.2f}s duration)",
+            bg="#1e1e1e",
+            fg="white",
+            font=("Segoe UI", 12, "bold"),
+            pady=10
+        )
+        header.pack()
+        
+        # Configuration section
+        config_frame = ttk.LabelFrame(
+            scrollable_frame,
+            text="Configuration",
+            padding=10
+        )
+        config_frame.pack(fill="x", padx=10, pady=5)
+        
+        # Get configuration values
+        cal_samples = self.cal_samples_var.get()
+        alpha = self.alpha_factor_var.get()
+        sample_rate_set = self.sample_rate_var.get()
+        
+        # Calculate measured average sample rate
+        if len(timestamps) > 1 and time_relative[-1] > 0:
+            measured_rate = len(timestamps) / time_relative[-1]
+        else:
+            measured_rate = 0.0
+        
+        # Note: Calibration values (AccErrorX, AccErrorY, GyroErrorX, etc.) are stored on ESP32
+        # We don't have direct access to them, so we'll note that calibration was performed
+        config_text = (
+            f"Calibration Samples: {cal_samples}\n"
+            f"Alpha Factor: {alpha:.4f}\n"
+            f"Sample Rate (Set): {sample_rate_set} Hz\n"
+            f"Sample Rate (Measured Avg): {measured_rate:.2f} Hz\n"
+            f"Note: Calibration error values stored on ESP32"
+        )
+        
+        config_label = tk.Label(
+            config_frame,
+            text=config_text,
+            bg="#1e1e1e",
+            fg="white",
+            font=("Consolas", 10),
+            justify="left",
+            anchor="w"
+        )
+        config_label.pack(anchor="w")
+        
+        # Statistics for each axis
+        for axis_name, data in axes.items():
+            # Basic statistics
+            min_val = np.min(data)
+            max_val = np.max(data)
+            mean_val = np.mean(data)
+            std_val = np.std(data)
+            rms_val = np.sqrt(np.mean(data**2))
+            
+            # Drift rate (linear regression slope)
+            # Fits a line to the angle data over time: angle = slope * time + intercept
+            # The slope represents the rate of change (drift) in degrees per second
+            # Convert to degrees per minute by multiplying by 60
+            if len(time_relative) > 1 and time_relative[-1] > 0:
+                # Linear regression: y = mx + b where y is angle, x is time
+                coeffs = np.polyfit(time_relative, data, 1)
+                drift_rate_per_sec = coeffs[0]  # slope (degrees per second)
+                drift_rate = drift_rate_per_sec * 60.0  # convert to degrees per minute
+            else:
+                drift_rate = 0.0
+            
+            # Create frame for this axis
+            axis_frame = ttk.LabelFrame(
+                scrollable_frame,
+                text=axis_name,
+                padding=10
+            )
+            axis_frame.pack(fill="x", padx=10, pady=5)
+            
+            # Statistics labels
+            stats_text = (
+                f"Min:     {min_val:8.3f}°\n"
+                f"Max:     {max_val:8.3f}°\n"
+                f"Mean:    {mean_val:8.3f}°\n"
+                f"Std Dev: {std_val:8.3f}°\n"
+                f"RMS:     {rms_val:8.3f}°\n"
+                f"Drift:   {drift_rate:8.3f}°/min"
+            )
+            
+            stats_label = tk.Label(
+                axis_frame,
+                text=stats_text,
+                bg="#1e1e1e",
+                fg="white",
+                font=("Consolas", 10),
+                justify="left",
+                anchor="w"
+            )
+            stats_label.pack(anchor="w")
+        
+        # Pack canvas and scrollbar
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # Close button
+        btn_frame = ttk.Frame(stats_window)
+        btn_frame.pack(fill="x", pady=10)
+        ttk.Button(btn_frame, text="Export Data", command=lambda: self.export_timed_run_data()).pack(side="left", padx=(0, 5))
+        ttk.Button(btn_frame, text="Close", command=stats_window.destroy).pack(side="right")
+        
+        # Update canvas scroll region after a short delay to ensure all widgets are rendered
+        stats_window.update_idletasks()
+        canvas.configure(scrollregion=canvas.bbox("all"))
+    
+    def export_timed_run_data(self):
+        """Export timed run data to CSV file"""
+        if not self.timed_run_data or len(self.timed_run_data) == 0:
+            messagebox.showwarning("Export", "No data to export.")
+            return
+        
+        filename = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            title="Export Timed Run Data"
+        )
+        
+        if not filename:
+            return
+        
+        try:
+            with open(filename, 'w', newline='') as f:
+                # Write header
+                f.write("Timestamp,Time_Relative_s,Roll_deg,Pitch_deg,Yaw_deg\n")
+                
+                # Get start time for relative time calculation
+                start_time = self.timed_run_data[0][0] if self.timed_run_data else 0
+                
+                # Write data
+                for timestamp, roll, pitch, yaw in self.timed_run_data:
+                    time_relative = timestamp - start_time
+                    f.write(f"{timestamp:.6f},{time_relative:.6f},{roll:.6f},{pitch:.6f},{yaw:.6f}\n")
+            
+            messagebox.showinfo("Export Complete", f"Data exported to:\n{filename}")
+        except Exception as e:
+            messagebox.showerror("Export Error", f"Failed to export data:\n{e}")
     
     def update_loop(self):
         """Main update loop"""
@@ -1382,16 +1657,57 @@ class DroneIMUMonitor:
                 self.pitch = float(parts[1].strip())
                 self.yaw = float(parts[2].strip())
                 
+                ts = timestamp or time.time()
+                
+                # Update frequency counter
+                self.serial_data_times.append(ts)
+                if len(self.serial_data_times) > 1:
+                    time_span = self.serial_data_times[-1] - self.serial_data_times[0]
+                    if time_span > 0:
+                        self.serial_frequency = (len(self.serial_data_times) - 1) / time_span
+                
+                # Store data during timed runs (skip first 100 samples after calibration)
+                if self.timed_run_active:
+                    self.samples_after_calibration += 1
+                    if self.samples_after_calibration > self.skip_calibration_samples:
+                        self.timed_run_data.append((ts, self.roll, self.pitch, self.yaw))
+                
+                # Update time display for timed runs
+                if self.timed_run_active and self.timed_run_start_time and hasattr(self, 'time_label') and self.time_label:
+                    elapsed = ts - self.timed_run_start_time
+                    self.timed_run_elapsed_time = elapsed
+                    set_duration = self.timed_run_duration
+                    elapsed_str = f"{int(elapsed)}s"
+                    set_str = f"{set_duration}s"
+                    self.time_label.config(
+                        text=f"Set: {set_str} | Elapsed: {elapsed_str}"
+                    )
+                elif hasattr(self, 'time_label') and self.time_label:
+                    self.time_label.config(text="")
+                
+                # Update frequency display
+                if hasattr(self, 'freq_label') and self.freq_label:
+                    self.freq_label.config(text=f"{self.serial_frequency:.1f} Hz")
+                
                 # Throttle 3D updates
                 current_time = time.time()
                 if current_time - self.last_3d_update >= self.min_3d_interval:
                     self.update_3d_orientation()
                     self.last_3d_update = current_time
+                
+                # Update values with color coding
+                if hasattr(self, 'values_text') and self.values_text:
+                    self.values_text.config(state="normal")
+                    self.values_text.delete("1.0", tk.END)
                     
-                self.values_label.config(
-                    text=f"Roll: {self.roll:.3f}°\nPitch: {self.pitch:.3f}°\nYaw: {self.yaw:.3f}°"
-                )
-                self.append_chart_data(timestamp or time.time())
+                    # Insert text with color tags
+                    self.values_text.insert("1.0", f"Roll: {self.roll:.3f}°\n", "roll")
+                    self.values_text.insert(tk.END, f"Pitch: {self.pitch:.3f}°\n", "pitch")
+                    self.values_text.insert(tk.END, f"Yaw: {self.yaw:.3f}°", "yaw")
+                    
+                    self.values_text.config(state="disabled")
+                
+                self.append_chart_data(ts)
         except ValueError:
             pass  # Ignore parse errors silently
     

@@ -232,13 +232,16 @@ void setup() {
 void loop() {
   processSerialCommands();
 
-  if (runLimited && streamingEnabled && millis() >= runStopTime) {
+  if (!streamingEnabled) {
+    delay(5);
+    return;
+  }
+
+  // Check if timed run should stop BEFORE sampling to avoid extra samples
+  if (runLimited && millis() >= runStopTime) {
     streamingEnabled = false;
     runLimited = false;
     Serial.println("INFO:RUN_COMPLETE");
-  }
-
-  if (!streamingEnabled) {
     delay(5);
     return;
   }
