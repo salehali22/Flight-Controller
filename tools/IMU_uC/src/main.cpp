@@ -1,4 +1,4 @@
-// V1.1
+// V1.2 - Hardware Timer Implementation (ESP32 Core 3.x compatible)
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -19,13 +19,31 @@ float roll = 0.0f, pitch = 0.0f, yaw = 0.0f;
 float AccErrorX = 0.0f, AccErrorY = 0.0f;
 float GyroErrorX = 0.0f, GyroErrorY = 0.0f, GyroErrorZ = 0.0f;
 
-unsigned long sample_time = 0;
-
 int calibrationSamples = 1000;
 float alphaFactor = 0.83f;
 bool runLimited = false;
 bool streamingEnabled = true;
 unsigned long runStopTime = 0;
+
+// Hardware timer variables (ESP32 Core 3.x API)
+hw_timer_t *sampleTimer = NULL;
+volatile bool sampleReady = false;
+portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
+
+// ISR - Keep as minimal as possible
+void IRAM_ATTR onSampleTimer() {
+  portENTER_CRITICAL_ISR(&timerMux);
+  sampleReady = true;
+  portEXIT_CRITICAL_ISR(&timerMux);
+}
+
+void updateTimerInterval(uint16_t intervalMs) {
+  if (sampleTimer != NULL) {
+    timerStop(sampleTimer);
+    timerAlarm(sampleTimer, intervalMs * 1000, true, 0);  // microseconds, auto-reload
+    timerStart(sampleTimer);
+  }
+}
 
 void read_accelerometer() {
   Wire.beginTransmission(MPU_ADDR);
@@ -55,12 +73,9 @@ void calculate_acc_angles() {
 }
 
 void apply_complementary_filter(float dt) {
-  // Integrate gyro directly onto the filtered angles
   const float beta = 1.0f - alphaFactor;
   roll = alphaFactor * (roll + GyroX * dt) + beta * accAngleX;
   pitch = alphaFactor * (pitch + GyroY * dt) + beta * accAngleY;
-
-  // Yaw has no accelerometer correction, so keep it as is
   yaw += GyroZ * dt;
 }
 
@@ -173,24 +188,34 @@ void handleCommand(String line) {
       return;
     }
     SAMPLE_INTERVAL = value;
+    updateTimerInterval(SAMPLE_INTERVAL);
     Serial.printf("ACK:SET_SAMPLE_RATE %d\n", SAMPLE_INTERVAL);
   } else if (keyword == "PAUSE") {
     streamingEnabled = false;
+    timerStop(sampleTimer);
     Serial.println("ACK:PAUSED");
   } else if (keyword == "RESUME") {
     streamingEnabled = true;
-    sample_time = millis();
+    // Clear any pending flag before resuming
+    portENTER_CRITICAL(&timerMux);
+    sampleReady = false;
+    portEXIT_CRITICAL(&timerMux);
+    timerStart(sampleTimer);
     Serial.println("ACK:RESUMED");
   } else if (keyword == "CLEAR_CAL") {
     clear_calibration_values();
     Serial.println("ACK:CLEAR_CAL");
   } else if (keyword == "CALIBRATE") {
     streamingEnabled = false;
+    timerStop(sampleTimer);
     calculate_IMU_error();
     streamingEnabled = true;
     runLimited = false;
+    portENTER_CRITICAL(&timerMux);
+    sampleReady = false;
+    portEXIT_CRITICAL(&timerMux);
+    timerStart(sampleTimer);
     Serial.println("ACK:CALIBRATE_DONE");
-    sample_time = millis();
   } else if (keyword == "RUN_FOR") {
     if (arg.length() == 0) {
       Serial.println("ERR:RUN_FOR missing value");
@@ -207,6 +232,10 @@ void handleCommand(String line) {
       runStopTime = millis() + (unsigned long)seconds * 1000UL;
       Serial.printf("ACK:RUN_FOR %ld\n", seconds);
     }
+    portENTER_CRITICAL(&timerMux);
+    sampleReady = false;
+    portEXIT_CRITICAL(&timerMux);
+    timerStart(sampleTimer);
   } else {
     Serial.println("ERR:UNKNOWN_COMMAND");
   }
@@ -226,36 +255,55 @@ void setup() {
   Wire.endTransmission(true);
 
   calculate_IMU_error();
-  sample_time = millis();
+
+  // Initialize hardware timer (ESP32 Arduino Core 3.2.0 API)
+  // timerBegin takes frequency in Hz
+  // For 10ms interval = 100Hz
+  uint32_t timerFrequency = 1000 / SAMPLE_INTERVAL;  // Convert interval (ms) to frequency (Hz)
+  sampleTimer = timerBegin(timerFrequency);
+  timerAttachInterrupt(sampleTimer, &onSampleTimer);
+  timerAlarm(sampleTimer, SAMPLE_INTERVAL * 1000, true, 0);  // period in microseconds, auto-reload
+  timerStart(sampleTimer);
+
+  Serial.printf("INFO:Timer initialized at %d Hz\n", timerFrequency);
 }
 
 void loop() {
   processSerialCommands();
 
-  if (!streamingEnabled) {
-    delay(5);
-    return;
-  }
-
-  // Check if timed run should stop BEFORE sampling to avoid extra samples
+  // Check if timed run should stop
   if (runLimited && millis() >= runStopTime) {
     streamingEnabled = false;
     runLimited = false;
+    timerStop(sampleTimer);
     Serial.println("INFO:RUN_COMPLETE");
-    delay(5);
     return;
   }
 
-  unsigned long now = millis();
-  if (now - sample_time >= SAMPLE_INTERVAL) {
-    sample_time = now;
+  // Check if timer has triggered a sample
+  bool shouldSample = false;
+  portENTER_CRITICAL(&timerMux);
+  if (sampleReady) {
+    sampleReady = false;
+    shouldSample = true;
+  }
+  portEXIT_CRITICAL(&timerMux);
 
+  if (shouldSample && streamingEnabled) {
     read_accelerometer();
     read_gyroscope();
     calculate_acc_angles();
 
+    // dt is now precisely the configured interval
     const float dt = SAMPLE_INTERVAL / 1000.0f;
     apply_complementary_filter(dt);
-    print_orientation();
+    
+    // Non-blocking print
+    if (Serial.availableForWrite() > 64) {
+      print_orientation();
+    }
   }
+  
+  // Small delay to prevent busy-waiting and allow other tasks
+  delay(1);
 }

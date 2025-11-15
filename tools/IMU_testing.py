@@ -1543,7 +1543,7 @@ class DroneIMUMonitor:
         canvas.configure(scrollregion=canvas.bbox("all"))
     
     def export_timed_run_data(self):
-        """Export timed run data to CSV file"""
+        """Export timed run data to CSV file with configuration and statistics"""
         if not self.timed_run_data or len(self.timed_run_data) == 0:
             messagebox.showwarning("Export", "No data to export.")
             return
@@ -1558,17 +1558,80 @@ class DroneIMUMonitor:
             return
         
         try:
+            # Calculate statistics (similar to calculate_and_display_statistics)
+            timestamps = np.array([d[0] for d in self.timed_run_data])
+            roll_data = np.array([d[1] for d in self.timed_run_data])
+            pitch_data = np.array([d[2] for d in self.timed_run_data])
+            yaw_data = np.array([d[3] for d in self.timed_run_data])
+            
+            # Convert timestamps to relative time (seconds from start)
+            time_relative = timestamps - timestamps[0]
+            duration = time_relative[-1] if len(time_relative) > 0 else 0.0
+            
+            # Calculate measured sample rate
+            if duration > 0:
+                measured_rate = len(timestamps) / duration
+            else:
+                measured_rate = 0.0
+            
+            # Get configuration values
+            cal_samples = self.cal_samples_var.get()
+            alpha = self.alpha_factor_var.get()
+            sample_rate_set = self.sample_rate_var.get()
+            
+            # Calculate statistics for each axis
+            def calc_stats(data, time_rel):
+                stats = {
+                    'min': np.min(data),
+                    'max': np.max(data),
+                    'mean': np.mean(data),
+                    'std': np.std(data),
+                    'rms': np.sqrt(np.mean(data**2))
+                }
+                # Drift rate (linear regression slope)
+                if len(time_rel) > 1 and time_rel[-1] > 0:
+                    coeffs = np.polyfit(time_rel, data, 1)
+                    drift_rate_per_sec = coeffs[0]
+                    stats['drift'] = drift_rate_per_sec * 60.0  # degrees per minute
+                else:
+                    stats['drift'] = 0.0
+                return stats
+            
+            roll_stats = calc_stats(roll_data, time_relative)
+            pitch_stats = calc_stats(pitch_data, time_relative)
+            yaw_stats = calc_stats(yaw_data, time_relative)
+            
+            # Get human-readable start timestamp
+            start_timestamp = timestamps[0] if len(timestamps) > 0 else time.time()
+            start_datetime = datetime.fromtimestamp(start_timestamp)
+            start_datetime_str = start_datetime.strftime("%Y-%m-%d %H:%M:%S")
+            
             with open(filename, 'w', newline='') as f:
-                # Write header
-                f.write("Timestamp,Time_Relative_s,Roll_deg,Pitch_deg,Yaw_deg\n")
+                # Write header section with metadata
+                f.write("# IMU Timed Run Data Export\n")
+                f.write(f"# Start Time: {start_datetime_str}\n")
+                f.write(f"# Samples: {len(self.timed_run_data)}\n")
+                f.write(f"# Duration: {duration:.2f} s\n")
+                f.write(f"#\n")
+                f.write(f"# Configuration:\n")
+                f.write(f"#   Calibration Samples: {cal_samples}\n")
+                f.write(f"#   Alpha Factor: {alpha:.4f}\n")
+                f.write(f"#   Sample Rate (Set): {sample_rate_set} Hz\n")
+                f.write(f"#   Sample Rate (Measured): {measured_rate:.2f} Hz\n")
+                f.write(f"#\n")
+                f.write(f"# Statistics:\n")
+                f.write(f"#   Roll:   Min={roll_stats['min']:8.3f}° Max={roll_stats['max']:8.3f}° Mean={roll_stats['mean']:8.3f}° StdDev={roll_stats['std']:8.3f}° RMS={roll_stats['rms']:8.3f}° Drift={roll_stats['drift']:8.3f}°/min\n")
+                f.write(f"#   Pitch:  Min={pitch_stats['min']:8.3f}° Max={pitch_stats['max']:8.3f}° Mean={pitch_stats['mean']:8.3f}° StdDev={pitch_stats['std']:8.3f}° RMS={pitch_stats['rms']:8.3f}° Drift={pitch_stats['drift']:8.3f}°/min\n")
+                f.write(f"#   Yaw:    Min={yaw_stats['min']:8.3f}° Max={yaw_stats['max']:8.3f}° Mean={yaw_stats['mean']:8.3f}° StdDev={yaw_stats['std']:8.3f}° RMS={yaw_stats['rms']:8.3f}° Drift={yaw_stats['drift']:8.3f}°/min\n")
+                f.write(f"#\n")
                 
-                # Get start time for relative time calculation
-                start_time = self.timed_run_data[0][0] if self.timed_run_data else 0
+                # Write data header (no timestamp column)
+                f.write("Time_Relative_s,Roll_deg,Pitch_deg,Yaw_deg\n")
                 
-                # Write data
-                for timestamp, roll, pitch, yaw in self.timed_run_data:
-                    time_relative = timestamp - start_time
-                    f.write(f"{timestamp:.6f},{time_relative:.6f},{roll:.6f},{pitch:.6f},{yaw:.6f}\n")
+                # Write data (only relative time, no absolute timestamp)
+                for i, (timestamp, roll, pitch, yaw) in enumerate(self.timed_run_data):
+                    time_rel = time_relative[i]
+                    f.write(f"{time_rel:.6f},{roll:.6f},{pitch:.6f},{yaw:.6f}\n")
             
             messagebox.showinfo("Export Complete", f"Data exported to:\n{filename}")
         except Exception as e:
