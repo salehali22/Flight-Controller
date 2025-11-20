@@ -8,4 +8,5 @@
   (lib (name "Magneto")(type "KiCad")(uri "${KIPRJMOD}/symbols/QMC5883P.kicad_sym")(options "")(descr ""))
   (lib (name "flash")(type "KiCad")(uri "${KIPRJMOD}/symbols/W25Q128JVSIQ.kicad_sym")(options "")(descr ""))
   (lib (name "switch-mine")(type "KiCad")(uri "${KIPRJMOD}/symbols/SW-SMD_SSSS810701.kicad_sym")(options "")(descr ""))
+  (lib (name "bmi270")(type "KiCad")(uri "C:/Users/Saleh work and edu/Desktop/Saleh Uni/board/symbols/BMI270.kicad_sym")(options "")(descr ""))
 )
