@@ -2322,190 +2322,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Device:R_Shunt"
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "R"
-				(at -4.445 0 90)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "R_Shunt"
-				(at -2.54 0 90)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at -1.778 0 90)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "~"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Shunt resistor"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "R res shunt resistor"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "R_*Shunt*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "R_Shunt_0_1"
-				(rectangle
-					(start -1.016 -2.54)
-					(end 1.016 2.54)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -2.54) (xy 1.27 -2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 2.54) (xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "R_Shunt_1_1"
-				(pin passive line
-					(at 0 5.08 270)
-					(length 2.54)
-					(name "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -5.08 90)
-					(length 2.54)
-					(name "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 3.81 2.54 180)
-					(length 2.54)
-					(name "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 3.81 -2.54 180)
-					(length 2.54)
-					(name "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "Device:R_Small"
 			(pin_numbers
 				(hide yes)
@@ -10542,6 +10358,113 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "shunt:FRM252WFR020TN"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "R"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "FRM252WFR020TN"
+				(at 0 -5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "easyeda2kicad:R2512"
+				(at 0 -7.62 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "LCSC Part" "C7420049"
+				(at 0 -10.16 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "FRM252WFR020TN_0_1"
+				(rectangle
+					(start -2.54 1.27)
+					(end 2.54 -1.27)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin unspecified line
+					(at -5.08 0 0)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 5.08 0 180)
+					(length 2.54)
+					(name "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "switch-mine:SSSS810701"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -11698,6 +11621,18 @@
 		(uuid "664ed4fb-d87c-4c4b-9e05-a198a56de10c")
 	)
 	(junction
+		(at 227.33 102.87)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "688bc91f-5746-4ed2-b2cf-5b751666357d")
+	)
+	(junction
+		(at 227.33 92.71)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "6a91eede-3ade-4fe7-be52-e050adc96dae")
+	)
+	(junction
 		(at 488.95 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -12590,6 +12525,16 @@
 			(type default)
 		)
 		(uuid "07907a48-e24a-4e7a-880d-5660e413fff1")
+	)
+	(wire
+		(pts
+			(xy 223.52 95.25) (xy 223.52 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "07ba6847-8ed5-4336-b0ac-6c89b6ce2ea8")
 	)
 	(wire
 		(pts
@@ -13954,7 +13899,7 @@
 	)
 	(wire
 		(pts
-			(xy 220.98 102.87) (xy 223.52 102.87)
+			(xy 220.98 102.87) (xy 227.33 102.87)
 		)
 		(stroke
 			(width 0)
@@ -15016,16 +14961,6 @@
 	)
 	(wire
 		(pts
-			(xy 223.52 102.87) (xy 223.52 100.33)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7c1ebf08-82a4-4a44-a61f-7b705b0e2a4a")
-	)
-	(wire
-		(pts
 			(xy 97.79 160.02) (xy 97.79 157.48)
 		)
 		(stroke
@@ -15373,6 +15308,16 @@
 			(type default)
 		)
 		(uuid "900846cb-c5c5-496b-a936-551437666d80")
+	)
+	(wire
+		(pts
+			(xy 223.52 92.71) (xy 227.33 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "905a18e2-45a0-406f-8d4c-d872e7a0a021")
 	)
 	(wire
 		(pts
@@ -19294,6 +19239,30 @@
 			)
 		)
 	)
+	(global_label "SERVO_3"
+		(shape input)
+		(at 553.72 152.4 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "66780056-624a-47f8-b029-f82ab3ddd525")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 553.72 159.4117 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "INA226_ALERT"
 		(shape input)
 		(at 186.69 115.57 180)
@@ -19570,6 +19539,30 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "SERVO_2"
+		(shape input)
+		(at 546.1 152.4 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "8113f102-7cbb-4a00-9e25-1e6670b35314")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 546.1 159.4117 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 				(hide yes)
 			)
 		)
@@ -20092,7 +20085,7 @@
 			)
 		)
 	)
-	(global_label "Servo_4"
+	(global_label "SERVO_4"
 		(shape input)
 		(at 444.5 101.6 0)
 		(fields_autoplaced yes)
@@ -20106,7 +20099,7 @@
 		)
 		(uuid "abf1e7a0-22e5-4703-a4fb-8cda9065dece")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 451.0037 101.6 0)
+			(at 451.5117 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20227,6 +20220,30 @@
 		(uuid "b0d3380f-c9e3-42db-89fa-b71092458e47")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 407.1169 285.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "SERVO_4"
+		(shape input)
+		(at 560.07 152.4 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "b7b2b762-28a2-4ce6-b28c-2c7ae5b9f3fc")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 560.07 159.4117 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21088,6 +21105,30 @@
 			)
 		)
 	)
+	(global_label "SERVO_1"
+		(shape input)
+		(at 538.48 152.4 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "face8724-4c32-4e1a-9c58-53eb7ec215cb")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 538.48 159.4117 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "OSD_MOSI"
 		(shape input)
 		(at 180.34 248.92 180)
@@ -21390,7 +21431,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0417a42b-fbe5-48f2-9dc5-1cc8841b1cfb")
-		(property "Reference" "TP33"
+		(property "Reference" "TP37"
 			(at 624.84 33.5279 0)
 			(effects
 				(font
@@ -21441,7 +21482,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP33")
+					(reference "TP37")
 					(unit 1)
 				)
 			)
@@ -21929,7 +21970,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0a3a68d9-d2c0-4012-889a-1aef2b165af6")
-		(property "Reference" "TP34"
+		(property "Reference" "TP38"
 			(at 624.84 89.4079 0)
 			(effects
 				(font
@@ -21980,7 +22021,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP34")
+					(reference "TP38")
 					(unit 1)
 				)
 			)
@@ -23567,7 +23608,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "LED_SMD:LED_0402_1005Metric"
 			(at 420.37 223.52 0)
 			(effects
 				(font
@@ -24163,7 +24204,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "3007f8c2-da48-4de9-a2b1-396107103e7d")
-		(property "Reference" "TP7"
+		(property "Reference" "TP8"
 			(at 539.75 121.92 0)
 			(effects
 				(font
@@ -24214,7 +24255,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP7")
+					(reference "TP8")
 					(unit 1)
 				)
 			)
@@ -24669,6 +24710,72 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 553.72 152.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "36380eab-393e-40ab-ad9b-5cfe924e436a")
+		(property "Reference" "TP16"
+			(at 550.672 144.272 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "servos"
+			(at 550.418 146.812 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Solderpoint:Solderpad"
+			(at 558.8 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 558.8 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 553.72 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "f8ef40f2-57b3-4a2e-aa99-647e427894fb")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
+					(reference "TP16")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "OSD:AT7456E")
 		(at 195.58 240.03 0)
 		(unit 1)
@@ -24836,7 +24943,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "39e06396-3eeb-42de-9775-1ca5554963aa")
-		(property "Reference" "#PWR0132"
+		(property "Reference" "#PWR0130"
 			(at 600.71 163.83 0)
 			(effects
 				(font
@@ -24887,7 +24994,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "#PWR0132")
+					(reference "#PWR0130")
 					(unit 1)
 				)
 			)
@@ -24968,7 +25075,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3b111c5b-f152-4b51-83ff-88260cbd1377")
-		(property "Reference" "TP36"
+		(property "Reference" "TP40"
 			(at 635 124.9679 0)
 			(effects
 				(font
@@ -25019,7 +25126,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP36")
+					(reference "TP40")
 					(unit 1)
 				)
 			)
@@ -25090,82 +25197,6 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
 					(reference "R4")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R_Shunt")
-		(at 227.33 97.79 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "3d155c10-37d0-439d-a7eb-84823b8a6097")
-		(property "Reference" "R19"
-			(at 229.87 96.5199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "R_Shunt"
-			(at 229.87 99.0599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_2512_6332Metric_Pad1.40x3.35mm_HandSolder"
-			(at 229.108 97.79 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 227.33 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Shunt resistor"
-			(at 227.33 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "3"
-			(uuid "8ce4276d-02ce-4589-becb-d94101056d13")
-		)
-		(pin "1"
-			(uuid "c601b097-052d-488f-b8cc-463a91bbb7ba")
-		)
-		(pin "2"
-			(uuid "3c1c6bbc-e7a2-445c-ae4d-bf38d20dd50b")
-		)
-		(pin "4"
-			(uuid "493cc127-23e2-418e-8334-132f345bf3cd")
-		)
-		(instances
-			(project ""
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "R19")
 					(unit 1)
 				)
 			)
@@ -26221,7 +26252,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "484eb238-86fe-4979-a801-cbde9410b7fe")
-		(property "Reference" "TP25"
+		(property "Reference" "TP29"
 			(at 597.662 114.046 0)
 			(effects
 				(font
@@ -26272,7 +26303,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP25")
+					(reference "TP29")
 					(unit 1)
 				)
 			)
@@ -26288,7 +26319,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "484fc091-f241-4bd2-9a82-d4ff89923a1f")
-		(property "Reference" "TP27"
+		(property "Reference" "TP31"
 			(at 604.52 118.6179 0)
 			(effects
 				(font
@@ -26339,7 +26370,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP27")
+					(reference "TP31")
 					(unit 1)
 				)
 			)
@@ -26558,7 +26589,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4c5a6846-426e-4aec-8912-e49cc4f285ae")
-		(property "Reference" "TP19"
+		(property "Reference" "TP23"
 			(at 567.69 55.1179 0)
 			(effects
 				(font
@@ -26609,7 +26640,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP19")
+					(reference "TP23")
 					(unit 1)
 				)
 			)
@@ -26625,7 +26656,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4d3d4697-481a-48cb-ab70-b96684160c31")
-		(property "Reference" "#PWR0130"
+		(property "Reference" "#PWR0133"
 			(at 615.95 176.53 0)
 			(effects
 				(font
@@ -26676,7 +26707,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "#PWR0130")
+					(reference "#PWR0133")
 					(unit 1)
 				)
 			)
@@ -27715,7 +27746,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "568a3bec-fe55-4103-8b71-7b9ee5452035")
-		(property "Reference" "TP21"
+		(property "Reference" "TP25"
 			(at 575.31 79.2479 0)
 			(effects
 				(font
@@ -27766,7 +27797,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP21")
+					(reference "TP25")
 					(unit 1)
 				)
 			)
@@ -27781,7 +27812,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "578cb50c-1a5b-4fe7-b254-168e920c1f42")
-		(property "Reference" "TP29"
+		(property "Reference" "TP33"
 			(at 614.172 114.554 0)
 			(effects
 				(font
@@ -27832,7 +27863,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP29")
+					(reference "TP33")
 					(unit 1)
 				)
 			)
@@ -27980,7 +28011,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "58225741-2159-4a44-8502-a9662ae6739f")
-		(property "Reference" "TP10"
+		(property "Reference" "TP11"
 			(at 548.64 36.0679 0)
 			(effects
 				(font
@@ -28031,7 +28062,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP10")
+					(reference "TP11")
 					(unit 1)
 				)
 			)
@@ -28247,7 +28278,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "59a6c20e-8cd6-4d48-953c-30743415ffed")
-		(property "Reference" "TP30"
+		(property "Reference" "TP34"
 			(at 615.95 33.5279 0)
 			(effects
 				(font
@@ -28298,7 +28329,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP30")
+					(reference "TP34")
 					(unit 1)
 				)
 			)
@@ -28501,6 +28532,72 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
 					(reference "TP4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 560.07 152.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "5ab2b69f-efec-4317-95c9-528e8c624449")
+		(property "Reference" "TP19"
+			(at 557.022 144.272 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "servos"
+			(at 557.022 146.812 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Solderpoint:Solderpad"
+			(at 565.15 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 565.15 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 560.07 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "f5d6b184-c543-4628-ae62-0c33aae57caa")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
+					(reference "TP19")
 					(unit 1)
 				)
 			)
@@ -28857,7 +28954,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5ee0831b-cc04-43f2-a268-a231e45e858b")
-		(property "Reference" "TP8"
+		(property "Reference" "TP9"
 			(at 547.37 55.1179 0)
 			(effects
 				(font
@@ -28908,7 +29005,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP8")
+					(reference "TP9")
 					(unit 1)
 				)
 			)
@@ -29465,7 +29562,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "61b6c371-af50-4efe-ae2c-2715faa2b16c")
-		(property "Reference" "TP32"
+		(property "Reference" "TP36"
 			(at 621.03 124.46 0)
 			(effects
 				(font
@@ -29516,7 +29613,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP32")
+					(reference "TP36")
 					(unit 1)
 				)
 			)
@@ -29620,7 +29717,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "MountingHole:MountingHole_2.2mm_M2_Pad_Via"
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
 			(at 495.3 210.82 0)
 			(effects
 				(font
@@ -29664,7 +29761,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6330408f-3a0b-43ee-a70e-9f2478476a98")
-		(property "Reference" "TP26"
+		(property "Reference" "TP30"
 			(at 604.52 81.7879 0)
 			(effects
 				(font
@@ -29715,7 +29812,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP26")
+					(reference "TP30")
 					(unit 1)
 				)
 			)
@@ -29782,6 +29879,85 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
 					(reference "#PWR0123")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "shunt:FRM252WFR020TN")
+		(at 227.33 97.79 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "6464a329-5f3e-40e7-8630-85e0b3d7552d")
+		(property "Reference" "R19"
+			(at 229.87 96.5199 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "FRM252WFR020TN"
+			(at 229.87 99.0599 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "memo:R2512"
+			(at 219.71 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 227.33 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 227.33 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC Part" "C7420049"
+			(at 217.17 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "bdec08ac-4ba1-40d2-8c9a-17c896907daf")
+		)
+		(pin "2"
+			(uuid "184246ed-c2ff-4882-9b45-5aa1498df1c9")
+		)
+		(instances
+			(project ""
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
+					(reference "R19")
 					(unit 1)
 				)
 			)
@@ -30331,7 +30507,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6715da58-df3c-4872-9ac1-15e6d9cba97e")
-		(property "Reference" "TP15"
+		(property "Reference" "TP18"
 			(at 560.07 79.2479 0)
 			(effects
 				(font
@@ -30382,7 +30558,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP15")
+					(reference "TP18")
 					(unit 1)
 				)
 			)
@@ -30692,7 +30868,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "LED_SMD:LED_0402_1005Metric"
 			(at 420.37 212.09 0)
 			(effects
 				(font
@@ -30889,7 +31065,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6e558f49-2994-4aaa-9eca-ba2325c91658")
-		(property "Reference" "TP17"
+		(property "Reference" "TP21"
 			(at 565.15 47.4979 0)
 			(effects
 				(font
@@ -30940,7 +31116,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP17")
+					(reference "TP21")
 					(unit 1)
 				)
 			)
@@ -31219,7 +31395,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "70aff7b2-afce-4f79-a928-b5c5b5161fb6")
-		(property "Reference" "TP11"
+		(property "Reference" "TP12"
 			(at 548.64 47.4979 0)
 			(effects
 				(font
@@ -31270,7 +31446,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP11")
+					(reference "TP12")
 					(unit 1)
 				)
 			)
@@ -31995,7 +32171,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "76f65d8c-ffc7-4074-b690-ea549287a13e")
-		(property "Reference" "TP23"
+		(property "Reference" "TP27"
 			(at 582.93 85.5979 0)
 			(effects
 				(font
@@ -32046,7 +32222,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP23")
+					(reference "TP27")
 					(unit 1)
 				)
 			)
@@ -32121,6 +32297,72 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
+		(at 546.1 152.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "77c85263-a59f-4e3e-8d83-6a8c7ac7af56")
+		(property "Reference" "TP13"
+			(at 543.052 144.272 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "servos"
+			(at 543.052 146.812 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Solderpoint:Solderpad"
+			(at 551.18 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 551.18 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 546.1 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3b2c205f-1261-4aa4-b66c-150588a0177b")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
+					(reference "TP13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
 		(at 549.91 119.38 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -32128,7 +32370,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "79bf19c7-6732-48d0-8aa5-fb8e591b71bd")
-		(property "Reference" "TP13"
+		(property "Reference" "TP15"
 			(at 546.862 111.252 0)
 			(effects
 				(font
@@ -32179,7 +32421,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP13")
+					(reference "TP15")
 					(unit 1)
 				)
 			)
@@ -32280,7 +32522,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Inductor_SMD:L_TracoPower_TCK-047_5.2x5.8mm"
 			(at 86.36 218.44 0)
 			(effects
 				(font
@@ -33587,7 +33829,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8905ce5f-c45d-4f14-af5c-ffbd83cc5404")
-		(property "Reference" "TP28"
+		(property "Reference" "TP32"
 			(at 605.79 33.5279 0)
 			(effects
 				(font
@@ -33638,7 +33880,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP28")
+					(reference "TP32")
 					(unit 1)
 				)
 			)
@@ -33654,7 +33896,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "890dd3b0-859e-46b0-80da-48d6aa2cd22c")
-		(property "Reference" "TP24"
+		(property "Reference" "TP28"
 			(at 596.9 33.5279 0)
 			(effects
 				(font
@@ -33705,7 +33947,7 @@
 		(instances
 			(project ""
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP24")
+					(reference "TP28")
 					(unit 1)
 				)
 			)
@@ -34610,6 +34852,72 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 538.48 152.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "9222bc4f-1780-4cc3-adc9-a19e1f1fa0c6")
+		(property "Reference" "TP7"
+			(at 535.432 144.272 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "servos"
+			(at 535.432 146.812 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Solderpoint:Solderpad"
+			(at 543.56 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 543.56 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 538.48 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c4ab4c7c-ad02-4ff3-9627-4dc0cec56f68")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
+					(reference "TP7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+3.3V")
 		(at 275.59 288.29 0)
 		(unit 1)
@@ -34753,7 +35061,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "943f757d-105b-44cd-a2dd-468d50c66605")
-		(property "Reference" "TP9"
+		(property "Reference" "TP10"
 			(at 547.37 79.2479 0)
 			(effects
 				(font
@@ -34804,7 +35112,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP9")
+					(reference "TP10")
 					(unit 1)
 				)
 			)
@@ -35621,7 +35929,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9d622860-fdaf-46ed-a70d-086d7e50d166")
-		(property "Reference" "#PWR0133"
+		(property "Reference" "#PWR0131"
 			(at 601.98 135.89 0)
 			(effects
 				(font
@@ -35672,7 +35980,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "#PWR0133")
+					(reference "#PWR0131")
 					(unit 1)
 				)
 			)
@@ -36312,7 +36620,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "LED_SMD:LED_0402_1005Metric"
 			(at 102.87 134.62 0)
 			(effects
 				(font
@@ -36440,7 +36748,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a4cb42c0-4934-47e0-8c78-4936f0e14141")
-		(property "Reference" "TP35"
+		(property "Reference" "TP39"
 			(at 635 81.7879 0)
 			(effects
 				(font
@@ -36491,7 +36799,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP35")
+					(reference "TP39")
 					(unit 1)
 				)
 			)
@@ -36641,7 +36949,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a9115c00-7769-43c9-84fc-d1a8cba09474")
-		(property "Reference" "TP14"
+		(property "Reference" "TP17"
 			(at 557.53 55.1179 0)
 			(effects
 				(font
@@ -36692,7 +37000,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP14")
+					(reference "TP17")
 					(unit 1)
 				)
 			)
@@ -36839,7 +37147,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "aa8e886d-d377-4497-acbf-3592b49f49ea")
-		(property "Reference" "#PWR0127"
+		(property "Reference" "#PWR0132"
 			(at 607.06 170.18 0)
 			(effects
 				(font
@@ -36889,7 +37197,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "#PWR0127")
+					(reference "#PWR0132")
 					(unit 1)
 				)
 			)
@@ -36905,7 +37213,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "abf25941-e553-40b1-abff-f9be367d7b43")
-		(property "Reference" "TP16"
+		(property "Reference" "TP20"
 			(at 565.15 36.0679 0)
 			(effects
 				(font
@@ -36956,7 +37264,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP16")
+					(reference "TP20")
 					(unit 1)
 				)
 			)
@@ -37774,7 +38082,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b74b2227-b8a0-4778-89e4-6edbeb538617")
-		(property "Reference" "#PWR0128"
+		(property "Reference" "#PWR0127"
 			(at 575.31 67.31 0)
 			(effects
 				(font
@@ -37825,7 +38133,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "#PWR0128")
+					(reference "#PWR0127")
 					(unit 1)
 				)
 			)
@@ -38847,7 +39155,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c48ccd42-d7bb-43c3-8538-2d46918fe17c")
-		(property "Reference" "TP37"
+		(property "Reference" "TP41"
 			(at 638.302 112.522 0)
 			(effects
 				(font
@@ -38898,7 +39206,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP37")
+					(reference "TP41")
 					(unit 1)
 				)
 			)
@@ -38997,7 +39305,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "LED_SMD:LED_0402_1005Metric"
 			(at 86.36 306.07 0)
 			(effects
 				(font
@@ -39057,7 +39365,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c651070f-a7b1-4bdd-924b-da4f6d315852")
-		(property "Reference" "TP20"
+		(property "Reference" "TP24"
 			(at 567.182 110.744 0)
 			(effects
 				(font
@@ -39108,7 +39416,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP20")
+					(reference "TP24")
 					(unit 1)
 				)
 			)
@@ -39124,7 +39432,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c6ae160c-fde6-428e-8169-f93d9ad74823")
-		(property "Reference" "TP12"
+		(property "Reference" "TP14"
 			(at 551.18 85.5979 0)
 			(effects
 				(font
@@ -39175,7 +39483,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP12")
+					(reference "TP14")
 					(unit 1)
 				)
 			)
@@ -40406,7 +40714,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "MountingHole:MountingHole_2.2mm_M2_Pad_Via"
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
 			(at 495.3 204.47 0)
 			(effects
 				(font
@@ -40654,7 +40962,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d5232f04-5cab-4545-bdc4-e2544184b261")
-		(property "Reference" "#PWR0131"
+		(property "Reference" "#PWR0129"
 			(at 600.71 147.32 0)
 			(effects
 				(font
@@ -40704,7 +41012,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "#PWR0131")
+					(reference "#PWR0129")
 					(unit 1)
 				)
 			)
@@ -40805,7 +41113,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "MountingHole:MountingHole_2.2mm_M2_Pad_Via"
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
 			(at 495.3 218.44 0)
 			(effects
 				(font
@@ -41138,7 +41446,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "MountingHole:MountingHole_2.2mm_M2_Pad_Via"
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
 			(at 495.3 196.85 0)
 			(effects
 				(font
@@ -41925,7 +42233,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e70d54cc-7d31-4f11-b8c6-cf7ddd198034")
-		(property "Reference" "TP22"
+		(property "Reference" "TP26"
 			(at 577.85 55.1179 0)
 			(effects
 				(font
@@ -41976,7 +42284,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP22")
+					(reference "TP26")
 					(unit 1)
 				)
 			)
@@ -42944,7 +43252,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f617ef25-55f9-4b64-bce7-2e0b58fbb452")
-		(property "Reference" "TP31"
+		(property "Reference" "TP35"
 			(at 615.95 81.7879 0)
 			(effects
 				(font
@@ -42995,7 +43303,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP31")
+					(reference "TP35")
 					(unit 1)
 				)
 			)
@@ -43229,7 +43537,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Inductor_SMD:L_TracoPower_TCK-047_5.2x5.8mm"
 			(at 92.71 157.48 0)
 			(effects
 				(font
@@ -43281,7 +43589,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "fcb406c9-ac8e-4a2d-963a-2f3c400fc28c")
-		(property "Reference" "TP18"
+		(property "Reference" "TP22"
 			(at 565.15 85.5979 0)
 			(effects
 				(font
@@ -43332,7 +43640,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "TP18")
+					(reference "TP22")
 					(unit 1)
 				)
 			)
@@ -43414,7 +43722,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "fd768f0d-6e40-4bef-a42c-bc46645f8a06")
-		(property "Reference" "#PWR0129"
+		(property "Reference" "#PWR0128"
 			(at 580.39 97.79 0)
 			(effects
 				(font
@@ -43465,7 +43773,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45"
-					(reference "#PWR0129")
+					(reference "#PWR0128")
 					(unit 1)
 				)
 			)
