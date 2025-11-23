@@ -10,4 +10,5 @@
   (lib (name "switch-mine")(type "KiCad")(uri "${KIPRJMOD}/symbols/SW-SMD_SSSS810701.kicad_sym")(options "")(descr ""))
   (lib (name "bmi270")(type "KiCad")(uri "C:/Users/Saleh work and edu/Desktop/Saleh Uni/board/symbols/BMI270.kicad_sym")(options "")(descr ""))
   (lib (name "shunt")(type "KiCad")(uri "${KIPRJMOD}/symbols/shunt.kicad_sym")(options "")(descr ""))
+  (lib (name "AO3407A")(type "KiCad")(uri "${KIPRJMOD}/symbols/AO3407A.kicad_sym")(options "")(descr ""))
 )

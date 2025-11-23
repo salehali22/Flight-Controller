@@ -1,4 +1,4 @@
-26612399315030458
+26619455159623299
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -59360,6 +59360,13 @@ ceramic
 3
 3
 Custom
+AO3407A
+
+
+0
+3
+3
+Custom
 AT7456E
 
 
@@ -59401,6 +59408,13 @@ QMC5883P
 0
 16
 16
+Custom
+R2512
+
+
+0
+2
+2
 Custom
 SW-SMD_SSSS810701
 
@@ -106295,6 +106309,13 @@ Varistor VF
 2
 2
 memo
+AO3407A
+
+
+0
+3
+3
+memo
 AT7456E
 
 
@@ -106336,6 +106357,13 @@ QMC5883P
 0
 16
 16
+memo
+R2512
+
+
+0
+2
+2
 memo
 SW-SMD_SSSS810701
 
