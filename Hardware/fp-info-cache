@@ -1,4 +1,4 @@
-26619455159623299
+26626510793941281
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -59381,6 +59381,20 @@ GCT_USB4110GFA
 16
 16
 Custom
+IND-SMD_L4.4-W4.2
+
+
+0
+2
+2
+Custom
+IND-SMD_L5.4-W5.2
+
+
+0
+2
+2
+Custom
 PQFN50P200X200X80-10N
 
 
@@ -106329,6 +106343,20 @@ GCT_USB4110GFA
 0
 16
 16
+memo
+IND-SMD_L4.4-W4.2
+
+
+0
+2
+2
+memo
+IND-SMD_L5.4-W5.2
+
+
+0
+2
+2
 memo
 PQFN50P200X200X80-10N
 
