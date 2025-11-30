@@ -452,9 +452,9 @@
       "pin_to_pin": "error",
       "power_pin_not_driven": "error",
       "same_local_global_label": "error",
-      "similar_label_and_power": "warning",
-      "similar_labels": "warning",
-      "similar_power": "warning",
+      "similar_label_and_power": "error",
+      "similar_labels": "error",
+      "similar_power": "error",
       "simulation_model_issue": "ignore",
       "single_global_label": "ignore",
       "unannotated": "error",
@@ -740,6 +740,22 @@
     [
       "affbaa1c-796a-43e2-b357-d8056264fe45",
       "Root"
+    ],
+    [
+      "4a7cbebd-f698-4bee-b98f-1e10a25991ff",
+      "Power"
+    ],
+    [
+      "8463a60f-8f72-494c-88d1-488c894f8e30",
+      "MCU"
+    ],
+    [
+      "cba678f1-cd76-4d72-9114-2cc1e511120c",
+      "Sensors and Peripherals"
+    ],
+    [
+      "a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab",
+      "Connectors"
     ]
   ],
   "text_variables": {}
