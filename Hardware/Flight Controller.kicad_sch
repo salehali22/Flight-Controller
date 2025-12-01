@@ -81,7 +81,7 @@
 		)
 		(uuid "a32c203b-8954-438a-b90d-5af2d4ccddc2")
 	)
-	(text "Signal"
+	(text "Signal Bidirectional"
 		(exclude_from_sim no)
 		(at 589.788 78.867 0)
 		(effects
@@ -118,7 +118,7 @@
 		)
 		(uuid "cb881141-80d6-4c15-873a-1a358a07089e")
 	)
-	(text "TVS + reverse polarity protection\n\nDual buck converters (5 V + 9/12 V)\n\nDual LDO rails (3.3 V digital + 3.3 V sensors)\n\nUSB-C power + automatic power switching\n\nBasic input filtering\n\nINA226 voltage/current monitor - I²"
+	(text "TVS + reverse polarity protection\n\nDual buck converters (5 V + 9/12 V)\n\nDual LDO rails (3.3V digital + 3.3V IMU)\n\nUSB-C power + automatic power switching\n\nBasic input filtering\n\nINA226 voltage/current monitor - I²C"
 		(exclude_from_sim no)
 		(at 94.742 91.44 0)
 		(effects
@@ -152,10 +152,31 @@
 				(size 2.032 2.032)
 				(thickness 0.4064)
 				(bold yes)
-				(color 255 15 7 1)
+				(color 194 0 0 1)
 			)
 		)
 		(uuid "f129ee3f-c60d-4091-85e0-ee622857878b")
+	)
+	(polyline
+		(pts
+			(xy 135.255 42.545) (xy 135.255 29.845)
+		)
+		(stroke
+			(width 1.27)
+			(type default)
+			(color 194 0 0 1)
+		)
+		(uuid "0b34e8eb-60d4-4f81-8878-f2d5d189b9c9")
+	)
+	(polyline
+		(pts
+			(xy 343.535 153.67) (xy 415.925 153.67)
+		)
+		(stroke
+			(width 1.27)
+			(type solid)
+		)
+		(uuid "0d447568-8da0-4f3c-881b-222bbd489d3e")
 	)
 	(polyline
 		(pts
@@ -164,9 +185,61 @@
 		(stroke
 			(width 0.762)
 			(type default)
-			(color 255 4 10 1)
+			(color 194 0 0 1)
 		)
 		(uuid "30e2d87b-aeb2-412f-9385-cfeb3f983a3e")
+	)
+	(polyline
+		(pts
+			(xy 463.55 231.775) (xy 463.55 288.925)
+		)
+		(stroke
+			(width 1.27)
+			(type default)
+		)
+		(uuid "3d8039a6-9159-4825-ab37-7958c59b4731")
+	)
+	(polyline
+		(pts
+			(xy 269.24 29.845) (xy 269.24 57.785)
+		)
+		(stroke
+			(width 1.27)
+			(type default)
+			(color 194 0 0 1)
+		)
+		(uuid "5a8e0dbc-1c51-4479-9711-f51434c13e7e")
+	)
+	(polyline
+		(pts
+			(xy 132.715 161.925) (xy 132.715 182.245)
+		)
+		(stroke
+			(width 1.27)
+			(type solid)
+			(color 194 0 0 1)
+		)
+		(uuid "64683570-e2fa-4e8b-861a-eb1da7d0e607")
+	)
+	(polyline
+		(pts
+			(xy 150.495 288.925) (xy 463.55 288.925)
+		)
+		(stroke
+			(width 1.27)
+			(type default)
+		)
+		(uuid "77f112b3-47fc-4fd6-b830-069ae5a1f9a8")
+	)
+	(polyline
+		(pts
+			(xy 149.86 210.82) (xy 201.295 210.82)
+		)
+		(stroke
+			(width 1.27)
+			(type default)
+		)
+		(uuid "949f9369-062f-428b-9747-08f79af56174")
 	)
 	(polyline
 		(pts
@@ -178,6 +251,28 @@
 		)
 		(uuid "e5526041-35f4-4966-8caf-b407f69bdf3f")
 	)
+	(polyline
+		(pts
+			(xy 135.255 29.845) (xy 453.39 29.845)
+		)
+		(stroke
+			(width 1.27)
+			(type default)
+			(color 194 0 0 1)
+		)
+		(uuid "ecd3ca69-df6c-4d9c-8593-46734dcd842b")
+	)
+	(polyline
+		(pts
+			(xy 453.39 29.845) (xy 453.39 75.565)
+		)
+		(stroke
+			(width 1.27)
+			(type default)
+			(color 194 0 0 1)
+		)
+		(uuid "fd7e25bd-4faf-4995-a042-abff1621f98d")
+	)
 	(sheet
 		(at 46.99 44.45)
 		(size 102.235 116.84)
@@ -187,7 +282,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(stroke
-			(width 0.1524)
+			(width 1.27)
 			(type solid)
 		)
 		(fill
@@ -231,7 +326,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(stroke
-			(width 0.1524)
+			(width 1.27)
 			(type solid)
 		)
 		(fill
@@ -274,7 +369,7 @@
 		(on_board yes)
 		(dnp no)
 		(stroke
-			(width 0.1524)
+			(width 1.27)
 			(type solid)
 		)
 		(fill
@@ -317,7 +412,7 @@
 		(on_board yes)
 		(dnp no)
 		(stroke
-			(width 0.1524)
+			(width 1.27)
 			(type solid)
 		)
 		(fill
@@ -325,7 +420,7 @@
 		)
 		(uuid "cba678f1-cd76-4d72-9114-2cc1e511120c")
 		(property "Sheetname" "Sensors and Peripherals"
-			(at 39.243 182.245 0)
+			(at 48.768 180.848 0)
 			(effects
 				(font
 					(size 3.81 3.81)
