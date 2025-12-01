@@ -9,7 +9,7 @@
 		(start 561.975 22.86)
 		(end 680.72 207.01)
 		(stroke
-			(width 0.762)
+			(width 1.27)
 			(type dash)
 		)
 		(fill
@@ -43,19 +43,6 @@
 		)
 		(uuid 3542dd32-c051-4c38-b43d-eadca0640895)
 	)
-	(text "Airspeed and mag, yet to be picked"
-		(exclude_from_sim no)
-		(at 100.965 285.75 0)
-		(effects
-			(font
-				(size 2.54 2.54)
-				(thickness 0.508)
-				(bold yes)
-				(color 255 0 0 1)
-			)
-		)
-		(uuid "37738fd9-64f2-4bbf-8e71-0f3a7b5f67ed")
-	)
 	(text "Flight Controller Design"
 		(exclude_from_sim no)
 		(at 60.452 21.59 0)
@@ -68,7 +55,7 @@
 		)
 		(uuid "7ffd1753-38b2-4444-934f-2df3ec34d533")
 	)
-	(text "ICM-42688P (primary IMU) - SPI\n\nBMI270 (backup IMU) - SPI\n\nBMP388 barometer - I²C\n\nMagnetometer (IST8310 / LIS3MDL) - I²C\n\nAirspeed sensor (MS4525DO) - I²C\n\nAT7456E OSD - SPI\n\nW25Q128 flash memory (16 Mbit) - SPI\n\nCAN transceiver (SN65HVD230) - FDCAN\n"
+	(text "ICM-42688P (primary IMU) - SPI\n\nBMI270 (backup IMU) - SPI\n\nBMP388 barometer - I²C\n\nMagnetometer (LIS3MDL) - I²C\n\n\nAT7456E OSD - SPI\n\nW25Q128 flash memory (16 Mbit) - SPI\n\nCAN transceiver (SN65HVD230) - FDCAN\n"
 		(exclude_from_sim no)
 		(at 97.917 241.554 0)
 		(effects
@@ -201,7 +188,7 @@
 	)
 	(polyline
 		(pts
-			(xy 269.24 29.845) (xy 269.24 57.785)
+			(xy 269.24 29.845) (xy 269.24 60.325)
 		)
 		(stroke
 			(width 1.27)
@@ -264,7 +251,7 @@
 	)
 	(polyline
 		(pts
-			(xy 453.39 29.845) (xy 453.39 75.565)
+			(xy 453.39 29.845) (xy 453.39 79.375)
 		)
 		(stroke
 			(width 1.27)
