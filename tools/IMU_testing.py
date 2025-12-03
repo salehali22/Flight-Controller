@@ -175,9 +175,9 @@ class DroneIMUMonitor:
         self.pos_y = 0
         self.pos_z = 0
         
-        # 3D update throttling (reduced for less delay)
+        # 3D update throttling (limit for performance)
         self.last_3d_update = 0
-        self.min_3d_interval = 0.016  # ~60 FPS for smoother updates
+        self.min_3d_interval = 0.033  # ~30 FPS for smoother updates
         
         # Batch text updates
         self.pending_log_lines = []
@@ -1854,9 +1854,8 @@ class DroneIMUMonitor:
         if "INFO:RUN_COMPLETE" in line:
             self.root.after(0, self.handle_run_complete)
         
-        # Parse orientation
-        if self.auto_update_3d.get():
-            self.parse_and_update_orientation(line, timestamp)
+        # Parse orientation (always), 3D update is gated inside the parser
+        self.parse_and_update_orientation(line, timestamp)
     
     def process_sent(self, timestamp, cmd):
         """Process sent command"""
@@ -1935,9 +1934,9 @@ class DroneIMUMonitor:
             if hasattr(self, 'freq_label') and self.freq_label:
                 self.freq_label.config(text=f"{self.serial_frequency:.1f} Hz")
 
-            # Throttle 3D updates
+            # Throttle 3D updates (can be disabled via checkbox)
             current_time = time.time()
-            if current_time - self.last_3d_update >= self.min_3d_interval:
+            if self.auto_update_3d.get() and current_time - self.last_3d_update >= self.min_3d_interval:
                 self.update_3d_orientation()
                 self.last_3d_update = current_time
 

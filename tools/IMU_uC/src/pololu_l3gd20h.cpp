@@ -135,6 +135,7 @@ void read_gyroscope() {
 }
 
 void read_magnetometer() {
+#if POLOLU_USE_MAG
   int16_t rawX, rawY, rawZ;
   if (!readMagRaw(rawX, rawY, rawZ)) {
     magVectorValid = false;
@@ -155,6 +156,11 @@ void read_magnetometer() {
 
   const float magNorm = sqrtf(mx * mx + my * my + mz * mz);
   magVectorValid = magNorm > 0.5f;  // Threshold to suppress zero vectors
+#else
+  // Magnetometer disabled: always mark vector invalid and keep zeros.
+  magVectorValid = false;
+  MagX = MagY = MagZ = 0.0f;
+#endif
 }
 
 void calculate_acc_angles() {
@@ -172,6 +178,7 @@ float calculateMagHeadingDegrees() {
     return yaw;
   }
 
+#if POLOLU_USE_MAG
   const float rollRad = roll * DEG_TO_RAD;
   const float pitchRad = pitch * DEG_TO_RAD;
 
@@ -189,6 +196,11 @@ float calculateMagHeadingDegrees() {
     heading += 360.0f;
   }
   return heading;
+#else
+  // Should not be reached when POLOLU_USE_MAG == 0 because magVectorValid is false,
+  // but keep a safe fallback.
+  return yaw;
+#endif
 }
 
 void apply_complementary_filter(float dt) {
@@ -231,8 +243,10 @@ void calculate_IMU_error() {
   GyroErrorX = GyroErrorY = GyroErrorZ = 0.0f;
   MagOffsetX = MagOffsetY = MagOffsetZ = 0.0f;
 
+#if POLOLU_USE_MAG
   float magMinX = 1e9f, magMinY = 1e9f, magMinZ = 1e9f;
   float magMaxX = -1e9f, magMaxY = -1e9f, magMaxZ = -1e9f;
+#endif
 
   for (int i = 0; i < calibrationSamples; ++i) {
     int16_t ax, ay, az;
@@ -251,6 +265,7 @@ void calculate_IMU_error() {
       GyroErrorZ += gzRaw * GYRO_LSB_TO_DPS;
     }
 
+    #if POLOLU_USE_MAG
     int16_t mxRaw, myRaw, mzRaw;
     if (readMagRaw(mxRaw, myRaw, mzRaw)) {
       const float mx = mxRaw * MAG_LSB_TO_UT;
@@ -265,6 +280,7 @@ void calculate_IMU_error() {
       magMaxY = max(magMaxY, my);
       magMaxZ = max(magMaxZ, mz);
     }
+    #endif
 
     delay(2);
   }
@@ -276,6 +292,7 @@ void calculate_IMU_error() {
   GyroErrorY /= calibrationSamples;
   GyroErrorZ /= calibrationSamples;
 
+  #if POLOLU_USE_MAG
   MagOffsetX = (magMaxX + magMinX) * 0.5f;
   MagOffsetY = (magMaxY + magMinY) * 0.5f;
   MagOffsetZ = (magMaxZ + magMinZ) * 0.5f;
@@ -288,6 +305,10 @@ void calculate_IMU_error() {
   MagScaleX = avgRange / max(rangeX, 0.01f);
   MagScaleY = avgRange / max(rangeY, 0.01f);
   MagScaleZ = avgRange / max(rangeZ, 0.01f);
+  #else
+  MagOffsetX = MagOffsetY = MagOffsetZ = 0.0f;
+  MagScaleX = MagScaleY = MagScaleZ = 1.0f;
+  #endif
 
   Serial.println("Calibration complete");
 }
