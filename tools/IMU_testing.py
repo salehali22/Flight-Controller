@@ -98,8 +98,28 @@ class DroneIMUMonitor:
         self.alpha_factor_var = tk.DoubleVar(value=0.83)
         self.run_duration_var = tk.IntVar(value=0)
         self.sample_rate_var = tk.IntVar(value=100)  # Default: 100 Hz
+        self.sensor_mode = tk.StringVar(value="MPU6050")
+        self.sensor_selection_locked = False
+        self._suppress_sensor_event = False
         self.esp_paused = False
         self.waiting_for_calibration = False
+        self.sensor_combo = None
+        
+        # Magnetometer state (Pololu board)
+        self.mag_values = {"x": 0.0, "y": 0.0, "z": 0.0}
+        self.mag_heading = float("nan")
+        self.mag_strength = 0.0
+        self.mag_heading_var = tk.StringVar(value="Heading: ---°")
+        self.mag_strength_var = tk.StringVar(value="Strength: --- µT")
+        self.mag_value_vars = {
+            "x": tk.StringVar(value="X: --- µT"),
+            "y": tk.StringVar(value="Y: --- µT"),
+            "z": tk.StringVar(value="Z: --- µT"),
+        }
+        self.mag_canvas = None
+        self.mag_frame = None
+        self.mag_frame_parent = None
+        self.mag_canvas_size = 220
         
         # Timed run data storage
         self.timed_run_data = deque(maxlen=50000)  # Limit to 50k samples to prevent memory issues
@@ -234,6 +254,17 @@ class DroneIMUMonitor:
                                   values=["9600", "57600", "115200", "230400"],
                                   width=12, state="readonly")
         baud_combo.grid(row=0, column=4, sticky="w")
+
+        ttk.Label(selection_frame, text="Sensor:").grid(row=1, column=0, padx=(0, 5), pady=(8, 0), sticky="w")
+        self.sensor_combo = ttk.Combobox(
+            selection_frame,
+            textvariable=self.sensor_mode,
+            values=["MPU6050", "Pololu 0J8003"],
+            width=12,
+            state="readonly"
+        )
+        self.sensor_combo.grid(row=1, column=1, padx=(0, 5), pady=(8, 0), sticky="w")
+        self.sensor_combo.bind("<<ComboboxSelected>>", self.on_sensor_combo_change)
         
         # Connect button
         btn_frame = ttk.Frame(frame)
@@ -336,6 +367,147 @@ class DroneIMUMonitor:
         )
         
         self.refresh_ports()
+        self.create_magnetometer_panel(parent)
+
+    def create_magnetometer_panel(self, parent):
+        """Build magnetometer view (visible for Pololu board)"""
+        self.mag_frame_parent = parent
+        self.mag_frame = ttk.LabelFrame(parent, text="Magnetometer", padding=10)
+        self.mag_canvas = tk.Canvas(
+            self.mag_frame,
+            width=self.mag_canvas_size,
+            height=self.mag_canvas_size,
+            bg="#0d0d0d",
+            highlightthickness=0
+        )
+        self.mag_canvas.pack(fill="x", pady=(0, 8))
+
+        value_frame = ttk.Frame(self.mag_frame)
+        value_frame.pack(fill="x", pady=(0, 6))
+        for idx, axis in enumerate(("x", "y", "z")):
+            value_frame.columnconfigure(idx, weight=1)
+            ttk.Label(
+                value_frame,
+                textvariable=self.mag_value_vars[axis],
+                font=("Consolas", 10)
+            ).grid(row=0, column=idx, sticky="ew", padx=4)
+
+        ttk.Label(
+            self.mag_frame,
+            textvariable=self.mag_heading_var,
+            font=("Consolas", 11)
+        ).pack(anchor="w", pady=(0, 2))
+
+        ttk.Label(
+            self.mag_frame,
+            textvariable=self.mag_strength_var,
+            font=("Consolas", 11)
+        ).pack(anchor="w")
+
+        # Pack then immediately update visibility so default mode hides panel
+        self.mag_frame.pack(fill="x", pady=(0, 10))
+        self.update_magnetometer_visibility()
+
+    def on_sensor_combo_change(self, _event=None):
+        """User manually switched sensor profile"""
+        if getattr(self, "_suppress_sensor_event", False):
+            return
+        self.sensor_selection_locked = True
+        self.update_magnetometer_visibility()
+
+    def auto_switch_sensor_mode(self, mode):
+        """Auto adjust UI when incoming data format changes"""
+        if self.sensor_selection_locked:
+            return
+        if mode not in ("MPU6050", "Pololu 0J8003"):
+            return
+        if self.sensor_mode.get() == mode:
+            return
+        self._suppress_sensor_event = True
+        self.sensor_mode.set(mode)
+        self._suppress_sensor_event = False
+        self.update_magnetometer_visibility()
+
+    def update_magnetometer_visibility(self):
+        """Show or hide magnetometer panel based on selection"""
+        if not self.mag_frame:
+            return
+        should_show = self.sensor_mode.get() == "Pololu 0J8003"
+        is_visible = self.mag_frame.winfo_manager() != ""
+        if should_show and not is_visible:
+            self.mag_frame.pack(fill="x", pady=(0, 10))
+        elif not should_show and is_visible:
+            self.mag_frame.pack_forget()
+
+    def handle_magnetometer_sample(self, mx, my, mz):
+        """Store and visualize magnetometer data"""
+        self.mag_values["x"] = mx
+        self.mag_values["y"] = my
+        self.mag_values["z"] = mz
+
+        strength = math.sqrt(mx * mx + my * my + mz * mz)
+        heading = (math.degrees(math.atan2(-my, mx)) + 360.0) % 360.0 if strength > 0.05 else float("nan")
+
+        if math.isfinite(heading):
+            self.mag_heading = heading
+            self.mag_heading_var.set(f"Heading: {heading:6.1f}°")
+        else:
+            self.mag_heading = float("nan")
+            self.mag_heading_var.set("Heading: ---°")
+
+        if strength > 0.05:
+            self.mag_strength = strength
+            self.mag_strength_var.set(f"Strength: {strength:6.2f} µT")
+        else:
+            self.mag_strength = 0.0
+            self.mag_strength_var.set("Strength: --- µT")
+
+        for axis in ("x", "y", "z"):
+            value = self.mag_values[axis]
+            self.mag_value_vars[axis].set(f"{axis.upper()}: {value:7.2f} µT")
+
+        if self.sensor_mode.get() == "Pololu 0J8003":
+            self.redraw_mag_canvas()
+
+    def redraw_mag_canvas(self):
+        """Draw simple compass view for magnetometer vectors"""
+        if not self.mag_canvas:
+            return
+        canvas = self.mag_canvas
+        canvas.delete("all")
+
+        size = self.mag_canvas_size
+        center = size / 2
+        radius = size * 0.4
+
+        # Compass circle and axis lines
+        canvas.create_oval(
+            center - radius, center - radius,
+            center + radius, center + radius,
+            outline="#555", width=2
+        )
+        canvas.create_line(center, center - radius, center, center + radius, fill="#333", width=1)
+        canvas.create_line(center - radius, center, center + radius, center, fill="#333", width=1)
+        canvas.create_text(center, center - radius - 10, text="N", fill="white", font=("Segoe UI", 10, "bold"))
+        canvas.create_text(center, center + radius + 10, text="S", fill="white", font=("Segoe UI", 10, "bold"))
+        canvas.create_text(center + radius + 10, center, text="E", fill="white", font=("Segoe UI", 10, "bold"))
+        canvas.create_text(center - radius - 10, center, text="W", fill="white", font=("Segoe UI", 10, "bold"))
+
+        if not math.isfinite(self.mag_heading):
+            return
+
+        angle_rad = math.radians(self.mag_heading)
+        dx = radius * math.sin(angle_rad)
+        dy = radius * math.cos(angle_rad)
+        canvas.create_line(
+            center,
+            center,
+            center + dx,
+            center - dy,
+            fill="#22c55e",
+            width=3,
+            arrow=tk.LAST
+        )
     
     
     def create_3d_view(self, parent):
@@ -1714,63 +1886,79 @@ class DroneIMUMonitor:
     def parse_and_update_orientation(self, line, timestamp=None):
         """Parse orientation data"""
         try:
-            parts = line.split(",")
-            if len(parts) == 3:
-                self.roll = float(parts[0].strip())
-                self.pitch = float(parts[1].strip())
-                self.yaw = float(parts[2].strip())
-                
-                ts = timestamp or time.time()
-                
-                # Update frequency counter
-                self.serial_data_times.append(ts)
-                if len(self.serial_data_times) > 1:
-                    time_span = self.serial_data_times[-1] - self.serial_data_times[0]
-                    if time_span > 0:
-                        self.serial_frequency = (len(self.serial_data_times) - 1) / time_span
-                
-                # Store data during timed runs (skip first 100 samples after calibration)
-                if self.timed_run_active:
-                    self.samples_after_calibration += 1
-                    if self.samples_after_calibration > self.skip_calibration_samples:
-                        self.timed_run_data.append((ts, self.roll, self.pitch, self.yaw))
-                
-                # Update time display for timed runs
-                if self.timed_run_active and self.timed_run_start_time and hasattr(self, 'time_label') and self.time_label:
-                    elapsed = ts - self.timed_run_start_time
-                    self.timed_run_elapsed_time = elapsed
-                    set_duration = self.timed_run_duration
-                    elapsed_str = f"{int(elapsed)}s"
-                    set_str = f"{set_duration}s"
-                    self.time_label.config(
-                        text=f"Set: {set_str} | Elapsed: {elapsed_str}"
-                    )
-                elif hasattr(self, 'time_label') and self.time_label:
-                    self.time_label.config(text="")
-                
-                # Update frequency display
-                if hasattr(self, 'freq_label') and self.freq_label:
-                    self.freq_label.config(text=f"{self.serial_frequency:.1f} Hz")
-                
-                # Throttle 3D updates
-                current_time = time.time()
-                if current_time - self.last_3d_update >= self.min_3d_interval:
-                    self.update_3d_orientation()
-                    self.last_3d_update = current_time
-                
-                # Update values with color coding
-                if hasattr(self, 'values_text') and self.values_text:
-                    self.values_text.config(state="normal")
-                    self.values_text.delete("1.0", tk.END)
-                    
-                    # Insert text with color tags
-                    self.values_text.insert("1.0", f"Roll: {self.roll:.3f}°\n", "roll")
-                    self.values_text.insert(tk.END, f"Pitch: {self.pitch:.3f}°\n", "pitch")
-                    self.values_text.insert(tk.END, f"Yaw: {self.yaw:.3f}°", "yaw")
-                    
-                    self.values_text.config(state="disabled")
-                
-                self.append_chart_data(ts)
+            parts = [segment.strip() for segment in line.split(",")]
+            if len(parts) < 3:
+                return
+
+            roll = float(parts[0])
+            pitch = float(parts[1])
+            yaw = float(parts[2])
+            mag_present = len(parts) >= 6
+            if mag_present:
+                mag_values = (float(parts[3]), float(parts[4]), float(parts[5]))
+            else:
+                mag_values = None
+
+            self.roll = roll
+            self.pitch = pitch
+            self.yaw = yaw
+
+            ts = timestamp or time.time()
+
+            # Update frequency counter
+            self.serial_data_times.append(ts)
+            if len(self.serial_data_times) > 1:
+                time_span = self.serial_data_times[-1] - self.serial_data_times[0]
+                if time_span > 0:
+                    self.serial_frequency = (len(self.serial_data_times) - 1) / time_span
+
+            # Store data during timed runs (skip first 100 samples after calibration)
+            if self.timed_run_active:
+                self.samples_after_calibration += 1
+                if self.samples_after_calibration > self.skip_calibration_samples:
+                    self.timed_run_data.append((ts, self.roll, self.pitch, self.yaw))
+
+            # Update time display for timed runs
+            if self.timed_run_active and self.timed_run_start_time and hasattr(self, 'time_label') and self.time_label:
+                elapsed = ts - self.timed_run_start_time
+                self.timed_run_elapsed_time = elapsed
+                set_duration = self.timed_run_duration
+                elapsed_str = f"{int(elapsed)}s"
+                set_str = f"{set_duration}s"
+                self.time_label.config(
+                    text=f"Set: {set_str} | Elapsed: {elapsed_str}"
+                )
+            elif hasattr(self, 'time_label') and self.time_label:
+                self.time_label.config(text="")
+
+            # Update frequency display
+            if hasattr(self, 'freq_label') and self.freq_label:
+                self.freq_label.config(text=f"{self.serial_frequency:.1f} Hz")
+
+            # Throttle 3D updates
+            current_time = time.time()
+            if current_time - self.last_3d_update >= self.min_3d_interval:
+                self.update_3d_orientation()
+                self.last_3d_update = current_time
+
+            # Update values with color coding
+            if hasattr(self, 'values_text') and self.values_text:
+                self.values_text.config(state="normal")
+                self.values_text.delete("1.0", tk.END)
+
+                # Insert text with color tags
+                self.values_text.insert("1.0", f"Roll: {self.roll:.3f}°\n", "roll")
+                self.values_text.insert(tk.END, f"Pitch: {self.pitch:.3f}°\n", "pitch")
+                self.values_text.insert(tk.END, f"Yaw: {self.yaw:.3f}°", "yaw")
+
+                self.values_text.config(state="disabled")
+
+            self.append_chart_data(ts)
+            if mag_present and mag_values:
+                self.auto_switch_sensor_mode("Pololu 0J8003")
+                self.handle_magnetometer_sample(*mag_values)
+            elif not mag_present:
+                self.auto_switch_sensor_mode("MPU6050")
         except ValueError:
             pass  # Ignore parse errors silently
     
