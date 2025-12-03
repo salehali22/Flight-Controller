@@ -4072,7 +4072,7 @@
 	)
 	(text "VBAT_MEASURED is the node that supplies \neach sensor and peripheral in the FC"
 		(exclude_from_sim no)
-		(at 286.258 80.772 0)
+		(at 288.798 78.994 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4154,16 +4154,6 @@
 			)
 		)
 		(uuid "6fe3f3a5-c8b4-43da-9150-d0a5aa89aee4")
-	)
-	(text "14.8\n"
-		(exclude_from_sim no)
-		(at 219.456 46.482 0)
-		(effects
-			(font
-				(size 0.762 0.762)
-			)
-		)
-		(uuid "74a23465-a122-4be9-b986-8950e1cd9419")
 	)
 	(text "Comments"
 		(exclude_from_sim no)
@@ -4508,12 +4498,6 @@
 		(uuid "75c1092c-248b-4ea6-8385-a696e230b2bf")
 	)
 	(junction
-		(at 215.9 49.53)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "76f63944-8f39-4570-b134-061db4565b50")
-	)
-	(junction
 		(at 99.06 199.39)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4720,16 +4704,6 @@
 			(type default)
 		)
 		(uuid "033b42e4-80f3-4046-a34f-87e1f55cdf12")
-	)
-	(wire
-		(pts
-			(xy 218.44 49.53) (xy 215.9 49.53)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "03c188be-b747-4b99-a994-6b4670e67175")
 	)
 	(wire
 		(pts
@@ -5223,16 +5197,6 @@
 	)
 	(wire
 		(pts
-			(xy 215.9 46.99) (xy 215.9 49.53)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "31bfac7b-4b47-4a4e-9f35-df225e8a75f0")
-	)
-	(wire
-		(pts
 			(xy 393.7 74.93) (xy 402.59 74.93)
 		)
 		(stroke
@@ -5360,16 +5324,6 @@
 			(type default)
 		)
 		(uuid "4323012b-b052-4fd9-915c-9a2de62f2822")
-	)
-	(wire
-		(pts
-			(xy 199.39 54.61) (xy 215.9 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4400fa61-42ff-47c7-99a0-f4be012520c0")
 	)
 	(wire
 		(pts
@@ -5693,7 +5647,7 @@
 	)
 	(wire
 		(pts
-			(xy 243.84 76.2) (xy 243.84 78.74)
+			(xy 245.11 76.2) (xy 245.11 78.74)
 		)
 		(stroke
 			(width 0)
@@ -6170,16 +6124,6 @@
 			(type default)
 		)
 		(uuid "910442d7-47c2-433f-8691-0c79c0cc4ffe")
-	)
-	(wire
-		(pts
-			(xy 215.9 49.53) (xy 215.9 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "93e993eb-b0de-4874-a45b-9564b0912112")
 	)
 	(wire
 		(pts
@@ -6913,16 +6857,6 @@
 	)
 	(wire
 		(pts
-			(xy 176.53 46.99) (xy 176.53 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "de3dab36-e9f8-4fb6-845c-09eb1ea619ba")
-	)
-	(wire
-		(pts
 			(xy 120.65 209.55) (xy 120.65 208.28)
 		)
 		(stroke
@@ -6983,7 +6917,7 @@
 	)
 	(wire
 		(pts
-			(xy 234.95 78.74) (xy 243.84 78.74)
+			(xy 234.95 78.74) (xy 245.11 78.74)
 		)
 		(stroke
 			(width 0)
@@ -7280,16 +7214,6 @@
 			(type default)
 		)
 		(uuid "fad5382a-4489-4403-a486-2e573de32efe")
-	)
-	(wire
-		(pts
-			(xy 176.53 54.61) (xy 194.31 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fc8fd9d8-ff30-46df-8070-b741a15fe784")
 	)
 	(wire
 		(pts
@@ -8424,73 +8348,6 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small")
-		(at 196.85 54.61 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "16e37e65-4a44-4c6a-bef7-23fcec7335e1")
-		(property "Reference" "R8"
-			(at 195.58 52.324 90)
-			(effects
-				(font
-					(size 1.016 1.016)
-				)
-			)
-		)
-		(property "Value" "0"
-			(at 194.564 56.388 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 196.85 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 196.85 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor, small symbol"
-			(at 196.85 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "ddaae99d-74ee-4e7e-a263-ccc311efdfda")
-		)
-		(pin "2"
-			(uuid "536ee4a4-b702-4081-a341-d413865bbfa2")
-		)
-		(instances
-			(project "Flight Controller"
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
-					(reference "R8")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R_Small")
 		(at 246.38 58.42 90)
 		(unit 1)
 		(exclude_from_sim no)
@@ -9322,71 +9179,6 @@
 			(project ""
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "U6")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+15V")
-		(at 176.53 46.99 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "39ef410a-c57a-40fc-a1b7-696cc98b7ca7")
-		(property "Reference" "#PWR019"
-			(at 176.53 50.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "VBAT_Filtered"
-			(at 176.53 42.926 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 176.53 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 176.53 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+15V\""
-			(at 176.53 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "80285883-97ed-42cc-b6e8-11ac81b54e88")
-		)
-		(instances
-			(project "Flight Controller"
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
-					(reference "#PWR019")
 					(unit 1)
 				)
 			)
@@ -10538,16 +10330,16 @@
 		)
 	)
 	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 218.44 49.53 270)
+		(lib_id "power:+15V")
+		(at 245.11 76.2 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "59ef47fe-8866-44df-965c-9b186f248ae0")
-		(property "Reference" "#FLG06"
-			(at 220.345 49.53 0)
+		(uuid "5a1ae190-efcb-451c-a8d2-d61e4c7cc346")
+		(property "Reference" "#PWR022"
+			(at 245.11 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10555,17 +10347,16 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "PWR_FLAG"
-			(at 221.234 49.53 90)
+		(property "Value" "VBAT_Filtered"
+			(at 245.11 72.136 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
 			)
 		)
 		(property "Footprint" ""
-			(at 218.44 49.53 0)
+			(at 245.11 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10573,8 +10364,8 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "~"
-			(at 218.44 49.53 0)
+		(property "Datasheet" ""
+			(at 245.11 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10582,8 +10373,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 218.44 49.53 0)
+		(property "Description" "Power symbol creates a global label with name \"+15V\""
+			(at 245.11 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10592,12 +10383,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "ac2ead2f-430a-40e5-a0d4-a08a96c6ede9")
+			(uuid "4aa0bf66-dc83-4d56-b8f9-b6c8e709db1e")
 		)
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
-					(reference "#FLG06")
+					(reference "#PWR022")
 					(unit 1)
 				)
 			)
@@ -11580,71 +11371,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+15V")
-		(at 243.84 76.2 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "74976e5d-97cf-4f2f-ab9b-1ced70b03206")
-		(property "Reference" "#PWR026"
-			(at 243.84 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "VBAT_Sense"
-			(at 243.84 72.136 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 243.84 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 243.84 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+15V\""
-			(at 243.84 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "661d3e60-c7c4-4203-9d8a-48a738f1e382")
-		)
-		(instances
-			(project "Flight Controller"
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
-					(reference "#PWR026")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R_Small")
 		(at 201.93 82.55 90)
 		(unit 1)
@@ -11774,71 +11500,6 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "L1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+15V")
-		(at 215.9 46.99 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "7cd52d34-88cb-43ed-8f15-4cc5b242ceb4")
-		(property "Reference" "#PWR022"
-			(at 215.9 50.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "VBAT_Sense"
-			(at 215.9 42.926 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 215.9 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 215.9 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+15V\""
-			(at 215.9 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "804522ae-4095-41cb-a542-486592cfa1d5")
-		)
-		(instances
-			(project "Flight Controller"
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
-					(reference "#PWR022")
 					(unit 1)
 				)
 			)
@@ -13496,6 +13157,71 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+15V")
+		(at 255.27 52.07 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ba8d2982-7ca6-4a99-b26f-7cc18b4dbaca")
+		(property "Reference" "#PWR019"
+			(at 255.27 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VBAT_Filtered"
+			(at 255.27 48.006 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 255.27 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 255.27 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+15V\""
+			(at 255.27 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "63feb992-f12d-4c03-a2bd-cfc16b4f70c0")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
+					(reference "#PWR019")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R_Small")
 		(at 128.27 203.2 0)
 		(unit 1)
@@ -13965,71 +13691,6 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR030")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+15V")
-		(at 255.27 52.07 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "c481a01c-88b1-4ca9-aa5f-b1bbe568fbf2")
-		(property "Reference" "#PWR029"
-			(at 255.27 55.88 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "VBAT_Sense"
-			(at 255.27 48.006 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 255.27 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 255.27 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+15V\""
-			(at 255.27 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "e8769ce6-bb93-4db6-bd19-d5c2e8e52acd")
-		)
-		(instances
-			(project "Flight Controller"
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
-					(reference "#PWR029")
 					(unit 1)
 				)
 			)
