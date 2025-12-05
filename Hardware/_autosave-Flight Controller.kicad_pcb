@@ -530,7 +530,7 @@
 	(footprint "Capacitor_SMD:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "02af5fa8-6064-4652-88b7-ca3bb793c3ed")
-		(at 173.61 59.13)
+		(at 156.3 92.5 180)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "C9"
@@ -586,16 +586,6 @@
 		(sheetfile "power.kicad_sch")
 		(attr smd)
 		(fp_line
-			(start -0.107836 -0.36)
-			(end 0.107836 -0.36)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "99a87ac5-a3b3-48c3-957a-755a52b4eadd")
-		)
-		(fp_line
 			(start -0.107836 0.36)
 			(end 0.107836 0.36)
 			(stroke
@@ -606,34 +596,14 @@
 			(uuid "b53075bb-ebd2-41e6-8bea-41b387073ed7")
 		)
 		(fp_line
-			(start -0.91 -0.46)
-			(end 0.91 -0.46)
+			(start -0.107836 -0.36)
+			(end 0.107836 -0.36)
 			(stroke
-				(width 0.05)
+				(width 0.12)
 				(type solid)
 			)
-			(layer "F.CrtYd")
-			(uuid "93fd86fd-0bb1-48b6-9653-069a13a8b298")
-		)
-		(fp_line
-			(start -0.91 0.46)
-			(end -0.91 -0.46)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "6ddb487d-9a3d-493c-bda6-87a7eb4878fb")
-		)
-		(fp_line
-			(start 0.91 -0.46)
-			(end 0.91 0.46)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "049b9a1d-4505-490d-8a36-4d84cc8a0ce8")
+			(layer "F.SilkS")
+			(uuid "99a87ac5-a3b3-48c3-957a-755a52b4eadd")
 		)
 		(fp_line
 			(start 0.91 0.46)
@@ -646,24 +616,44 @@
 			(uuid "30c0b31c-94a2-4e1a-80d3-c1dd8403d560")
 		)
 		(fp_line
-			(start -0.5 -0.25)
-			(end 0.5 -0.25)
+			(start 0.91 -0.46)
+			(end 0.91 0.46)
 			(stroke
-				(width 0.1)
+				(width 0.05)
 				(type solid)
 			)
-			(layer "F.Fab")
-			(uuid "4220a245-6fd8-4196-8638-e78be37794cc")
+			(layer "F.CrtYd")
+			(uuid "049b9a1d-4505-490d-8a36-4d84cc8a0ce8")
 		)
 		(fp_line
-			(start -0.5 0.25)
-			(end -0.5 -0.25)
+			(start -0.91 0.46)
+			(end -0.91 -0.46)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "6ddb487d-9a3d-493c-bda6-87a7eb4878fb")
+		)
+		(fp_line
+			(start -0.91 -0.46)
+			(end 0.91 -0.46)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "93fd86fd-0bb1-48b6-9653-069a13a8b298")
+		)
+		(fp_line
+			(start 0.5 0.25)
+			(end -0.5 0.25)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "4bfe6b12-0876-4bd8-b44a-2fd2cc5df112")
+			(uuid "df9e191a-3c25-4c4c-9e73-dcc8878feb8d")
 		)
 		(fp_line
 			(start 0.5 -0.25)
@@ -676,14 +666,24 @@
 			(uuid "0f818e39-b81b-4095-969a-fc797d701e3d")
 		)
 		(fp_line
-			(start 0.5 0.25)
-			(end -0.5 0.25)
+			(start -0.5 0.25)
+			(end -0.5 -0.25)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "df9e191a-3c25-4c4c-9e73-dcc8878feb8d")
+			(uuid "4bfe6b12-0876-4bd8-b44a-2fd2cc5df112")
+		)
+		(fp_line
+			(start -0.5 -0.25)
+			(end 0.5 -0.25)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "4220a245-6fd8-4196-8638-e78be37794cc")
 		)
 		(fp_text user "${REFERENCE}"
 			(at 0 0 0)
@@ -697,7 +697,7 @@
 			)
 		)
 		(pad "1" smd roundrect
-			(at -0.48 0)
+			(at -0.48 0 180)
 			(size 0.56 0.62)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
@@ -706,7 +706,7 @@
 			(uuid "4250b4d8-1906-47d4-a1cf-f371a84b2a3d")
 		)
 		(pad "2" smd roundrect
-			(at 0.48 0)
+			(at 0.48 0 180)
 			(size 0.56 0.62)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
@@ -18342,7 +18342,7 @@
 			(size 1.325 0.6)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
-			(net 117 "/Power/D+")
+			(net 116 "/Power/D-")
 			(pinfunction "I/O1")
 			(pintype "passive")
 			(uuid "7b8ef4bb-e423-489a-875b-7d437842c6ea")
@@ -18362,7 +18362,7 @@
 			(size 1.325 0.6)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
-			(net 116 "/Power/D-")
+			(net 117 "/Power/D+")
 			(pinfunction "I/O2")
 			(pintype "passive")
 			(uuid "eb5c3ba0-fb9a-42dc-adac-5a80cb0d5873")
@@ -18372,7 +18372,7 @@
 			(size 1.325 0.6)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
-			(net 39 "USB_DN")
+			(net 38 "USB_DP")
 			(pinfunction "I/O2")
 			(pintype "passive")
 			(uuid "1be826b3-a048-464a-82ad-5cd0a6337aef")
@@ -18392,7 +18392,7 @@
 			(size 1.325 0.6)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
-			(net 38 "USB_DP")
+			(net 39 "USB_DN")
 			(pinfunction "I/O1")
 			(pintype "passive")
 			(uuid "94a2c729-3c4a-48a2-909b-23d7454358a2")

@@ -3903,13 +3903,14 @@
 	)
 	(text "1) Crystal Oscillator capacitor Calculation\n   Depends on the specific crystal capacitance\n   and stray capacitance. Take stray capacitance \n   to be 3 - 5 pF.\n "
 		(exclude_from_sim no)
-		(at 552.45 46.736 0)
+		(at 514.604 46.228 0)
 		(effects
 			(font
 				(size 2.032 2.032)
 				(thickness 0.4064)
 				(bold yes)
 			)
+			(justify left)
 		)
 		(uuid "4516b42d-1482-446e-8d50-3db4a5a3778e")
 	)
@@ -3961,13 +3962,14 @@
 	)
 	(text "2) A)CAN bus requires 120Ω termination resistors\n   at both physical ends of the bus only.\n   If the flight controller is positioned in\n   the middle of the CAN chain, no termination\n   should be installed. Populate R30 only\n   if the flight controller is at one end of the bus.\n\n   B) 0Ω Resistor on RS for slope control,\n      now its configured for High speed. If\n      the wires are long then 10kΩ - 100kΩ \n      should be used\n\n\n "
 		(exclude_from_sim no)
-		(at 552.958 101.092 0)
+		(at 514.096 91.44 0)
 		(effects
 			(font
 				(size 2.032 2.032)
 				(thickness 0.4064)
 				(bold yes)
 			)
+			(justify left)
 		)
 		(uuid "87d2c9d5-92e9-4370-9b0c-7656078d4c62")
 	)
@@ -3994,6 +3996,19 @@
 			)
 		)
 		(uuid "a3aa9e79-0165-4cf5-9c47-27ae07c9bbf8")
+	)
+	(text "3) On board magnetometer is cancelled and \n   execluded from board. it is much more stable \n   as an external module paired with GPS \n   or individually. "
+		(exclude_from_sim no)
+		(at 515.874 123.952 0)
+		(effects
+			(font
+				(size 2.032 2.032)
+				(thickness 0.4064)
+				(bold yes)
+			)
+			(justify left)
+		)
+		(uuid "a3c14647-cc4d-4306-9ff8-6a8133f3d512")
 	)
 	(text "OSD"
 		(exclude_from_sim no)
@@ -8953,9 +8968,9 @@
 		(at 201.93 195.58 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(fields_autoplaced yes)
 		(uuid "5ac27756-ed3d-4870-87c9-7269e364905d")
 		(property "Reference" "U11"
@@ -10141,9 +10156,9 @@
 		(at 170.18 209.55 270)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(uuid "7f4f43b3-ace4-47e5-8d5b-bfafa8a87d9c")
 		(property "Reference" "C42"
 			(at 171.45 207.01 90)
@@ -11658,9 +11673,9 @@
 		(at 170.18 200.66 270)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(uuid "a5990c0a-d45c-4881-bc1e-962fb725a186")
 		(property "Reference" "C41"
 			(at 171.45 198.12 90)
@@ -12874,9 +12889,9 @@
 		(at 170.18 218.44 270)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(uuid "e178c66a-b58e-4076-89ea-366412fbc73a")
 		(property "Reference" "C43"
 			(at 171.45 215.9 90)
