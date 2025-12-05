@@ -5314,6 +5314,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 0 41 131 1)
 		)
 		(uuid "46d16143-1340-481a-b69f-7aaad5688529")
 	)
@@ -6344,6 +6345,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 0 41 131 1)
 		)
 		(uuid "b6127f9f-823c-4fa2-9b52-7e3a69218fa0")
 	)
@@ -7074,6 +7076,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 0 41 131 1)
 		)
 		(uuid "f7127ca6-c413-4496-972c-9f56ba8c9b66")
 	)
@@ -7094,6 +7097,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 0 41 131 1)
 		)
 		(uuid "f8b1bbbf-301a-4524-8fc5-bc74dfd572b5")
 	)
