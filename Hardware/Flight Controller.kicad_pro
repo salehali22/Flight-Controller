@@ -456,7 +456,7 @@
       "similar_labels": "error",
       "similar_power": "error",
       "simulation_model_issue": "ignore",
-      "single_global_label": "ignore",
+      "single_global_label": "error",
       "unannotated": "error",
       "unconnected_wire_endpoint": "error",
       "undefined_netclass": "error",

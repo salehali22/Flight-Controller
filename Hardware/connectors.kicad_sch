@@ -1471,6 +1471,18 @@
 		)
 		(uuid "4d0c3862-67dd-45b5-8a66-b976d56da443")
 	)
+	(text "CAN Protocol"
+		(exclude_from_sim no)
+		(at 230.632 208.026 0)
+		(effects
+			(font
+				(size 2.032 2.032)
+				(thickness 0.4064)
+				(bold yes)
+			)
+		)
+		(uuid "6411c198-d67d-4bf4-9682-414804d9594c")
+	)
 	(text "Comments"
 		(exclude_from_sim no)
 		(at 351.028 32.258 0)
@@ -1762,6 +1774,16 @@
 	)
 	(wire
 		(pts
+			(xy 226.06 226.06) (xy 229.87 226.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "451e0c94-997c-4f2e-ae26-af1f9c8889e8")
+	)
+	(wire
+		(pts
 			(xy 49.53 67.31) (xy 57.15 67.31)
 		)
 		(stroke
@@ -1962,6 +1984,16 @@
 	)
 	(wire
 		(pts
+			(xy 226.06 229.87) (xy 226.06 226.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7e20410f-64ea-42d2-802a-641afc4aea19")
+	)
+	(wire
+		(pts
 			(xy 30.48 67.31) (xy 38.1 67.31)
 		)
 		(stroke
@@ -2042,6 +2074,16 @@
 	)
 	(wire
 		(pts
+			(xy 229.87 218.44) (xy 226.06 218.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "944374b5-95db-4b3d-be50-6e794a77fd06")
+	)
+	(wire
+		(pts
 			(xy 63.5 139.7) (xy 63.5 138.43)
 		)
 		(stroke
@@ -2049,6 +2091,16 @@
 			(type default)
 		)
 		(uuid "975820f3-8761-453b-8251-fc863419fcb5")
+	)
+	(wire
+		(pts
+			(xy 226.06 218.44) (xy 226.06 215.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "97e8e54a-9488-4708-bbac-b1a8dc90be18")
 	)
 	(wire
 		(pts
@@ -2419,6 +2471,30 @@
 		(uuid "18171804-8b02-4318-a473-b965fac45e70")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 248.0041 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "CANH"
+		(shape input)
+		(at 229.87 220.98 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "189d4f69-4b85-41b7-9fd9-adedbd651f49")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 224.7814 220.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2882,6 +2958,30 @@
 			)
 		)
 	)
+	(global_label "CANL"
+		(shape input)
+		(at 229.87 223.52 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "b8225873-b5b1-4017-986c-21d5555ccc25")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 224.9628 223.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "TELEMETRY_RX"
 		(shape input)
 		(at 110.49 132.08 270)
@@ -3243,6 +3343,72 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
 					(reference "TP12")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 226.06 215.9 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "0e981f67-bcd7-4578-97f3-d14be241bdd6")
+		(property "Reference" "#PWR0151"
+			(at 226.06 219.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 226.06 210.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 226.06 215.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 226.06 215.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 226.06 215.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a73be27a-bcb3-4167-b913-bfecfb7f085f")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
+					(reference "#PWR0151")
 					(unit 1)
 				)
 			)
@@ -5628,6 +5794,80 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector_Generic:Conn_01x04")
+		(at 234.95 220.98 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "7f6564d9-8715-4bd4-9394-253565cfae17")
+		(property "Reference" "J10"
+			(at 234.442 212.598 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "CAN BUS"
+			(at 233.68 214.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "memo:CONN-SMD_4P-P1.00_SM04B-SRSS-TB-LF-SN"
+			(at 234.95 220.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 234.95 220.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 234.95 220.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "fb5996b4-7061-4825-a1f4-5f6db1907b32")
+		)
+		(pin "2"
+			(uuid "44aa0a02-b5b3-4d41-92a4-a139b914db65")
+		)
+		(pin "3"
+			(uuid "97377e35-b612-441a-988d-92874083e84f")
+		)
+		(pin "4"
+			(uuid "aa0bde18-790a-42bc-a149-b9abab39966e")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
+					(reference "J10")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector:TestPoint")
 		(at 77.47 168.91 0)
 		(unit 1)
@@ -7581,6 +7821,73 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
 					(reference "#PWR0128")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 226.06 229.87 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d7274bdb-d779-407c-a2a8-fdf29780edf8")
+		(property "Reference" "#PWR0152"
+			(at 226.06 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 226.06 234.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 226.06 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 226.06 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 226.06 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "b1ec2ece-0ea5-4e8d-ab7a-1e285dc98a11")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
+					(reference "#PWR0152")
 					(unit 1)
 				)
 			)
