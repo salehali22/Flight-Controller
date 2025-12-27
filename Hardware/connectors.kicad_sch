@@ -2386,6 +2386,30 @@
 			)
 		)
 	)
+	(global_label "CANH"
+		(shape input)
+		(at 229.87 223.52 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "0314d263-0471-42cb-aa23-34793c179274")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 224.7814 223.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "I2C1_SCL"
 		(shape input)
 		(at 205.74 189.23 180)
@@ -2471,30 +2495,6 @@
 		(uuid "18171804-8b02-4318-a473-b965fac45e70")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 248.0041 67.31 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "CANH"
-		(shape input)
-		(at 229.87 220.98 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.762 0.762)
-				(thickness 0.1524)
-				(bold yes)
-			)
-			(justify right)
-		)
-		(uuid "189d4f69-4b85-41b7-9fd9-adedbd651f49")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 224.7814 220.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2790,6 +2790,30 @@
 			)
 		)
 	)
+	(global_label "CANL"
+		(shape input)
+		(at 229.87 220.98 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "86e37ce6-eb85-44f5-a577-4d47f3659c0c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 224.9628 220.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "TELEMETRY_TX"
 		(shape input)
 		(at 121.92 132.08 270)
@@ -2949,30 +2973,6 @@
 		(uuid "ab032b19-9a7d-4fbb-b6db-4b286f49cb5e")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 91.44 175.9217 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "CANL"
-		(shape input)
-		(at 229.87 223.52 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.762 0.762)
-				(thickness 0.1524)
-				(bold yes)
-			)
-			(justify right)
-		)
-		(uuid "b8225873-b5b1-4017-986c-21d5555ccc25")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 224.9628 223.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)

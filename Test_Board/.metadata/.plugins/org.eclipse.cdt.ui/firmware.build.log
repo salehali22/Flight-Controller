@@ -1,0 +1,10 @@
+17:24:12 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-size  firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  51260	    488	   3736	  55484	   d8bc	firmware.elf
+Finished building: default.size.stdout
+ 
+
+17:24:12 Build Finished. 0 errors, 0 warnings. (took 192ms)
+

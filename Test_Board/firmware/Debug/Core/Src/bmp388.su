@@ -1,0 +1,17 @@
+../Core/Src/bmp388.c:32:22:BMP388_ReadReg	48	static
+../Core/Src/bmp388.c:51:22:BMP388_WriteReg	40	static
+../Core/Src/bmp388.c:74:22:BMP388_ReadCalibData	40	static
+../Core/Src/bmp388.c:92:13:BMP388_ParseCalibData	16	static
+../Core/Src/bmp388.c:139:15:BMP388_CompensateTemperature	32	static
+../Core/Src/bmp388.c:157:15:BMP388_CompensatePressure	88	static
+../Core/Src/bmp388.c:196:15:BMP388_Init	32	static
+../Core/Src/bmp388.c:259:15:BMP388_SoftReset	16	static
+../Core/Src/bmp388.c:264:15:BMP388_Configure	24	static
+../Core/Src/bmp388.c:294:15:BMP388_SetPowerMode	24	static
+../Core/Src/bmp388.c:301:15:BMP388_IsDataReady	24	static
+../Core/Src/bmp388.c:321:15:BMP388_ReadData	48	static
+../Core/Src/bmp388.c:378:15:BMP388_ReadTemperature	48	static
+../Core/Src/bmp388.c:388:15:BMP388_ReadPressure	48	static
+../Core/Src/bmp388.c:398:8:BMP388_CalculateAltitude	24	static
+../Core/Src/bmp388.c:405:15:BMP388_GetChipID	16	static
+../Core/Src/bmp388.c:413:15:BMP388_GetError	16	static
