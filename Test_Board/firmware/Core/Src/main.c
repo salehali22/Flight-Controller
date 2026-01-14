@@ -18,7 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include "icm42688p.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "bmi270_stm32.h"
@@ -35,6 +35,15 @@ volatile int16_t g_acc_x = 0, g_acc_y = 0, g_acc_z = 0;
 volatile int16_t g_gyr_x = 0, g_gyr_y = 0, g_gyr_z = 0;
 volatile uint32_t g_sample_count = 0;
 /* USER CODE END Includes */
+
+
+volatile uint8_t device_id = 0;
+volatile ICM42688P_Status_t imu_status = ICM42688P_ERR_ID;
+volatile ICM42688P_Data_t imu_data = {0};
+
+// Error tracking
+volatile uint32_t read_count = 0;
+volatile uint32_t error_count = 0;
 
 BMP388_Handle bmp388;
 BMP388_Data data;
@@ -175,6 +184,38 @@ int main(void)
   init_status = BMP388_Init(&bmp388, &hi2c2, 0x76);
 
 
+
+
+  imu_status = ICM42688P_ReadID(&hspi2, (uint8_t*)&device_id);
+
+     // Set breakpoint here and check:
+     // - device_id should be 0x47 (decimal 71)
+     // - imu_status should be 0 (ICM42688P_OK)
+
+     if (device_id != ICM42688P_WHO_AM_I_VAL) {
+         // WHO_AM_I failed - check SPI wiring and settings
+         // Common issues:
+         // 1. Wrong SPI mode (must be Mode 3: CPOL=1, CPHA=1)
+         // 2. CS pin not connected or wrong pin
+         // 3. SPI clock too fast (try lower prescaler)
+         // 4. MISO/MOSI swapped
+         error_count++;
+         Error_Handler();
+     }
+
+     //===========================================
+     // TEST 2: Full initialization
+     //===========================================
+     imu_status = ICM42688P_Init(&hspi2);
+
+     if (imu_status != ICM42688P_OK) {
+         // Init failed
+         error_count++;
+         Error_Handler();
+     }
+
+
+
   while (1)
   {
       int16_t ax, ay, az, gx, gy, gz;
@@ -195,6 +236,28 @@ int main(void)
       HAL_Delay(200);
 
       HAL_Delay(10);  /* ~100Hz */
+
+
+      imu_status = ICM42688P_ReadAll(&hspi2, (ICM42688P_Data_t*)&imu_data);
+
+              if (imu_status == ICM42688P_OK) {
+                  read_count++;
+
+                  // In debugger, watch these values:
+                  // imu_data.accel_g.x/y/z  -> Should show ~0, 0, 1.0 when flat (Z = gravity)
+                  // imu_data.gyro_dps.x/y/z -> Should show ~0 when stationary
+                  // imu_data.temp_c         -> Should show reasonable temp (20-40°C)
+
+                  // Tilt the board and watch accel values change!
+                  // Rotate and watch gyro values spike!
+
+              } else {
+                  error_count++;
+              }
+
+              HAL_Delay(10);  // ~100Hz update rate
+
+
   }
 }
 

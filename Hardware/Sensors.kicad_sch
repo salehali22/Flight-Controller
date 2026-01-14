@@ -9093,7 +9093,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 298.45 241.3 0)
 			(effects
 				(font
@@ -11338,7 +11338,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 323.85 241.3 0)
 			(effects
 				(font
@@ -13832,7 +13832,7 @@
 	)
 	(symbol
 		(lib_id "Oscillator:ASE-xxxMHz")
-		(at 260.35 238.76 0)
+		(at 237.49 241.3 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -13841,7 +13841,7 @@
 		(fields_autoplaced yes)
 		(uuid "f8ce3827-2285-470c-8483-781138c0cda3")
 		(property "Reference" "Y3"
-			(at 278.13 232.3398 0)
+			(at 255.27 234.8798 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13849,7 +13849,7 @@
 			)
 		)
 		(property "Value" "ASE-27.000MHZ-LC-T"
-			(at 278.13 234.8798 0)
+			(at 255.27 237.4198 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13857,7 +13857,7 @@
 			)
 		)
 		(property "Footprint" "Oscillator:Oscillator_SMD_Abracon_ASE-4Pin_3.2x2.5mm"
-			(at 278.13 247.65 0)
+			(at 255.27 250.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13866,7 +13866,7 @@
 			)
 		)
 		(property "Datasheet" "http://www.abracon.com/Oscillators/ASV.pdf"
-			(at 257.81 238.76 0)
+			(at 234.95 241.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13875,7 +13875,7 @@
 			)
 		)
 		(property "Description" "3.3V CMOS SMD Crystal Clock Oscillator, Abracon"
-			(at 260.35 238.76 0)
+			(at 237.49 241.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)

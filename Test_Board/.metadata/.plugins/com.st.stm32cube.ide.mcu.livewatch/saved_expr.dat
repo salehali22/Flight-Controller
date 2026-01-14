@@ -1,6 +1,6 @@
-icm_id
-icm_status
-icm_data
+device_id
+imu_status
+imu_data
 bmp388
 i2c_ready
 init_status
