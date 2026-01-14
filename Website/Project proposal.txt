@@ -1,0 +1,853 @@
+
+================================================================================
+PAGE 1
+================================================================================
+
+1 | P a g e  
+ 
+Ilia State University 
+Faculty of Business, Technology, and Education 
+School of Technology 
+ 
+“Custom Flight Controller Development for UAV Applications” 
+ 
+ 
+ 
+Team Members: 
+Saleh Alhomeidy 
+Akaki Gvelesiani 
+Levani Kazaishvili 
+ 
+Electrical and Electronics Engineering 
+Senior Project Design Conception A 
+Supervising Professor: Prof. Giorgi Veshapidze 
+ 
+Project Proposal  
+Tbilisi, Georgia 
+ 
+ 
+
+
+
+================================================================================
+PAGE 2
+================================================================================
+
+2 | P a g e  
+ 
+Table of Contents 
+1. Introduction ................................ ................................ ................................ ........... 4 
+1.1 Background and societal Need ................................ ................................ ................. 4 
+1.2 Project overview and Objective ................................ ................................ ................ 4 
+1.3 Project Objectives ................................ ................................ ................................ .. 5 
+1.4 Project Scope................................ ................................ ................................ ......... 6 
+1.5 Limitations ................................ ................................ ................................ ............ 6 
+2. Technical Approach and Methodology ................................ ................................ ....... 7 
+2.1 Overall System Architecture ................................ ................................ ..................... 7 
+2.2 Power Management System ................................ ................................ .................... 8 
+2.2.1 Design Standards and Protocols ................................ ................................ ......... 8 
+2.3  Processing and Control Core ................................ ................................ ................... 9 
+2.3.1 Design Standards and Protocols ................................ ................................ ....... 10 
+2.4 Sensors and Peripherals ................................ ................................ ........................ 10 
+2.4.1 Inertial Measurement Units (IMUs) ................................ ................................ ... 10 
+2.4.2 Barometric and Air-Pressure Sensing ................................ ................................  11 
+2.4.3 GPS and Magnetometer Interface................................ ................................ ..... 11 
+2.4.4 On-Screen Display and Digital Video Systems ................................ ..................... 12 
+2.4.5 CAN Bus Interface and Peripheral Support ................................ .........................  12 
+2.4.6 Airspeed Sensor Interface ................................ ................................ ................ 13 
+2.4.7 Design Standards and Protocols ................................ ................................ ....... 14 
+2.5 External Interfaces and Connector Architecture ................................ ........................ 15 
+2.5.1 Motor and Servo Control Interfaces ................................ ................................ .. 15 
+2.5.2 Radio Control Receiver Interface ................................ ................................ ....... 16 
+2.5.3 Telemetry ................................ ................................ ................................ ..... 16 
+2.5.4 Video and OSD Interfaces Telemetry ................................ ................................ . 16 
+2.5.5 Connector Reuse and User Responsibility ................................ ...........................  17 
+2.6 PCB Layout, Stack-Up, Signal Integrity, and EMC Design ................................ ........... 18 
+2.6.1 Six-Layer Stack-Up Architecture ................................ ................................ ........ 18 
+
+
+================================================================================
+PAGE 3
+================================================================================
+
+3 | P a g e  
+ 
+2.6.3 Power Plane Segregation and Noise Containment ................................ ............... 19 
+2.6.4 EMC and Certification-Oriented Design Standards ................................ ............... 19 
+3. Project Timeline and Task Allocation ................................ ................................ ........... 20 
+3.1 Project Timeline ................................ ................................ ................................ ... 20 
+3.2 Task Allocation ................................ ................................ ................................ .... 21 
+3.3 Test Platform ................................ ................................ ................................ ....... 22 
+4. Expected Outcomes and Deliverables. ................................ ................................ ......... 23 
+5. Limitations. ................................ ................................ ................................ .............. 24 
+5.1 Budget Constraints ................................ ................................ ...............................  24 
+5.2 EMI/EMC Testing Limitations ................................ ................................ ................. 24 
+5.3 Testing Scope and Validation Depth ................................ ................................ ........ 24 
+ 
+  
+
+
+================================================================================
+PAGE 4
+================================================================================
+
+4 | P a g e  
+ 
+1. Introduction 
+ 
+1.1 Background and societal Need 
+The growing integration of autonomous and semi-autonomous systems across industrial, 
+commercial, and research sectors has elevated the importance of advanced embedded control 
+platforms. Modern applications in infrastructure inspection, environmental monitoring, public 
+safety, logistics, agriculture, and robotics rely on precise, real-time sensor processing and stable 
+control algorithms to ensure safe and efficient operation. As industries accelerate toward 
+automation, the demand for engineers capable of designing, analyzing, and implementing 
+control systems at the hardware and firmware levels continues to increase. 
+Many existing flight-control solutions, while mature, are designed around fixed configurations or 
+proprietary architectures that limit deep system customization, scalability, or adaptation to 
+specialized mission profiles. Industrial applications often require hardware capable of 
+supporting heterogeneous sensors, redundant configurations, and flexible communication 
+interfaces to accommodate varying operational standards and safety requirements. 
+Furthermore, as autonomous systems evolve, industries increasingly favor platforms that offer 
+transparency, long-term maintainability, and the ability to integrate custom logic or specialized 
+control algorithms without dependence on closed ecosystems. 
+These trends highlight a clear need for modular, adaptable, and technically open flight-control 
+architectures that can be tailored to different UAV platforms and operational scenarios. A 
+custom controller designed with modern performance requirements, robust interfacing 
+capabilities, and compatibility with established firmware ecosystems directly addresses this gap, 
+supporting both current industry practices and anticipated future developments in autonomous 
+aerial systems. 
+1.2 Project overview and Objective 
+This project proposes the design and development of a fully custom flight-controller platform 
+intended for use across multiple unmanned aerial vehicle (UAV) configurations. The controller is 
+built around a high-performance STM32H743 microcontroller operating at 480 MHz, selected 
+for its computational capacity, extensive peripheral set, and suitability for real-time control 
+tasks. The hardware integrates a complete suite of essential flight sensors, including inertial 
+measurement units, barometric pressure sensing, magnetometers, and satellite-based 
+positioning modules. These components enable accurate attitude estimation, altitude 
+determination, heading reference, and global navigation, forming the sensor backbone required 
+for stable flight and autonomous operation. 
+
+
+================================================================================
+PAGE 5
+================================================================================
+
+5 | P a g e  
+ 
+A key design goal is modularity. The board incorporates standard communication interfaces 
+allowing integration with diverse UAV frames, ESC systems, GPS receivers, radio-control 
+protocols, and auxiliary sensors. The hardware architecture is engineered to maintain 
+compatibility with leading open-source firmware ecosystems such as ArduPilot, iNav, and 
+Betaflight, ensuring interoperability while also enabling the development of custom firmware 
+tailored to advanced applications. This dual-purpose approach supports both rapid validations 
+using established software and deeper experimentation through original embedded-systems 
+development. 
+Physical design adheres to practical constraints, targeting a compact form factor suitable for 50 
+mm flight-controller mounting standards commonly used in quadcopters and adaptable to 
+fixed-wing VTOL platforms. The project includes full PCB schematic design, signal-integrity 
+considerations, component selection, power-distribution architecture, and manufacturing 
+through a budget-conscious prototyping process. By June, the team will demonstrate stable 
+manual and autonomous quadcopter flight as proof of concept, validating both the hardware 
+platform and the foundational firmware components. 
+The project showcases a complete engineering workflow from concept and design to 
+implementation and testing while delivering a functional controller that is cost-efficient, 
+educationally valuable, and aligned with emerging industry needs for adaptable autonomous-
+system hardware. 
+ 
+1.3 Project Objectives 
+The objective of this project is to design and implement a custom, modular flight-controller 
+hardware platform that can support a broad range of UAV firmware ecosystems and vehicle 
+configurations. The primary focus is the development of robust electronic architecture; 
+firmware development is limited to essential board validation and flight testing. 
+The project aims to achieve the following: 
+1. Develop a complete custom PCB flight controller, integrating a high-performance STM32 
+microcontroller, essential flight sensors, GNSS support, and a reliable power-distribution 
+and protection system. 
+2. Implement a modular hardware interface layout, providing standardized UART, SPI, I²C, 
+PWM, USB, and power connections to ensure compatibility with diverse sensors, ESCs, 
+radio systems, and potential future expansions. 
+
+
+================================================================================
+PAGE 6
+================================================================================
+
+6 | P a g e  
+ 
+3. Align the hardware design with established open-source firmware ecosystems, enabling 
+the board to operate with ArduPilot, iNav, Betaflight, or other platforms without 
+requiring significant architectural changes. 
+4. Perform minimal required firmware bring-up, limited to sensor communication tests, 
+bus verification, and basic flight-stability checks needed to validate hardware 
+functionality. 
+5. Demonstrate stable quadcopter flight, using either existing firmware or simplified 
+custom implementation, solely to verify the electrical and architectural integrity of the 
+hardware platform. 
+ 
+1.4 Project Scope 
+This project encompasses the design and implementation of a custom, modular flight-controller 
+hardware platform together with the development of essential flight-control algorithms 
+required for stable manual flight and basic autonomous operation. The scope includes complete 
+PCB and hardware architecture design, sensor integration, power-management circuitry, and 
+communication-interface layout. On the firmware side, the project will implement core 
+stabilization logic, cascaded PID control loops, sensor fusion for attitude estimation, and simple 
+autonomous behaviors such as basic waypoint navigation or position hold. Advanced mission 
+planning, complex autonomy, and large-scale firmware ecosystems remain outside the project’s 
+scope, as the primary objective is to deliver a functional and extensible hardware platform 
+validated through controlled, stable flight. 
+1.5 Limitations 
+Autonomous functionality is restricted to basic behaviors intended for validation purposes 
+rather than operational deployment. Environmental robustness, regulatory certification, and 
+extended reliability testing fall outside the scope of this work and are assumed to be addressed 
+in future iterations. It is further assumed that standard UAV components such as motors, ESCs, 
+batteries, and radio-control systems operate within nominal specifications and are compatible 
+with the designed hardware platform. Moreover, the initial design will be based on industrial 
+standards and will follow codes and protocols that take certification requirements from (EASA , 
+FAA) into account.  
+  
+
+
+================================================================================
+PAGE 7
+================================================================================
+
+7 | P a g e  
+ 
+2. Technical Approach and Methodology 
+ 
+ 
+Figure [1] 
+2.1 Overall System Architecture 
+The technical approach of this project is centered on the development of modular, hardware-
+first flight-controller architecture capable of supporting multiple UAV configurations and 
+firmware ecosystems. The system is organized into four primary subsystems: power 
+management, processing and control, sensing and peripheral integration, and external 
+connectivity. A block-level representation of the complete architecture is shown in Figure 1, 
+illustrating the relationship between the microcontroller core and the surrounding hardware 
+modules. 
+At the center of the system is a high-performance STM32H743 microcontroller, selected for its 
+real-time processing capability, extensive peripheral support, and suitability for flight-control 
+applications. Surrounding the MCU, dedicated power-conditioning circuitry ensures stable 
+operation under electrically noisy UAV environments, while multiple sensor interfaces and 
+communication ports enable flexible integration with external components such as ESCs, GPS 
+modules, radio receivers, and telemetry systems.  
+
+
+
+================================================================================
+PAGE 8
+================================================================================
+
+8 | P a g e  
+ 
+The architecture prioritizes hardware modularity and electrical robustness. Standardized 
+interfaces (SPI, I²C, UART, PWM, CAN, USB) are exposed through dedicated connectors, allowing 
+the flight controller to operate with different firmware platforms and airframe types without 
+requiring hardware redesign. Firmware development is treated as a validation layer, used 
+primarily to confirm sensor communication, control-loop execution, and overall system stability. 
+2.2 Power Management System 
+The power-management and protection subsystem is designed to ensure stable and reliable 
+operation under the electrical conditions typical of UAV platforms, including voltage 
+fluctuations, high-current transients, and electromagnetic interference generated by motors 
+and ESCs. Reverse-polarity protection, transient voltage suppression, and input filtering are 
+implemented at the power entry to protect against incorrect connection and fast electrical 
+disturbances. It is worth noting that there will be a dedicated power distribution board for the 
+motors, servos and power demanding modules. Therefore, expanding the compatibility borders 
+and reinforcing the separation of low-power and high-power systems.  
+Voltage regulation is achieved through high-efficiency buck converters generating intermediate 
+supply rails, followed by dedicated low-dropout regulators supplying isolated 3.3 V domains for 
+digital logic and inertial sensors. This staged regulation approach reduces noise coupling 
+between high-current digital loads and noise-sensitive sensing circuitry. Voltage and current 
+monitoring are integrated via an I²C-connected sensing device to support diagnostics and 
+power-awareness. A USB-C power interface with automatic source selection is included to 
+support development and testing without reliance on the main battery.  
+2.2.1 Design Standards and Protocols 
+The power subsystem is designed in accordance with established industrial best practices and 
+standards. Electromagnetic immunity and transient robustness follow the principles of the IEC 
+61000 series. Low-voltage safety considerations are guided by IEC 62368-1. PCB layout and 
+power-distribution practices adhere to IPC-2221 and IPC-9592 recommendations, while USB-C 
+power behavior aligns with the USB Type-C specification. These standards are applied as design 
+references rather than certification targets. 
+  
+
+
+================================================================================
+PAGE 9
+================================================================================
+
+9 | P a g e  
+ 
+2.3  Processing and Control Core 
+The processing and control core of the flight controller is based on the STM32H743 
+microcontroller, featuring an ARM Cortex-M7 core operating at up to 480 MHz with single-
+precision floating-point support (FPU). This processing capability is sufficient to execute real-
+time attitude estimation, cascaded PID control loops, and peripheral communication within 
+deterministic timing constraints typical of UAV flight-control systems. 
+The microcontroller provides 1 MB of on-chip RAM and 2 MB of Flash memory, allowing 
+separation of program memory, runtime data, and DMA buffers. Multiple Advanced Control 
+Timers (TIM1/TIM8) and general-purpose timers support generation of motor and servo control 
+signals with microsecond-level resolution, enabling precise PWM outputs for multirotor and 
+fixed-wing actuation. Timer allocation is selected to maintain independent control of motor 
+outputs and auxiliary actuators. 
+The clock system uses an external high-speed crystal oscillator (HSE) as the primary reference 
+source to ensure stable timing for control loops and communication peripherals. The internal 
+PLL is configured to achieve the target core frequency while maintaining peripheral clock 
+domains within their specified limits. This clocking approach improves timing determinism 
+compared to internal RC oscillators, particularly for high-speed SPI communication and control-
+loop scheduling. 
+Power is supplied to the MCU through multiple dedicated supply pins (VDD, VDDA, VDDUSB), 
+each locally decoupled using a combination of bulk capacitors (µF range) and high-frequency 
+ceramic capacitors (100nF and below). Analog and digital supply domains are treated separately 
+at the schematic level to reduce coupling of digital switching noise into ADCs and other noise-
+sensitive circuits. 
+The STM32H743 provides multiple SPI, I²C, UART/USART, ADC, USB 2.0 FS, and CAN-FD capable 
+interfaces, enabling clean separation of sensor, control, and communication traffic. High-
+bandwidth sensors such as IMUs are connected via SPI, while lower-speed peripherals are 
+assigned to I²C or UART interfaces. Direct Memory Access (DMA) is employed for SPI and UART 
+data transfers to reduce CPU load and ensure predictable execution of time-critical control 
+tasks. 
+Pin multiplexing and peripheral mapping are selected to avoid resource conflicts and to 
+maintain compatibility with established open-source firmware platforms. Debug and 
+programming access is provided through SWD, allowing low-level firmware development, 
+register-level debugging, and performance analysis during system bring-up and validation. 
+
+
+================================================================================
+PAGE 10
+================================================================================
+
+10 | P a g e  
+ 
+2.3.1 Design Standards and Protocols 
+The processing and control core is designed following established embedded-system and PCB 
+design practices addressing signal integrity, electromagnetic compatibility, and timing stability. 
+Clock distribution, power decoupling, and grounding strategies are implemented in accordance 
+with IPC-2221 recommendations and EMC-oriented design principles derived from the IEC 
+61000 framework. USB connectivity associated with the microcontroller follows the USB 2.0 
+electrical specification to ensure reliable communication and signal integrity 
+ 
+2.4 Sensors and Peripherals 
+The sensor and peripheral subsystem are responsible for acquiring all primary state variables 
+required for flight stabilization, navigation, and pilot feedback. The design integrates both 
+onboard sensors and standardized external interfaces to support multirotor, fixed-wing, and 
+VTOL configurations while maintaining compatibility with existing UAV firmware ecosystems.  
+2.4.1 Inertial Measurement Units (IMUs) 
+The flight controller integrates two independent 6-axis inertial measurement units: 
+• Primary IMU: InvenSense ICM-42688-P 
+• Secondary IMU: Bosch BMI270 
+Both devices provide tri-axis accelerometer and gyroscope measurements and operate from a 
+3.3 V ±5% supply. The IMUs are interfaced via SPI, selected over I²C to meet deterministic 
+latency and bandwidth requirements for control loops operating at ≥1 kHz. 
+Each IMU is connected to the MCU via: 
+• Dedicated chip-select (CS) line 
+• Shared SPI clock (SCK), MOSI, MISO 
+The SPI bus is configured to support clock rates up to 8–10 MHz, well within the electrical limits 
+of both devices, ensuring sufficient bandwidth for: 
+• Gyroscope output data rates up to 4 kHz (ICM-42688-P) 
+• Accelerometer output data rates up to 1.6 kHz 
+  
+
+
+================================================================================
+PAGE 11
+================================================================================
+
+11 | P a g e  
+ 
+ 
+This configuration enables raw inertial data acquisition with sub-millisecond latency. Redundant 
+IMU integration allows: 
+• Sensor cross-validation 
+• Firmware-level failover 
+• Improved robustness under vibration and transient disturbances 
+2.4.2 Barometric and Air-Pressure Sensing 
+Altitude estimation is provided by an onboard BMP388 barometric pressure sensor, interfaced 
+via I²C. The sensor operates from a 3.3 V supply and supports pressure resolution on the order 
+of ±0.08 m under nominal conditions, sufficient for altitude-hold control and vertical velocity 
+estimation. 
+The I²C bus operates at 400 kHz (Fast mode), balancing update rate and bus stability. Pull-up 
+resistors are selected to meet I²C rise-time requirements for the expected bus capacitance, 
+including external devices. 
+In addition to onboard barometric sensing, a dedicated external airspeed/pressure connector is 
+provided for differential pressure sensors. This interface supplies: 
+• Regulated 3.3 V power 
+• I²C communication 
+This enables air speed measurement for fixed-wing and VTOL platforms without additional 
+analog front-end circuitry on the flight controller. 
+2.4.3 GPS and Magnetometer Interface 
+Global position and heading reference are provided through a combined GPS and 
+magnetometer module connected via a dedicated external connector. The interface supplies 
+regulated power and digital communication lines required for position, velocity, and heading 
+estimation. 
+The GPS receiver communicates with the flight controller through a UART interface operating at 
+3.3 V logic levels, supporting baud rates up to 115200 bps. This bandwidth is sufficient for 
+standard GPS message formats (e.g., NMEA sentences or vendor-specific binary protocols) at 
+update rates commonly ranging from 1 Hz to 10 Hz. The UART interface is electrically isolated 
+from high-bandwidth sensor buses to prevent interference with time-critical inertial data 
+acquisition. 
+
+
+================================================================================
+PAGE 12
+================================================================================
+
+12 | P a g e  
+ 
+The integrated magnetometer within the GPS module is interfaced via I²C, operating at 3.3 V 
+and configured for 400 kHz fast-mode operation. Locating the magnetometer within an external 
+GPS module allows physical separation from high-current conductors, voltage regulators, and 
+switching elements on the flight controller, reducing susceptibility to magnetic interference 
+without requiring onboard shielding or compensation circuitry. 
+The GPS/magnetometer connector provides: 
+• Regulated supply voltage (5V) 
+• UART TX/RX lines for GPS data 
+• I²C SCL/SDA lines for magnetometer communication 
+• Ground reference 
+This connector-level definition enables direct compatibility with widely used UAV GPS–compass 
+modules and allows the same flight controller hardware to be deployed across different 
+airframes without modification. 
+2.4.4 On-Screen Display and Digital Video Systems 
+An onboard AT7456E OSD controller is interfaced via SPI to support real-time telemetry overlay 
+on analog video signals. The SPI interface is operated within the device’s specified clock limits to 
+ensure stable character rendering and video synchronization. 
+In parallel, the flight controller includes a dedicated connector for DJI Air Unit–class digital video 
+systems, providing: 
+• Regulated power rails (9 V / 12 V, as required) 
+• UART communication for telemetry and configuration 
+• Control signaling compatible with DJI digital FPV ecosystems 
+Electrical pin assignments and voltage levels are selected to match DJI Air Unit interface 
+requirements, enabling direct integration without external adapters. 
+ 
+2.4.5 CAN Bus Interface and Peripheral Support 
+The flight controller integrates a dedicated CAN transceiver connected to the MCU’s FDCAN 
+peripheral, enabling robust differential communication with external UAV subsystems. The CAN 
+interface is designed to support distributed peripherals such as smart ESCs, power modules, 
+range sensors, or companion control boards commonly used in modern UAV architectures. 
+
+
+================================================================================
+PAGE 13
+================================================================================
+
+13 | P a g e  
+ 
+The CAN transceiver operates at 3.3 V logic levels on the MCU side and interfaces to a 
+differential CAN bus (CANH/CANL) on the external side. The design supports standard CAN 
+physical-layer requirements, including differential signaling and common-mode noise rejection, 
+making it suitable for electrically noisy environments typical of propulsion and power systems. 
+A dedicated CAN connector is provided to expose the CAN bus externally, supplying: 
+• CANH and CANL differential signal lines 
+• Ground reference 
+• Optional power rail (depending on peripheral requirements) 
+The physical-layer implementation is compatible with standard CAN bus topologies and 
+supports configurable bit rates within the operating limits of the transceiver and MCU FDCAN 
+peripheral. Bus termination is treated as a system-level consideration and is expected to be 
+applied externally according to the specific network topology and connected devices. 
+By integrating the CAN transceiver onboard while exposing the bus through a standardized 
+connector, the design enables modular expansion toward CAN-based peripherals without 
+imposing fixed assumptions about network size or device roles. 
+2.4.6 Airspeed Sensor Interface 
+The flight controller provides a dedicated airspeed sensor connector intended for integration of 
+external differential air-pressure sensors commonly used in fixed-wing and VTOL configurations. 
+The interface is defined at the electrical and protocol level to allow compatibility with a range of 
+commercially available airspeed modules without constraining the specific sensor 
+implementation. 
+The airspeed connector provides: 
+• Regulated 3.3 V supply 
+• I²C communication interface (SCL, SDA) 
+• Ground reference 
+The I²C interface supports standard-mode (100 kHz) and fast-mode (400 kHz) operation, 
+consistent with common digital airspeed sensors. Pull-up resistors are implemented on the 
+flight controller to satisfy I²C bus electrical requirements, accounting for external sensor 
+modules and cable length. 
+
+
+================================================================================
+PAGE 14
+================================================================================
+
+14 | P a g e  
+ 
+By defining the airspeed interface as a digital I²C connection rather than an analog input, the 
+design avoids the need for onboard analog signal conditioning while maintaining flexibility in 
+sensor selection. 
+ 
+2.4.7 Design Standards and Protocols 
+The sensor and peripheral subsystem are designed in accordance with established digital 
+communication and interface standards. SPI-based devices follow the Motorola SPI 
+specification, while I²C-connected sensors adhere to the NXP I²C-bus specification, including 
+open-drain signaling and pull-up requirements. Asynchronous serial communication for GPS, 
+telemetry, and digital video control interfaces follow UART framing conventions. The CAN 
+interface is implemented in accordance with ISO 11898-1 and ISO 11898-2, defining the CAN 
+data link and physical layers. Analog video signaling, and airspeed sensor for the onboard OSD 
+follows standard composite video conventions. Connector definition and schematic-level 
+interface design adhere to IPC-2221 guidelines. Layout-dependent EMC and signal-integrity 
+considerations are addressed separately in the PCB layout section.  
+
+
+================================================================================
+PAGE 15
+================================================================================
+
+15 | P a g e  
+ 
+2.5 External Interfaces and Connector Architecture 
+The external interface architecture defines the modular expansion capability of the flight 
+controller and establishes clear electrical boundaries between the onboard core subsystems 
+and user-selectable external modules. While critical sensing and processing functions are 
+implemented through fixed onboard components, all mission-dependent peripherals actuation, 
+communication, navigation modules, and video systems are interfaced through dedicated 
+connectors with explicitly defined electrical contracts. 
+This separation allows the same hardware platform to support multiple UAV configurations 
+without schematic modification, while preserving deterministic behavior for time-critical 
+onboard subsystems. 
+2.5.1 Motor and Servo Control Interfaces 
+The flight controller provides a total of 12 independent PWM output channels, all configurable 
+at the firmware level and mapped to MCU timer resources. This output capacity is selected to 
+support a wide range of UAV configurations, including multirotor, fixed-wing, and VTOL 
+platforms, without requiring hardware modification. 
+The standard allocation of PWM outputs is organized as follows: 
+• 4 PWM outputs dedicated to a 4-in-1 ESC interface, intended for compact multirotor 
+configurations using integrated ESC modules 
+• 4 PWM outputs exposed as individual motor control pins, supporting discrete ESCs 
+commonly used in larger multirotor or hybrid configurations 
+• 4 PWM outputs allocated to servo control, enabling actuation of control surfaces, tilt 
+mechanisms, or auxiliary devices in fixed-wing and VTOL systems 
+All PWM outputs operate at 3.3 V logic levels and are generated using hardware timers to 
+ensure deterministic timing and consistent pulse width generation. Output frequency and pulse 
+width are configurable through firmware to support standard ESC protocols and servo control 
+requirements. 
+Servo power is not sourced from the flight controller logic supply. Instead, servo power is 
+provided externally through the system stack or a dedicated power-distribution board. This 
+design choice allows the use of high-voltage servos and prevents high-current or high-voltage 
+actuation loads from coupling into sensitive onboard electronics. The flight controller therefore 
+supplies only the control signal and ground reference for servo outputs, while power delivery is 
+managed externally according to application requirements. 
+
+
+================================================================================
+PAGE 16
+================================================================================
+
+16 | P a g e  
+ 
+This separation of control and power domains improves electrical robustness, increases 
+compatibility with a wider range of actuators, and aligns with modular UAV system 
+architectures. 
+2.5.2 Radio Control Receiver Interface   
+A dedicated RC receiver connector supports serial receiver protocols commonly used in UAV 
+systems, including SBUS and CRSF (ELRS). The interface provides: 
+• Regulated supply voltage 
+• UART signal input at 3.3 V logic levels 
+• Ground reference 
+The receiver interface is electrically isolated from high-bandwidth sensor buses and motor 
+outputs, ensuring reliable reception of control data under electrically noisy operating 
+conditions. 
+2.5.3 Telemetry 
+A dedicated telemetry UART interface is exposed through connector pins to support 
+bidirectional data exchange with external ground stations, radios, or companion computers. 
+This interface operates at 3.3 V logic levels and supports configurable baud rates within the 
+UART capabilities of the MCU. 
+For development and system bring-up, a standard ST-Link debug connector is provided, 
+exposing SWD signals, power reference, and ground. This interface enables low-level firmware 
+flashing, debugging, and register-level inspection without interfering with operational 
+connectors. 
+2.5.4 Video and OSD Interfaces Telemetry 
+The flight controller supports both analog and digital video systems. An analog FPV connector 
+provides video signal routing and power for traditional analog camera and VTX configurations, 
+interfacing directly with the onboard OSD controller. 
+For digital video systems, a dedicated DJI Air Unit connector is implemented. This interface 
+provides: 
+• Regulated power rail suitable for DJI digital video units 
+• UART communication for telemetry and configuration 
+• Control signals required for full integration with DJI FPV ecosystems 
+
+
+================================================================================
+PAGE 17
+================================================================================
+
+17 | P a g e  
+ 
+The connector pinout is designed to support multiple DJI Air Unit variants, enabling direct plug-
+and-play integration without external adapter boards. 
+Some of these variants are:  
+1.    DJI O3 Air Unit 
+2.    DJI FPV Air Unit v1 
+3.    DJI FPV Vista / Caddx Vista 
+4.    DJI RunCam Link 
+5.    DJI Air Unit Lite (Vista variants) 
+ 
+DJI O3 Air Unit 
+ 
+ 
+DJI FPV Air Unit v1 
+2.5.5 Connector Reuse and User Responsibility 
+Several external connectors on the flight controller are defined by protocol and electrical 
+characteristics rather than fixed functional roles. If the electrical constraints and communication 
+protocol requirements of a given connector are satisfied, certain interfaces may be repurposed 
+to support alternative peripherals. Examples include reassigning UART-based connectors for 
+telemetry, control, or peripheral communication, or using I²C connectors for different 
+compatible sensor modules. 
+This design approach increases hardware flexibility while preserving deterministic electrical 
+behavior. Responsibility for ensuring protocol compatibility, voltage requirements, and correct 
+peripheral configuration rests with the user when repurposing connectors beyond their typical 
+application. The flight controller hardware guarantees defined voltage levels, signal integrity at 
+the schematic level, and protocol-compliant electrical interfaces, but does not enforce 
+functional constraints on externally connected devices. 
+This separation of hardware capability and application-level responsibility allows advanced 
+users to adapt the platform to specialized use cases without requiring hardware modification. 
+
+
+
+================================================================================
+PAGE 18
+================================================================================
+
+18 | P a g e  
+ 
+2.6 PCB Layout, Stack-Up, Signal Integrity, and EMC Design 
+The PCB layout and stack-up are treated as a primary design axis due to their direct impact on 
+electromagnetic emissions, susceptibility, and overall system reliability. Given the mixed-signal 
+nature of the flight controller combining high-speed digital interfaces, switching power supplies, 
+sensor electronics, and high-current actuation paths, the layout is explicitly designed to meet 
+EMI/EMC design-for-compliance requirements, rather than relying on post-layout mitigation. 
+2.6.1 Six-Layer Stack-Up Architecture 
+A six-layer PCB stack-up is employed to provide controlled return paths, effective 
+electromagnetic shielding, and low-impedance power distribution. The layer assignment is 
+organized as follows: 
+• Top layer: Signal routing referenced to an adjacent solid ground plane 
+• Layer 2: Power plane (VCC) 
+• Layer 3: Solid signal ground reference 
+• Layer 4: Segregated power plane for noisy or high-current domains 
+• Layer 5: Solid ground plane 
+• Bottom layer: Signal routing referenced to an adjacent ground plane 
+This ground-power-ground sandwich structure ensures that all high-edge-rate signals are routed 
+adjacent to continuous reference planes, minimizing loop area and reducing both radiated and 
+conducted emissions. 
+2.6.2 EMI-Driven Grounding and Return-Path Control 
+Electromagnetic emissions are primarily controlled through return-path integrity rather than 
+component-level filtering. Continuous ground planes are maintained across internal layers to 
+provide predictable, low impedance return paths for all signal currents. Signal routing is 
+constrained such that return currents remain directly beneath their corresponding signal traces, 
+avoiding plane discontinuities and unintended current loops. 
+Split grounds are intentionally avoided. Instead, noise isolation between sensitive sensor circuits 
+and high-energy digital or power domains is achieved through physical separation, controlled 
+routing, and plane referencing, which is consistent with modern EMC design practice. 
+  
+
+
+================================================================================
+PAGE 19
+================================================================================
+
+19 | P a g e  
+ 
+ 
+2.6.3 Power Plane Segregation and Noise Containment 
+Power planes are separated by function to limit the propagation of switching noise across the 
+PCB. High-current and high-di/dt power paths are confined to dedicated internal layers and 
+routed to minimize loop area. This approach reduces common-mode noise injection into signal 
+reference planes and external cables, a common source of EMI failures. 
+Decoupling and bulk capacitors are placed to form localized current loops between power and 
+ground planes, further reducing high-frequency emissions. 
+2.6.4 EMC and Certification-Oriented Design Standards 
+The PCB layout and stack-up are designed in alignment with recognized EMC standards used in 
+electronic product certification: 
+• IEC 61000-6-3 / IEC 61000-6-4 — Emission standards for residential, commercial, and 
+industrial environments 
+• IEC 61000-6-1 / IEC 61000-6-2 — Immunity standards for residential and industrial 
+environments 
+• IEC 61000-4-2 / -4 / -5 — ESD, EFT, and surge immunity test references (design-for-
+compliance) 
+• CISPR 32 — Radiated and conducted emissions for multimedia and digital equipment 
+• IPC-2221 — PCB layout, grounding, and stack-up design guidelines 
+These standards guide layout decisions related to ground continuity, return-path control, plane 
+usage, and connector placement. While formal EMC certification testing is outside the scope of 
+this project, the layout is explicitly designed to maximize the likelihood of first-pass compliance 
+under standard EMI/EMC test conditions. 
+  
+
+
+================================================================================
+PAGE 20
+================================================================================
+
+20 | P a g e  
+ 
+3. Project Timeline and Task Allocation 
+3.1 Project Timeline 
+ 
+Figure [2] 
+ 
+ 
+Figure 2 presents the project timeline from October 2025 to June 2026, illustrating the 
+sequencing, overlap, and key milestones of the development process. The timeline reflects a 
+hardware-first approach, ensuring early validation of critical design decisions while enabling 
+parallel firmware and algorithm development. 
+The project begins in October 2025 with initial planning and schematic design. PCB layout and 
+stack-up design followed in November 2025, leading to PCB manufacturing in December 2025. A 
+key milestone marks the availability of an initial test board, intended for electrical validation and 
+bring-up rather than final deployment. 
+
+
+
+================================================================================
+PAGE 21
+================================================================================
+
+21 | P a g e  
+ 
+From December 2025 to January 2026, hardware testing and bring-up are conducted, enabling 
+firmware development to commence in January 2026. Firmware development continues 
+through March 2026, overlapping with sensor fusion and filtering, which culminates in a 
+milestone indicating validated IMU-based state estimation. 
+Control algorithm development is carried out between February and April 2026, focusing on 
+stabilization and manual flight control. System integration and flight testing take place from 
+April to May 2026, with a milestone marking successful initial flight validation. The final phase, 
+extending into June 2026, is dedicated to documentation, final validation, and project delivery. 
+This structured timeline ensures efficient use of development time, risk reduction through early 
+hardware validation, and sufficient margin for integration and testing prior to final submission. 
+3.2 Task Allocation 
+The project is carried out by a multidisciplinary team with responsibilities allocated according to 
+technical specialization while maintaining sufficient overlap to ensure integration and 
+continuity. Task distribution is structured to support a hardware-first development approach 
+while enabling parallel progress in firmware and system integration 
+ 
+1. Akaki Gvelesiani: Hardware Design, PCB Layout, and Low-Level Firmware 
+Development responsibilities include system architecture definition, schematic 
+design, six-layer PCB layout and stack-up development, power distribution, 
+sensor and interface integration, and EMI/EMC-aware layout practices. In 
+addition to hardware responsibilities, this role focuses on low-level firmware, 
+including microcontroller bring-up, clock and reset configuration, hardware 
+abstraction layer setup, peripheral initialization, sensor fusion, filtering, and 
+driver development for sensors, communication interfaces, and timers. Close 
+interaction between hardware and low-level firmware ensures rapid validation 
+during bring-up and early testing.  
+ 
+2. Saleh Alhomeidy: Hardware Design and High-Level Firmware. Development 
+responsibilities include shared ownership of schematic design and PCB layout, 
+design review of routing, grounding, and stack-up decisions, and coordination of 
+hardware revisions. This role additionally focuses on high-level firmware, 
+including state estimation, control logic implementation, and tuning of 
+stabilization algorithms for manual flight. By combining hardware insight with 
+control-level firmware development, this role ensures that algorithm design is 
+aligned with real hardware constraints and sensor behavior.  
+
+
+================================================================================
+PAGE 22
+================================================================================
+
+22 | P a g e  
+ 
+  
+3. Levani Kazaishvili: Component Sourcing, Budget Management, and Mechanical 
+Integration: include component selection and availability verification, 
+procurement and cost tracking, budget management, and consideration of 
+mechanical constraints such as board dimensions, mounting patterns, connector 
+accessibility, and integration with airframe and stack components. This role 
+supports design decisions by ensuring feasibility with respect to supply chain 
+constraints, cost limitations, and physical integration requirements.   
+ 
+ 
+ 
+3.3 Test Platform 
+System validation and flight testing will be conducted using a 7-inch quadcopter platform, 
+selected to provide a stable and representative test environment for evaluating the flight 
+controller hardware and firmware. This platform offers sufficient payload capacity to 
+accommodate the custom flight controller, external sensors, power distribution hardware, and 
+digital video systems, while remaining manageable for iterative testing and tuning. 
+The quadcopter configuration will be used to validate core system functionality, including power 
+integrity under dynamic load, data acquisition, actuator signal generation, and manual flight 
+stabilization. Testing on this platform enables controlled evaluation of real-world operating 
+conditions such as vibration, electrical noise from propulsion systems, and environmental 
+disturbances, which are critical for assessing the robustness of the hardware design. 
+The test platform will be equipped with standard multirotor components, including brushless 
+motors, electronic speed controllers (ESCs), a lithium-polymer battery, and an RC receiver, 
+providing a representative operating environment for the flight controller. Initial validation will 
+focus on bench testing and tethered tests, followed by free flight tests once system stability is 
+confirmed. 
+If time and system maturity permit, additional validation may be conducted on a fixed-wing or 
+VTOL platform to demonstrate the modularity of the hardware architecture and the flexibility of 
+the sensor and actuator interfaces. Such testing would focus on reuse of the same flight 
+controller hardware with minimal configuration changes, rather than full development of fixed-
+wing-specific control algorithms. This staged testing approach prioritizes reliable validation of 
+the core hardware platform while allowing optional extension to additional airframe 
+configurations if project constraints are allowed. 
+
+
+================================================================================
+PAGE 23
+================================================================================
+
+23 | P a g e  
+ 
+4. Expected Outcomes and Deliverables. 
+Upon completion of the project, the following outcomes are expected: 
+• A custom-designed six-layer flight controller PCB, including complete schematics, PCB 
+layout, and manufacturing files, developed with explicit consideration for power 
+integrity, signal integrity, and EMI/EMC design principles. 
+• A fully assembled and electrically validated test board, with verified power rails, clock 
+generation, debug access, and functional communication interfaces. 
+• Integration and validation of core onboard sensors and peripherals, including inertial 
+measurement units, barometric sensing, CAN communication, and external sensor 
+interfaces, demonstrating reliable data acquisition under bench-test conditions. 
+• A functional embedded firmware framework, including microcontroller initialization, 
+low-level peripheral drivers, sensor data acquisition, filtering, and basic system services 
+required for flight control operation. 
+• Implementation of manual flight control logic, including stabilized attitude control and 
+actuator output generation, validated through bench testing and initial flight tests. 
+• Demonstration of system-level integration, showing correct interaction between 
+hardware, firmware, sensors, actuators, and external modules such as RC receivers and 
+video systems. 
+• Comprehensive project documentation, including design rationale, hardware and 
+firmware descriptions, test procedures, results, and analysis, as well as final presentation 
+materials. 
+These outcomes collectively demonstrate the successful design and validation of a modular, 
+hardware-focused flight controller platform capable of supporting multiple UAV configurations 
+and future extensions. 
+  
+
+
+================================================================================
+PAGE 24
+================================================================================
+
+24 | P a g e  
+ 
+5. Limitations 
+Despite careful planning and engineering-oriented design decisions, the project is subject to 
+several practical limitations that influence the scope and validation depth of the final system. 
+5.1 Budget Constraints 
+The project is developed under a strict budget limitation of approximately 800 GEL (≈ 280 USD). 
+This constraint affects component selection, number of prototype iterations, and feature 
+inclusions. As a result, the design prioritizes modularity, reuse of commercially available 
+components, and a single primary hardware prototype, with limited allowance for multiple PCB 
+fabrication or extensive hardware redundancy. 
+5.2 EMI/EMC Testing Limitations 
+While the PCB layout and stack-up are explicitly designed with EMI/EMC compliance principles 
+in mind, formal electromagnetic emission and immunity testing cannot be performed within the 
+scope of this project. Certified EMI/EMC validation requires specialized equipment such as 
+spectrum analyzers, EMI receivers, LISNs, and shielded test environments, which are not 
+accessible under the available budget and laboratory resources. 
+To mitigate this limitation, the project adopts a design-for-compliance approach, relying on 
+established layout practices and pre-compliance analysis methods. Signal integrity, power 
+integrity, and noise coupling are evaluated using simulation and analytical tools, including 
+circuit-level simulation (e.g., SPICE-based tools ,Open EMS), interface modeling, and 
+manufacturer-provided reference models. Layout decisions are guided by industry standards 
+and best practices to reduce the likelihood of EMI/EMC issues prior to any formal certification 
+testing. 
+5.3 Testing Scope and Validation Depth 
+System validation is primarily limited to bench testing and flight testing on representative 
+airframes, rather than exhaustive environmental or regulatory testing. As a result, performance 
+validation focuses on functional correctness, stability, and robustness under realistic operating 
+conditions rather than compliance with formal certification thresholds. 
+These limitations are acknowledged as inherent to an academic, prototype-level project and do 
+not detract from the technical validity of the design. Instead, they reflect realistic engineering 
+trade-offs and reinforce the project’s emphasis on sound architecture, standards-aware design, 
+and future extensibility toward more comprehensive testing if resources permit. 
+ 
+ 
+

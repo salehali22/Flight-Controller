@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Flight Controller | UAV Applications</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-text">FC</span>
+                <span class="logo-subtitle">Flight Controller</span>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#overview" class="nav-link">Overview</a></li>
+                <li><a href="#specs" class="nav-link">Specifications</a></li>
+                <li><a href="#progress" class="nav-link">Progress</a></li>
+                <li><a href="#team" class="nav-link">Team</a></li>
+                <li><a href="#documentation" class="nav-link">Documentation</a></li>
+                <li><a href="downloads.html" class="nav-link">Downloads</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <button class="nav-toggle" id="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-background">
+            <div class="circuit-pattern"></div>
+            <div class="floating-particles">
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+            </div>
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-badge">Senior Project Design</div>
+            <h1 class="hero-title">
+                Custom Flight Controller<br>
+                <span class="gradient-text">Development for UAV</span>
+            </h1>
+            <p class="hero-description">
+                A fully custom, modular flight controller platform designed for multiple UAV configurations,
+                featuring high-performance processing, redundant sensors, and industry-standard interfaces.
+            </p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-value">24</div>
+                    <div class="stat-label">Months Project</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">480</div>
+                    <div class="stat-label">MHz Processing</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">6</div>
+                    <div class="stat-label">Layer PCB</div>
+                </div>
+            </div>
+            <div class="hero-buttons">
+                <a href="#specs" class="btn btn-primary">
+                    <span>View Specifications</span>
+                    <svg class="btn-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <a href="downloads.html" class="btn btn-secondary">
+                    <span>Downloads</span>
+                    <svg class="btn-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M10 2.5V12.5M10 12.5L6.25 8.75M10 12.5L13.75 8.75M2.5 15V16.25C2.5 17.0784 3.17157 17.75 4 17.75H16C16.8284 17.75 17.5 17.0784 17.5 16.25V15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="mouse"></div>
+        </div>
+    </section>
+
+    <!-- Overview Section -->
+    <section id="overview" class="section overview">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">About</span>
+                <h2 class="section-title">Project Overview</h2>
+                <p class="section-description">
+                    A comprehensive embedded systems project developing a custom flight controller
+                    from schematic design to functional flight validation.
+                </p>
+            </div>
+            
+            <div class="overview-grid">
+                <div class="overview-card">
+                    <div class="card-icon">🎯</div>
+                    <h3>Objective</h3>
+                    <p>Design and implement a modular flight controller hardware platform supporting multiple UAV firmware ecosystems and vehicle configurations.</p>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">🔧</div>
+                    <h3>Approach</h3>
+                    <p>Hardware-first development with emphasis on modularity, electrical robustness, and compatibility with established open-source firmware.</p>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">⚡</div>
+                    <h3>Technology</h3>
+                    <p>STM32H743 microcontroller, dual redundant IMUs, comprehensive sensor suite, and industry-standard communication interfaces.</p>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">🎓</div>
+                    <h3>Education</h3>
+                    <p>Complete engineering workflow from concept and design to implementation and testing, delivering cost-efficient, educational value.</p>
+                </div>
+            </div>
+
+            <div class="features-showcase">
+                <div class="feature-item">
+                    <div class="feature-number">01</div>
+                    <div class="feature-content">
+                        <h3>Modular Architecture</h3>
+                        <p>Standardized interfaces (UART, SPI, I²C, PWM, CAN, USB) enable compatibility with diverse UAV frames, ESC systems, and sensors.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-number">02</div>
+                    <div class="feature-content">
+                        <h3>Redundant Sensing</h3>
+                        <p>Dual independent IMUs (ICM-42688-P + BMI270) provide sensor cross-validation and firmware-level failover capabilities.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-number">03</div>
+                    <div class="feature-content">
+                        <h3>EMC Design</h3>
+                        <p>Six-layer PCB stack-up with design-for-compliance approach following IEC 61000, CISPR 32, and IPC-2221 standards.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-number">04</div>
+                    <div class="feature-content">
+                        <h3>Open Ecosystem</h3>
+                        <p>Compatible with ArduPilot, iNav, and Betaflight firmware ecosystems while enabling custom firmware development.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Specifications Section -->
+    <section id="specs" class="section specs">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Technical</span>
+                <h2 class="section-title">Specifications</h2>
+                <p class="section-description">
+                    Detailed technical specifications of the flight controller hardware platform.
+                </p>
+            </div>
+
+            <div class="specs-grid">
+                <!-- Processing Core -->
+                <div class="specs-category">
+                    <div class="category-header">
+                        <h3>Processing & Control</h3>
+                        <span class="category-badge">Core</span>
+                    </div>
+                    <ul class="specs-list">
+                        <li>
+                            <span class="spec-label">Microcontroller</span>
+                            <span class="spec-value">STM32H743</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">CPU Core</span>
+                            <span class="spec-value">ARM Cortex-M7 @ 480 MHz</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">FPU</span>
+                            <span class="spec-value">Single-precision floating-point</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">RAM</span>
+                            <span class="spec-value">1 MB on-chip</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">Flash</span>
+                            <span class="spec-value">2 MB on-chip</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">Clock Source</span>
+                            <span class="spec-value">External HSE crystal oscillator</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Sensors -->
+                <div class="specs-category">
+                    <div class="category-header">
+                        <h3>Sensors & Peripherals</h3>
+                        <span class="category-badge">Sensing</span>
+                    </div>
+                    <ul class="specs-list">
+                        <li>
+                            <span class="spec-label">Primary IMU</span>
+                            <span class="spec-value">InvenSense ICM-42688-P</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">Secondary IMU</span>
+                            <span class="spec-value">Bosch BMI270</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">IMU Interface</span>
+                            <span class="spec-value">SPI (8-10 MHz)</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">Gyro Rate</span>
+                            <span class="spec-value">Up to 4 kHz</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">Barometric</span>
+                            <span class="spec-value">BMP388 (±0.08 m resolution)</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">GPS/Magnetometer</span>
+                            <span class="spec-value">External module (UART/I²C)</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Interfaces -->
+                <div class="specs-category">
+                    <div class="category-header">
+                        <h3>Communication Interfaces</h3>
+                        <span class="category-badge">I/O</span>
+                    </div>
+                    <ul class="specs-list">
+                        <li>
+                            <span class="spec-label">PWM Outputs</span>
+                            <span class="spec-value">12 channels (motors/servos)</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">UART</span>
+                            <span class="spec-value">Multiple (GPS, telemetry, video)</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">SPI</span>
+                            <span class="spec-value">High-speed sensor interfaces</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">I²C</span>
+                            <span class="spec-value">400 kHz fast-mode</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">CAN Bus</span>
+                            <span class="spec-value">FDCAN with transceiver</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">USB</span>
+                            <span class="spec-value">USB 2.0 FS, USB-C power</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Power & PCB -->
+                <div class="specs-category">
+                    <div class="category-header">
+                        <h3>Power & PCB</h3>
+                        <span class="category-badge">Hardware</span>
+                    </div>
+                    <ul class="specs-list">
+                        <li>
+                            <span class="spec-label">PCB Layers</span>
+                            <span class="spec-value">6-layer stack-up</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">Form Factor</span>
+                            <span class="spec-value">50 mm mounting standard</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">Power Input</span>
+                            <span class="spec-value">Battery + USB-C (auto-select)</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">Regulation</span>
+                            <span class="spec-value">Buck converters + LDOs</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">Protection</span>
+                            <span class="spec-value">Reverse-polarity, transient suppression</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">Video Systems</span>
+                            <span class="spec-value">Analog OSD + DJI Air Unit support</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Interactive Component Diagram -->
+            <div class="component-diagram">
+                <h3 class="diagram-title">System Architecture</h3>
+                <div class="diagram-container">
+                    <!-- Grid Layout for proper alignment -->
+                    <div class="diagram-grid">
+                        <!-- Top Row - Sensors -->
+                        <div class="diagram-item" data-component="imu1">
+                            <div class="diagram-icon-wrapper">
+                                <div class="diagram-icon">📡</div>
+                            </div>
+                            <div class="diagram-label">ICM-42688-P</div>
+                            <div class="diagram-spec">Primary IMU</div>
+                            <div class="diagram-info-panel">
+                                <div class="info-title">InvenSense IMU</div>
+                                <div class="info-detail">6-axis (Accel + Gyro)</div>
+                                <div class="info-detail">SPI Interface</div>
+                                <div class="info-detail">Up to 4 kHz</div>
+                            </div>
+                        </div>
+                        
+                        <div class="diagram-item central" data-component="mcu">
+                            <div class="diagram-icon-wrapper">
+                                <div class="diagram-icon">💻</div>
+                            </div>
+                            <div class="diagram-label">STM32H743</div>
+                            <div class="diagram-spec">480 MHz</div>
+                            <div class="diagram-info-panel">
+                                <div class="info-title">Processing Core</div>
+                                <div class="info-detail">ARM Cortex-M7</div>
+                                <div class="info-detail">1 MB RAM | 2 MB Flash</div>
+                                <div class="info-detail">FPU Enabled</div>
+                            </div>
+                        </div>
+                        
+                        <div class="diagram-item" data-component="imu2">
+                            <div class="diagram-icon-wrapper">
+                                <div class="diagram-icon">📡</div>
+                            </div>
+                            <div class="diagram-label">BMI270</div>
+                            <div class="diagram-spec">Secondary IMU</div>
+                            <div class="diagram-info-panel">
+                                <div class="info-title">Bosch IMU</div>
+                                <div class="info-detail">6-axis (Accel + Gyro)</div>
+                                <div class="info-detail">SPI Interface</div>
+                                <div class="info-detail">Redundant Sensing</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bottom Row -->
+                        <div class="diagram-item" data-component="power">
+                            <div class="diagram-icon-wrapper">
+                                <div class="diagram-icon">⚡</div>
+                            </div>
+                            <div class="diagram-label">Power Mgmt</div>
+                            <div class="diagram-spec">Regulation</div>
+                            <div class="diagram-info-panel">
+                                <div class="info-title">Power System</div>
+                                <div class="info-detail">Buck Converters</div>
+                                <div class="info-detail">LDO Regulators</div>
+                                <div class="info-detail">Protection Circuits</div>
+                            </div>
+                        </div>
+                        
+                        <div class="diagram-item" data-component="baro">
+                            <div class="diagram-icon-wrapper">
+                                <div class="diagram-icon">📊</div>
+                            </div>
+                            <div class="diagram-label">BMP388</div>
+                            <div class="diagram-spec">Barometric</div>
+                            <div class="diagram-info-panel">
+                                <div class="info-title">Pressure Sensor</div>
+                                <div class="info-detail">I²C Interface</div>
+                                <div class="info-detail">±0.08 m resolution</div>
+                                <div class="info-detail">Altitude Estimation</div>
+                            </div>
+                        </div>
+                        
+                        <div class="diagram-item" data-component="can">
+                            <div class="diagram-icon-wrapper">
+                                <div class="diagram-icon">🔌</div>
+                            </div>
+                            <div class="diagram-label">CAN Bus</div>
+                            <div class="diagram-spec">FDCAN</div>
+                            <div class="diagram-info-panel">
+                                <div class="info-title">CAN Interface</div>
+                                <div class="info-detail">Differential Signaling</div>
+                                <div class="info-detail">Smart ESC Support</div>
+                                <div class="info-detail">Peripheral Expansion</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Progress Timeline Section -->
+    <section id="progress" class="section progress">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Timeline</span>
+                <h2 class="section-title">Project Progress</h2>
+                <p class="section-description">
+                    Development timeline from October 2025 to June 2026
+                </p>
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-item" data-status="completed">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">October 2025</div>
+                        <h3>Planning & Schematic Design</h3>
+                        <p>System architecture definition and initial schematic design</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-status="completed">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">November 2025</div>
+                        <h3>PCB Layout & Stack-Up</h3>
+                        <p>Six-layer PCB layout with EMC design considerations</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-status="completed">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">December 2025</div>
+                        <h3>PCB Manufacturing</h3>
+                        <p>Fabrication and assembly of initial test board</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-status="completed">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">December 2025</div>
+                        <h3>PCB Testing</h3>
+                        <p>Electrical validation and initial board testing</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-status="in-progress">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">Dec 2025 - Jan 2026</div>
+                        <h3>Hardware Testing & Bring-Up</h3>
+                        <p>Electrical validation and hardware debugging</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-status="planned">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">January - March 2026</div>
+                        <h3>Firmware Development</h3>
+                        <p>Microcontroller bring-up, drivers, and sensor integration</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-status="planned">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">February - April 2026</div>
+                        <h3>Control Algorithms</h3>
+                        <p>Sensor fusion, filtering, and stabilization logic</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-status="planned">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">April - May 2026</div>
+                        <h3>Integration & Flight Testing</h3>
+                        <p>System integration and quadcopter flight validation</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-status="planned">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">June 2026</div>
+                        <h3>Documentation & Delivery</h3>
+                        <p>Final validation, documentation, and project submission</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Stats -->
+            <div class="progress-stats">
+                <div class="progress-stat">
+                    <div class="progress-stat-icon">📅</div>
+                    <div class="progress-stat-value">45%</div>
+                    <div class="progress-stat-label">Overall Progress</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-icon">🔧</div>
+                    <div class="progress-stat-value">Hardware Testing</div>
+                    <div class="progress-stat-label">Current Phase</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-icon">📦</div>
+                    <div class="progress-stat-value">5</div>
+                    <div class="progress-stat-label">Months Remaining</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section id="team" class="section team">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Team</span>
+                <h2 class="section-title">Project Team</h2>
+                <p class="section-description">
+                    Ilia State University, Faculty of Business, Technology, and Education
+                </p>
+            </div>
+
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-avatar">
+                        <div class="avatar-placeholder">AG</div>
+                    </div>
+                    <h3>Akaki Gvelesiani</h3>
+                    <p class="team-role">Hardware Design & Low-Level Firmware</p>
+                    <p class="team-description">
+                        System architecture, schematic design, 6-layer PCB layout, EMI/EMC design,
+                        microcontroller bring-up, sensor fusion, and driver development.
+                    </p>
+                    <div class="team-social">
+                        <a href="https://www.linkedin.com/in/akaki-gvelesiani-631b27300/" target="_blank" rel="noopener noreferrer" class="social-link linkedin">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                            LinkedIn
+                        </a>
+                    </div>
+                </div>
+
+                <div class="team-card">
+                    <div class="team-avatar">
+                        <div class="avatar-placeholder">SA</div>
+                    </div>
+                    <h3>Saleh Alhomeidy</h3>
+                    <p class="team-role">Hardware Design & High-Level Firmware</p>
+                    <p class="team-description">
+                        Schematic design review, PCB layout coordination, state estimation,
+                        control logic implementation, and stabilization algorithm tuning.
+                    </p>
+                    <div class="team-social">
+                        <a href="https://www.linkedin.com/in/salehalhomeidy/" target="_blank" rel="noopener noreferrer" class="social-link linkedin">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                            LinkedIn
+                        </a>
+                    </div>
+                </div>
+
+                <div class="team-card">
+                    <div class="team-avatar">
+                        <div class="avatar-placeholder">LK</div>
+                    </div>
+                    <h3>Levani Kazaishvili</h3>
+                    <p class="team-role">Component Sourcing & Mechanical Integration</p>
+                    <p class="team-description">
+                        Component selection, procurement, budget management, and mechanical
+                        integration including board dimensions and mounting patterns.
+                    </p>
+                    <div class="team-social">
+                        <a href="https://www.linkedin.com/in/levan-kazaishvili-665139289/" target="_blank" rel="noopener noreferrer" class="social-link linkedin">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                            LinkedIn
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="supervisor-info">
+                <div class="supervisor-card">
+                    <h3>Supervising Professor</h3>
+                    <p class="supervisor-name">Prof. Giorgi Veshapidze</p>
+                    <p class="supervisor-institution">Ilia State University</p>
+                    <div class="team-social" style="margin-top: 1rem;">
+                        <a href="https://www.linkedin.com/in/giorgi-veshapidze-71227448/" target="_blank" rel="noopener noreferrer" class="social-link linkedin">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                            LinkedIn
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Documentation & Gallery Section -->
+    <section id="documentation" class="section documentation">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Resources</span>
+                <h2 class="section-title">Documentation & Gallery</h2>
+                <p class="section-description">
+                    Project documentation, design files, and visual progress gallery
+                </p>
+            </div>
+
+            <div class="docs-tabs">
+                <button class="tab-btn active" data-tab="gallery">Gallery</button>
+                <button class="tab-btn" data-tab="documents">Documents</button>
+                <button class="tab-btn" data-tab="downloads">Downloads</button>
+            </div>
+
+            <!-- Gallery Tab -->
+            <div class="tab-content active" id="gallery-tab">
+                <div class="gallery-grid">
+                    <div class="gallery-item">
+                        <div class="gallery-placeholder">
+                            <span class="placeholder-icon">📸</span>
+                            <span class="placeholder-text">PCB Design Preview</span>
+                        </div>
+                        <div class="gallery-overlay">
+                            <span>PCB Layout</span>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <div class="gallery-placeholder">
+                            <span class="placeholder-icon">📸</span>
+                            <span class="placeholder-text">Component Assembly</span>
+                        </div>
+                        <div class="gallery-overlay">
+                            <span>Hardware Build</span>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <div class="gallery-placeholder">
+                            <span class="placeholder-icon">📸</span>
+                            <span class="placeholder-text">Flight Testing</span>
+                        </div>
+                        <div class="gallery-overlay">
+                            <span>Test Platform</span>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <div class="gallery-placeholder">
+                            <span class="placeholder-icon">📸</span>
+                            <span class="placeholder-text">Schematic Diagrams</span>
+                        </div>
+                        <div class="gallery-overlay">
+                            <span>Design Files</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="gallery-note">
+                    💡 <em>To add images: Replace placeholder divs with &lt;img&gt; tags pointing to your images in the assets/images folder</em>
+                </p>
+            </div>
+
+            <!-- Documents Tab -->
+            <div class="tab-content" id="documents-tab">
+                <div class="documents-list">
+                    <div class="document-item">
+                        <div class="doc-icon">📄</div>
+                        <div class="doc-info">
+                            <h4>Project Proposal</h4>
+                            <p>Complete project proposal document (PDF)</p>
+                        </div>
+                        <a href="Project proposal.pdf" class="doc-download" target="_blank">View</a>
+                    </div>
+                    <div class="document-item">
+                        <div class="doc-icon">📊</div>
+                        <div class="doc-info">
+                            <h4>Technical Analysis</h4>
+                            <p>Comprehensive technical analysis and feasibility study</p>
+                        </div>
+                        <a href="Project_Analysis.md" class="doc-download" target="_blank">View</a>
+                    </div>
+                    <div class="document-item">
+                        <div class="doc-icon">📐</div>
+                        <div class="doc-info">
+                            <h4>Schematic Diagrams</h4>
+                            <p>PCB schematic design files (Coming Soon)</p>
+                        </div>
+                        <span class="doc-coming-soon">Soon</span>
+                    </div>
+                    <div class="document-item">
+                        <div class="doc-icon">🔧</div>
+                        <div class="doc-info">
+                            <h4>Firmware Repository</h4>
+                            <p>Source code and firmware documentation (Coming Soon)</p>
+                        </div>
+                        <span class="doc-coming-soon">Soon</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Downloads Tab -->
+            <div class="tab-content" id="downloads-tab">
+                <div class="downloads-grid">
+                    <div class="download-card">
+                        <div class="download-icon">💾</div>
+                        <h4>Project Proposal PDF</h4>
+                        <p>Download the complete project proposal</p>
+                        <a href="Project proposal.pdf" download class="download-btn">Download PDF</a>
+                    </div>
+                    <div class="download-card">
+                        <div class="download-icon">📋</div>
+                        <h4>Technical Specifications</h4>
+                        <p>Detailed technical specifications document</p>
+                        <a href="#" class="download-btn disabled">Coming Soon</a>
+                    </div>
+                    <div class="download-card">
+                        <div class="download-icon">📁</div>
+                        <h4>Design Files</h4>
+                        <p>PCB schematics and layout files (KiCad)</p>
+                        <a href="#" class="download-btn disabled">Coming Soon</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section contact">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Contact</span>
+                <h2 class="section-title">Get In Touch</h2>
+                <p class="section-description">
+                    For inquiries about this project or collaboration opportunities
+                </p>
+            </div>
+
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <div class="contact-icon">🏫</div>
+                        <div class="contact-details">
+                            <h4>Institution</h4>
+                            <p>Ilia State University</p>
+                            <p>Faculty of Business, Technology, and Education</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">📍</div>
+                        <div class="contact-details">
+                            <h4>Location</h4>
+                            <p>Tbilisi, Georgia</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">📧</div>
+                        <div class="contact-details">
+                            <h4>Email</h4>
+                            <p><a href="mailto:project@example.com">project@example.com</a></p>
+                            <p class="contact-note"><em>Update with your actual email address</em></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-form-container">
+                    <form class="contact-form" id="contact-form">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Subject</label>
+                            <input type="text" id="subject" name="subject" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" name="message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                        <p class="form-note">
+                            <em>Note: Form requires backend integration or email service (e.g., Formspree, EmailJS)</em>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Custom Flight Controller</h4>
+                    <p>UAV Applications Development Project</p>
+                    <p class="footer-subtitle">Ilia State University | Senior Project Design</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="#overview">Overview</a></li>
+                        <li><a href="#specs">Specifications</a></li>
+                        <li><a href="#progress">Progress</a></li>
+                        <li><a href="#documentation">Documentation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Project Info</h4>
+                    <ul class="footer-links">
+                        <li>Timeline: Oct 2025 - Jun 2026</li>
+                        <li>Status: Hardware Testing</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Flight Controller Development Team. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
