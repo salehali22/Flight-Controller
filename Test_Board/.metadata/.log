@@ -602,3 +602,82 @@ org.eclipse.core.runtime.CoreException: Setup exceptions
 	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
 !SUBENTRY 1 com.st.stm32cube.ide.mcu.debug.launch 4 0 2025-12-28 20:36:09.032
 !MESSAGE Setup exceptions
+!SESSION 2026-01-14 14:24:58.467 -----------------------------------------------
+eclipse.buildId=Version 1.19.0
+java.version=21.0.3
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=en_US
+Framework arguments:  C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\.project
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\.project
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2026-01-14 14:25:08.946
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2026-01-14 14:25:08.948
+!MESSAGE Log4j2 initialized with config file C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\.metadata\.log4j2.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2026-01-14 14:25:14.113
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-01-14 14:25:16.629
+!MESSAGE Indexed 'firmware' (25 sources, 125 headers) in 2.4 sec: 13,846 declarations; 70,425 references; 2 unresolved inclusions; 36 syntax errors; 188 unresolved names (0.22%)
+!SESSION 2026-01-26 00:31:57.590 -----------------------------------------------
+eclipse.buildId=Version 1.19.0
+java.version=21.0.3
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=en_US
+Framework arguments:  C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\firmware\Flight_Controller_h7\.project
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\firmware\Flight_Controller_h7\.project
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2026-01-26 00:32:06.066
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2026-01-26 00:32:06.068
+!MESSAGE Log4j2 initialized with config file C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\.metadata\.log4j2.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2026-01-26 00:32:13.951
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-01-26 00:32:19.841
+!MESSAGE Indexed 'Flight_Controller_H7' (34 sources, 134 headers) in 4.99 sec: 20,956 declarations; 155,260 references; 3 unresolved inclusions; 46 syntax errors; 171 unresolved names (0.097%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-01-26 00:32:46.327
+!MESSAGE Indexed 'firmware' (25 sources, 125 headers) in 2.01 sec: 13,846 declarations; 70,425 references; 2 unresolved inclusions; 36 syntax errors; 188 unresolved names (0.22%)
+!SESSION 2026-01-26 00:33:03.791 -----------------------------------------------
+eclipse.buildId=Version 1.19.0
+java.version=21.0.3
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=en_US
+Framework arguments:  C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\.project
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\.project
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2026-01-26 00:33:11.497
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2026-01-26 00:33:11.498
+!MESSAGE Log4j2 initialized with config file C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\.metadata\.log4j2.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2026-01-26 00:33:18.676
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-01-26 00:33:24.737
+!MESSAGE Indexed 'firmware' (25 sources, 125 headers) in 1.69 sec: 13,846 declarations; 70,428 references; 2 unresolved inclusions; 36 syntax errors; 188 unresolved names (0.22%)
+!SESSION 2026-01-26 00:33:35.641 -----------------------------------------------
+eclipse.buildId=Version 1.19.0
+java.version=21.0.3
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=en_US
+Framework arguments:  C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\.project
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\.project
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2026-01-26 00:33:47.965
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2026-01-26 00:33:47.966
+!MESSAGE Log4j2 initialized with config file C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\.metadata\.log4j2.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2026-01-26 00:33:54.725
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-01-26 00:33:58.892
+!MESSAGE Indexed 'firmware' (25 sources, 125 headers) in 4.01 sec: 13,846 declarations; 70,428 references; 2 unresolved inclusions; 36 syntax errors; 188 unresolved names (0.22%)

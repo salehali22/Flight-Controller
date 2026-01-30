@@ -3709,6 +3709,131 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "power:+15V"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "+15V"
+				(at 0 3.556 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"+15V\""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "+15V_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "+15V_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "power:+3.3V"
 			(power)
 			(pin_numbers
@@ -4321,6 +4446,12 @@
 		(uuid "86646eb8-a230-4e47-b998-f7a6d57f83a6")
 	)
 	(junction
+		(at 236.22 142.24)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "878b9d11-ef8d-4f9a-a68d-be085906d48c")
+	)
+	(junction
 		(at 184.15 36.83)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4415,16 +4546,16 @@
 		(uuid "15e5a8de-cce2-46ad-8ac5-b8bc9f146470")
 	)
 	(no_connect
+		(at 214.63 139.7)
+		(uuid "1b2248a2-3f7f-4453-90a2-7b2abbcebb16")
+	)
+	(no_connect
 		(at 168.91 129.54)
 		(uuid "1b5c8c2c-c154-4da2-8999-92f244d7f434")
 	)
 	(no_connect
 		(at 168.91 147.32)
 		(uuid "1f2f5542-f029-4db6-a9dd-de6f3f42a9ec")
-	)
-	(no_connect
-		(at 214.63 147.32)
-		(uuid "2f6be686-8eaa-4f97-b86e-d443bcc9b859")
 	)
 	(no_connect
 		(at 214.63 177.8)
@@ -4475,10 +4606,6 @@
 		(uuid "c2b0d842-be72-427d-9735-35a651419866")
 	)
 	(no_connect
-		(at 214.63 142.24)
-		(uuid "c3a68703-52d8-45eb-9f37-787a2e531c58")
-	)
-	(no_connect
 		(at 168.91 114.3)
 		(uuid "c74b73c1-68b4-4cff-b85e-aa20c7d63757")
 	)
@@ -4493,10 +4620,6 @@
 	(no_connect
 		(at 214.63 175.26)
 		(uuid "d9675f44-a4f3-4cec-b7fa-df7197f794bc")
-	)
-	(no_connect
-		(at 214.63 129.54)
-		(uuid "e4d51542-bc0a-40c4-a918-6ece6e181042")
 	)
 	(no_connect
 		(at 168.91 76.2)
@@ -4588,6 +4711,16 @@
 	)
 	(wire
 		(pts
+			(xy 236.22 130.81) (xy 236.22 134.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "176d2bc9-b3de-4a23-b2e9-d2cfaab9c9ba")
+	)
+	(wire
+		(pts
 			(xy 76.2 109.22) (xy 76.2 110.49)
 		)
 		(stroke
@@ -4615,6 +4748,16 @@
 			(type default)
 		)
 		(uuid "222800cd-f6a0-44e8-9782-dac4835c9ade")
+	)
+	(wire
+		(pts
+			(xy 214.63 142.24) (xy 236.22 142.24)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "24c66d52-dddb-4dcd-be2f-1317b7158690")
 	)
 	(wire
 		(pts
@@ -5058,6 +5201,16 @@
 	)
 	(wire
 		(pts
+			(xy 236.22 144.78) (xy 236.22 142.24)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8790634c-d893-499e-8aa6-ddac32559e16")
+	)
+	(wire
+		(pts
 			(xy 40.64 71.12) (xy 40.64 66.04)
 		)
 		(stroke
@@ -5095,6 +5248,16 @@
 			(type default)
 		)
 		(uuid "8f255953-4b6e-4204-bec2-1a08f5be2013")
+	)
+	(wire
+		(pts
+			(xy 236.22 156.21) (xy 236.22 157.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8f8b836a-eaf8-4a51-a802-19dcb1d64dd4")
 	)
 	(wire
 		(pts
@@ -5465,6 +5628,26 @@
 			(type default)
 		)
 		(uuid "d942df9a-df88-4439-9988-d3400131346a")
+	)
+	(wire
+		(pts
+			(xy 236.22 139.7) (xy 236.22 142.24)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dc758eb9-0253-422c-a00f-7ca7cd3d32fe")
+	)
+	(wire
+		(pts
+			(xy 236.22 151.13) (xy 236.22 149.86)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ddcd89f3-5aaa-4ce6-90c1-0518f68e2af8")
 	)
 	(wire
 		(pts
@@ -6396,6 +6579,30 @@
 			)
 		)
 	)
+	(global_label "CURR"
+		(shape input)
+		(at 214.63 147.32 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify left)
+		)
+		(uuid "89693232-d5f1-408b-8eab-4ef1eb92ef67")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 219.7912 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "M1"
 		(shape input)
 		(at 214.63 154.94 0)
@@ -6804,6 +7011,30 @@
 			)
 		)
 	)
+	(global_label "EXPANSION_TX"
+		(shape input)
+		(at 214.63 129.54 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify left)
+		)
+		(uuid "c1a58ad1-b5ed-4cc8-8b3f-b971bf62d5e3")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 224.9075 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "IMU_MISO"
 		(shape input)
 		(at 214.63 68.58 0)
@@ -6843,30 +7074,6 @@
 		(uuid "cba001eb-2e7c-444f-95f3-bd0db60c2c25")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 221.574 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "INA226_ALERT"
-		(shape input)
-		(at 214.63 139.7 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.762 0.762)
-				(thickness 0.1524)
-				(bold yes)
-			)
-			(justify left)
-		)
-		(uuid "cd189dcf-fbab-4b90-8205-26eca1599af3")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 224.5809 139.7 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7116,7 +7323,7 @@
 			)
 		)
 	)
-	(global_label "ESC_RX"
+	(global_label "EXPANSION_RX"
 		(shape input)
 		(at 214.63 127 0)
 		(fields_autoplaced yes)
@@ -7130,7 +7337,7 @@
 		)
 		(uuid "f84d4c7f-a51a-4b03-9874-091ea49b96e5")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 221.1428 127 0)
+			(at 225.0889 127 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7182,7 +7389,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0.01uF"
+		(property "Value" "10nF"
 			(at 38.608 237.998 0)
 			(effects
 				(font
@@ -7218,6 +7425,15 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 39.37 240.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "46f774bc-9832-48d8-a19d-f5e93fda4089")
 		)
@@ -7228,6 +7444,82 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/8463a60f-8f72-494c-88d1-488c894f8e30"
 					(reference "C21")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small")
+		(at 236.22 137.16 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "07a83b56-a06a-439e-b33d-990c3c63493f")
+		(property "Reference" "R7"
+			(at 234.188 136.906 90)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 238.506 136.906 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 236.22 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 236.22 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 236.22 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
+			(at 236.22 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a0bd7024-c0b0-4a1b-a057-58ac350c7be0")
+		)
+		(pin "2"
+			(uuid "bc3dc109-c38c-43e5-9492-f2d0bffb1821")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/8463a60f-8f72-494c-88d1-488c894f8e30"
+					(reference "R7")
 					(unit 1)
 				)
 			)
@@ -7419,6 +7711,15 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 72.39 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "52089b1d-28d4-42eb-adc7-23d437fc0f64")
 		)
@@ -7480,6 +7781,15 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor, small symbol"
+			(at 64.77 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
 			(at 64.77 59.69 0)
 			(effects
 				(font
@@ -7556,6 +7866,15 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 54.61 100.33 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "6329eae6-4409-4b41-b149-4388b84730d2")
 		)
@@ -7616,6 +7935,15 @@
 		)
 		(property "Description" "Resistor, small symbol"
 			(at 71.12 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
+			(at 71.12 151.13 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7690,6 +8018,15 @@
 				(font
 					(size 1.27 1.27)
 				)
+			)
+		)
+		(property "Link" ""
+			(at 209.55 241.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
 			)
 		)
 		(instances
@@ -7822,6 +8159,15 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 45.72 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "18b5c652-1007-480c-95be-4c4b073aecd5")
 		)
@@ -7883,6 +8229,15 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor, small symbol"
+			(at 73.66 196.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
 			(at 73.66 196.85 0)
 			(effects
 				(font
@@ -8287,6 +8642,15 @@
 			)
 		)
 		(property "Description" "STMicroelectronics Arm Cortex-M7 MCU, 2048KB flash, 1024KB RAM, 480 MHz, 1.71-3.6V, 82 GPIO, LQFP100"
+			(at 191.77 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
 			(at 191.77 116.84 0)
 			(effects
 				(font
@@ -8797,6 +9161,15 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 58.42 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "8ff20f8b-7676-4a34-9bd7-f641c2426e93")
 		)
@@ -8858,6 +9231,15 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor, small symbol"
+			(at 163.83 176.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
 			(at 163.83 176.53 0)
 			(effects
 				(font
@@ -8935,6 +9317,15 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 40.64 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7df0d58e-40e2-43a1-b130-edd0500e01c1")
 		)
@@ -8996,6 +9387,15 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor, small symbol"
+			(at 157.48 68.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
 			(at 157.48 68.58 0)
 			(effects
 				(font
@@ -9073,6 +9473,15 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 76.2 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "07342822-92cf-45ee-8fc1-2978d8a839f7")
 		)
@@ -9133,6 +9542,15 @@
 			)
 		)
 		(property "Description" "3.3V CMOS SMD Crystal Clock Oscillator, Abracon"
+			(at 57.15 243.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
 			(at 57.15 243.84 0)
 			(effects
 				(font
@@ -9216,6 +9634,15 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 57.15 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "57c41011-a3b1-43f3-9e85-575a9fd5165a")
 		)
@@ -9257,7 +9684,7 @@
 				)
 			)
 		)
-		(property "Footprint" "LED_SMD:LED_0402_1005Metric"
+		(property "Footprint" "LED_SMD:LED_0805_2012Metric"
 			(at 160.02 243.84 0)
 			(effects
 				(font
@@ -9285,6 +9712,15 @@
 			)
 		)
 		(property "Sim.Pins" "1=K 2=A"
+			(at 160.02 243.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
 			(at 160.02 243.84 0)
 			(effects
 				(font
@@ -9426,6 +9862,15 @@
 				)
 			)
 		)
+		(property "Link" ""
+			(at 209.55 234.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/8463a60f-8f72-494c-88d1-488c894f8e30"
@@ -9461,7 +9906,7 @@
 				)
 			)
 		)
-		(property "Footprint" "LED_SMD:LED_0402_1005Metric"
+		(property "Footprint" "LED_SMD:LED_0805_2012Metric"
 			(at 160.02 232.41 0)
 			(effects
 				(font
@@ -9489,6 +9934,15 @@
 			)
 		)
 		(property "Sim.Pins" "1=K 2=A"
+			(at 160.02 232.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
 			(at 160.02 232.41 0)
 			(effects
 				(font
@@ -9699,6 +10153,15 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 80.01 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "ec62aed2-5e5a-437b-b315-73882964ee30")
 		)
@@ -9768,6 +10231,15 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 87.63 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "248d9ebe-6e4d-42df-9bf1-121a96aa22f9")
 		)
@@ -9778,6 +10250,82 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/8463a60f-8f72-494c-88d1-488c894f8e30"
 					(reference "C32")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small")
+		(at 236.22 147.32 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "82aa93dc-bcd0-421c-95e7-f334103ef4ca")
+		(property "Reference" "R6"
+			(at 234.188 147.066 90)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+			)
+		)
+		(property "Value" "1k"
+			(at 238.506 147.066 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 236.22 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 236.22 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 236.22 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
+			(at 236.22 147.32 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "985b8f17-e9c6-415f-a9b1-af050a967c95")
+		)
+		(pin "2"
+			(uuid "43529b59-d80e-4b19-aad1-617c99a4d02a")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/8463a60f-8f72-494c-88d1-488c894f8e30"
+					(reference "R6")
 					(unit 1)
 				)
 			)
@@ -9911,6 +10459,15 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 60.96 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "fe6a6df6-32c8-4d5d-bc69-61b6fb6e6efd")
 		)
@@ -9972,6 +10529,15 @@
 		)
 		(property "Description" "Resistor, small symbol"
 			(at 147.32 232.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
+			(at 147.32 232.41 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10121,6 +10687,71 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/8463a60f-8f72-494c-88d1-488c894f8e30"
 					(reference "#PWR051")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+15V")
+		(at 236.22 130.81 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "aceaadd8-4ab1-4909-b309-acf4eb995161")
+		(property "Reference" "#PWR019"
+			(at 236.22 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VBAT"
+			(at 236.22 126.746 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 236.22 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 236.22 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+15V\""
+			(at 236.22 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "aefcdc64-b036-4adc-b210-e6dd5fbd2519")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/8463a60f-8f72-494c-88d1-488c894f8e30"
+					(reference "#PWR019")
 					(unit 1)
 				)
 			)
@@ -10312,6 +10943,15 @@
 				)
 			)
 		)
+		(property "Link" ""
+			(at 209.55 248.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/8463a60f-8f72-494c-88d1-488c894f8e30"
@@ -10366,6 +11006,15 @@
 		)
 		(property "Description" "Resistor, small symbol"
 			(at 81.28 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
+			(at 81.28 190.5 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10641,6 +11290,15 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 67.31 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "2b256d42-52ec-4c65-8ad1-f2d190675bb5")
 		)
@@ -10651,6 +11309,84 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/8463a60f-8f72-494c-88d1-488c894f8e30"
 					(reference "C27")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Small")
+		(at 236.22 153.67 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "dbe016ee-25b1-4aec-b053-7967119821e0")
+		(property "Reference" "C56"
+			(at 241.046 155.956 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "0.1uF"
+			(at 241.808 151.638 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+			(at 236.22 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 236.22 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor, small symbol"
+			(at 236.22 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
+			(at 236.22 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "852dddee-8e78-4c64-8658-24a2b07af8cd")
+		)
+		(pin "2"
+			(uuid "9b6652ea-3852-4c4a-9d02-971a7f1c9c7f")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/8463a60f-8f72-494c-88d1-488c894f8e30"
+					(reference "C56")
 					(unit 1)
 				)
 			)
@@ -10775,6 +11511,15 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 147.32 243.84 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "de33fb4c-2ce3-4149-825f-0ae4e28a7b60")
 		)
@@ -10836,6 +11581,15 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor, small symbol"
+			(at 157.48 176.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
 			(at 157.48 176.53 0)
 			(effects
 				(font
@@ -10912,6 +11666,15 @@
 				)
 			)
 		)
+		(property "Link" ""
+			(at 209.55 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/8463a60f-8f72-494c-88d1-488c894f8e30"
@@ -10967,6 +11730,15 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor, small symbol"
+			(at 48.26 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
 			(at 48.26 59.69 0)
 			(effects
 				(font
@@ -11052,6 +11824,73 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/8463a60f-8f72-494c-88d1-488c894f8e30"
 					(reference "#PWR062")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 236.22 157.48 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "faff3cf4-25bc-4f9a-8205-37df70aa77b6")
+		(property "Reference" "#PWR018"
+			(at 236.22 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 236.22 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 236.22 157.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 236.22 157.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 236.22 157.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "5f693cbd-a695-41ff-812a-c793a162363e")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/8463a60f-8f72-494c-88d1-488c894f8e30"
+					(reference "#PWR018")
 					(unit 1)
 				)
 			)

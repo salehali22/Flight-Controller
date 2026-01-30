@@ -1724,3 +1724,17 @@ arm-none-eabi-size  firmware.elf
   54332	    488	   3792	  58612	   e4f4	firmware.elf
 Finished building: default.size.stdout
  
+14:25:37 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-size  firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  54332	    488	   3792	  58612	   e4f4	firmware.elf
+Finished building: default.size.stdout
+ 
+14:29:27 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-size  firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  54332	    488	   3792	  58612	   e4f4	firmware.elf
+Finished building: default.size.stdout
+ 

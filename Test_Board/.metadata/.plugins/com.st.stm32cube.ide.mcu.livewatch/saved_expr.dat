@@ -7,8 +7,6 @@ init_status
 read_status
 data.temperature
 data.pressure
-g_chip_id
-g_init_status
 g_init_result
 bmi270
 g_config_result

@@ -67,8 +67,6 @@ void Error_Handler(void);
 #define OSD_MISO_GPIO_Port GPIOE
 #define OSD_MOSI_Pin GPIO_PIN_6
 #define OSD_MOSI_GPIO_Port GPIOE
-#define INA226_ALERT_Pin GPIO_PIN_0
-#define INA226_ALERT_GPIO_Port GPIOC
 #define DJI_SBUS_Pin GPIO_PIN_1
 #define DJI_SBUS_GPIO_Port GPIOA
 #define GPS_TX_Pin GPIO_PIN_2
