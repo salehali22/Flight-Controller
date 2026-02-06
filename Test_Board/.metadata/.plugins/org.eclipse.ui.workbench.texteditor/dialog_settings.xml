@@ -3,6 +3,8 @@
 	<item key="hasShownOverlayPopupBefore" value="true"/>
 	<item key="replaceBarOpen" value="false"/>
 	<list key="searchhistory">
+		<item value="compute_accel_angles"/>
+		<item value="roll"/>
 		<item value="BMI270_Init()"/>
 	</list>
 </section>

@@ -6580,7 +6580,7 @@
 		)
 		(uuid "f78b9189-89fd-4bb8-9ee5-400e1aee89d6")
 	)
-	(global_label "IMU_MOSI"
+	(global_label "IMU2_MOSI"
 		(shape input)
 		(at 43.18 92.71 180)
 		(fields_autoplaced yes)
@@ -6594,7 +6594,7 @@
 		)
 		(uuid "05f75246-b713-4af3-81d9-44c917653511")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 35.5421 92.71 0)
+			(at 34.8164 92.71 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6626,7 +6626,7 @@
 			)
 		)
 	)
-	(global_label "IMU_MISO"
+	(global_label "IMU2_MISO"
 		(shape input)
 		(at 43.18 95.25 180)
 		(fields_autoplaced yes)
@@ -6640,7 +6640,7 @@
 		)
 		(uuid "090f7ab0-cd0a-4d73-bc26-23e611e561f8")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 35.5421 95.25 0)
+			(at 34.8164 95.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6694,7 +6694,7 @@
 			)
 		)
 	)
-	(global_label "IMU2_MISO"
+	(global_label "IMU_MISO"
 		(shape input)
 		(at 165.1 91.44 180)
 		(fields_autoplaced yes)
@@ -6708,7 +6708,7 @@
 		)
 		(uuid "0dd10e72-db91-424c-809e-20d67a0cf33d")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 156.9269 91.44 0)
+			(at 157.6526 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6742,7 +6742,7 @@
 			)
 		)
 	)
-	(global_label "IMU_INT1"
+	(global_label "IMU2_INT1"
 		(shape input)
 		(at 100.33 82.55 0)
 		(fields_autoplaced yes)
@@ -6756,7 +6756,7 @@
 		)
 		(uuid "1c6aa49f-61df-4e53-ac72-164bb7ae397a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 107.6776 82.55 0)
+			(at 108.2128 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6856,7 +6856,7 @@
 			)
 		)
 	)
-	(global_label "IMU2_SCLK"
+	(global_label "IMU_SCLK"
 		(shape input)
 		(at 165.1 86.36 180)
 		(fields_autoplaced yes)
@@ -6870,7 +6870,7 @@
 		)
 		(uuid "541b154c-5608-4173-992e-7f33418123ac")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 156.8181 86.36 0)
+			(at 157.5438 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6946,7 +6946,7 @@
 			)
 		)
 	)
-	(global_label "IMU2_INT1"
+	(global_label "IMU_INT1"
 		(shape input)
 		(at 195.58 96.52 0)
 		(fields_autoplaced yes)
@@ -6960,7 +6960,7 @@
 		)
 		(uuid "739b65c8-ca50-4fae-93bd-d86b7a49507e")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 202.9276 96.52 0)
+			(at 202.7371 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6970,7 +6970,7 @@
 			)
 		)
 	)
-	(global_label "IMU2_CS"
+	(global_label "IMU_CS"
 		(shape input)
 		(at 165.1 81.28 180)
 		(fields_autoplaced yes)
@@ -6984,7 +6984,7 @@
 		)
 		(uuid "79674925-25b3-424e-8bc1-fd40b9b5bf91")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 158.197 81.28 0)
+			(at 158.9227 81.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7016,7 +7016,7 @@
 			)
 		)
 	)
-	(global_label "IMU_CS"
+	(global_label "IMU2_CS"
 		(shape input)
 		(at 43.18 87.63 180)
 		(fields_autoplaced yes)
@@ -7030,7 +7030,7 @@
 		)
 		(uuid "829d6c4e-0690-4986-a289-bb29d8c98f2a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 34.6901 87.63 0)
+			(at 36.0865 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7086,7 +7086,7 @@
 			)
 		)
 	)
-	(global_label "CANL"
+	(global_label "CAN_N"
 		(shape input)
 		(at 449.58 97.79 0)
 		(fields_autoplaced yes)
@@ -7100,7 +7100,7 @@
 		)
 		(uuid "99759e3b-8a2e-4fcc-b4f1-b35188b56a41")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 454.4872 97.79 0)
+			(at 455.0678 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7158,7 +7158,7 @@
 			)
 		)
 	)
-	(global_label "IMU_SCLK"
+	(global_label "IMU2_SCLK"
 		(shape input)
 		(at 43.18 90.17 180)
 		(fields_autoplaced yes)
@@ -7172,7 +7172,7 @@
 		)
 		(uuid "acd4dc67-61c1-4753-a5bb-3706ec2f0106")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 32.8516 90.17 0)
+			(at 34.7076 90.17 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7182,7 +7182,7 @@
 			)
 		)
 	)
-	(global_label "CANH"
+	(global_label "CAN_P"
 		(shape input)
 		(at 449.58 80.01 0)
 		(fields_autoplaced yes)
@@ -7196,7 +7196,7 @@
 		)
 		(uuid "b22f9b14-26d0-4d96-ba83-218cdcc66e31")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 454.8591 80.01 0)
+			(at 455.2492 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7298,7 +7298,7 @@
 			)
 		)
 	)
-	(global_label "IMU2_MOSI"
+	(global_label "IMU_MOSI"
 		(shape input)
 		(at 165.1 88.9 180)
 		(fields_autoplaced yes)
@@ -7312,7 +7312,7 @@
 		)
 		(uuid "e6d046c6-f485-42ec-a979-b5084e45eee1")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 151.4788 88.9 0)
+			(at 157.6526 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)

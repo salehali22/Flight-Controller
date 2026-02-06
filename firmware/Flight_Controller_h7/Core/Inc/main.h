@@ -59,30 +59,34 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define OSD_SCLK_Pin GPIO_PIN_2
-#define OSD_SCLK_GPIO_Port GPIOE
-#define OSD_CS_Pin GPIO_PIN_3
-#define OSD_CS_GPIO_Port GPIOE
-#define OSD_MISO_Pin GPIO_PIN_5
-#define OSD_MISO_GPIO_Port GPIOE
-#define OSD_MOSI_Pin GPIO_PIN_6
-#define OSD_MOSI_GPIO_Port GPIOE
+#define IMU_SCK_Pin GPIO_PIN_2
+#define IMU_SCK_GPIO_Port GPIOE
+#define IMU_CS_Pin GPIO_PIN_3
+#define IMU_CS_GPIO_Port GPIOE
+#define IMU_INT_Pin GPIO_PIN_4
+#define IMU_INT_GPIO_Port GPIOE
+#define IMU_MISO_Pin GPIO_PIN_5
+#define IMU_MISO_GPIO_Port GPIOE
+#define IMU_MOSI_Pin GPIO_PIN_6
+#define IMU_MOSI_GPIO_Port GPIOE
+#define ADC_VOLTAGE_Pin GPIO_PIN_1
+#define ADC_VOLTAGE_GPIO_Port GPIOC
+#define ADC_CURR_Pin GPIO_PIN_3
+#define ADC_CURR_GPIO_Port GPIOC
 #define DJI_SBUS_Pin GPIO_PIN_1
 #define DJI_SBUS_GPIO_Port GPIOA
-#define GPS_TX_Pin GPIO_PIN_2
-#define GPS_TX_GPIO_Port GPIOA
-#define GPS_RX_Pin GPIO_PIN_3
-#define GPS_RX_GPIO_Port GPIOA
-#define IMU_CS_Pin GPIO_PIN_4
-#define IMU_CS_GPIO_Port GPIOA
-#define IMU_SCLK_Pin GPIO_PIN_5
-#define IMU_SCLK_GPIO_Port GPIOA
-#define IMU_MISO_Pin GPIO_PIN_6
-#define IMU_MISO_GPIO_Port GPIOA
-#define IMU_MOSI_Pin GPIO_PIN_7
-#define IMU_MOSI_GPIO_Port GPIOA
-#define IMU_INT1_Pin GPIO_PIN_4
-#define IMU_INT1_GPIO_Port GPIOC
+#define VTX_TX_Pin GPIO_PIN_2
+#define VTX_TX_GPIO_Port GPIOA
+#define VTX_RX_Pin GPIO_PIN_3
+#define VTX_RX_GPIO_Port GPIOA
+#define OSD_CS_Pin GPIO_PIN_4
+#define OSD_CS_GPIO_Port GPIOA
+#define OSD_SCK_Pin GPIO_PIN_5
+#define OSD_SCK_GPIO_Port GPIOA
+#define OSD_MISO_Pin GPIO_PIN_6
+#define OSD_MISO_GPIO_Port GPIOA
+#define OSD_MOSI_Pin GPIO_PIN_7
+#define OSD_MOSI_GPIO_Port GPIOA
 #define STATUS_LED_2_Pin GPIO_PIN_5
 #define STATUS_LED_2_GPIO_Port GPIOC
 #define STATUS_LED_1_Pin GPIO_PIN_0
@@ -153,8 +157,10 @@ void Error_Handler(void);
 #define GPS_SCL_GPIO_Port GPIOB
 #define GPS_SDA_Pin GPIO_PIN_7
 #define GPS_SDA_GPIO_Port GPIOB
-#define VTX_TX_Pin GPIO_PIN_1
-#define VTX_TX_GPIO_Port GPIOE
+#define GPS_RX_Pin GPIO_PIN_0
+#define GPS_RX_GPIO_Port GPIOE
+#define GPS_TX_Pin GPIO_PIN_1
+#define GPS_TX_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
 

@@ -1345,7 +1345,7 @@ static void MX_UART8_Init(void)
   huart8.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart8.Init.ClockPrescaler = UART_PRESCALER_DIV1;
   huart8.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_HalfDuplex_Init(&huart8) != HAL_OK)
+  if (HAL_UART_Init(&huart8) != HAL_OK)
   {
     Error_Handler();
   }
@@ -1561,33 +1561,26 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOE_CLK_ENABLE();
-  __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(OSD_CS_GPIO_Port, OSD_CS_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(STATUS_LED_2_GPIO_Port, STATUS_LED_2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13|STATUS_LED_2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(OSD_CS_GPIO_Port, OSD_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(STATUS_LED_1_GPIO_Port, STATUS_LED_1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, IMU2_CS_Pin|FLASH_CS_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : OSD_CS_Pin */
-  GPIO_InitStruct.Pin = OSD_CS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(OSD_CS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : IMU_CS_Pin */
   GPIO_InitStruct.Pin = IMU_CS_Pin;
@@ -1596,18 +1589,25 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(IMU_CS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : IMU_INT1_Pin */
-  GPIO_InitStruct.Pin = IMU_INT1_Pin;
+  /*Configure GPIO pin : IMU_INT_Pin */
+  GPIO_InitStruct.Pin = IMU_INT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(IMU_INT1_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(IMU_INT_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : STATUS_LED_2_Pin */
-  GPIO_InitStruct.Pin = STATUS_LED_2_Pin;
+  /*Configure GPIO pins : PC13 STATUS_LED_2_Pin */
+  GPIO_InitStruct.Pin = GPIO_PIN_13|STATUS_LED_2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(STATUS_LED_2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : OSD_CS_Pin */
+  GPIO_InitStruct.Pin = OSD_CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(OSD_CS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : STATUS_LED_1_Pin */
   GPIO_InitStruct.Pin = STATUS_LED_1_Pin;

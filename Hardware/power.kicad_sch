@@ -4283,18 +4283,6 @@
 		(uuid "59e50d20-c207-4291-9d66-81dc127fb64a")
 	)
 	(junction
-		(at 39.37 57.15)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "5d23c811-cac9-4a44-9a02-645a44ac09e2")
-	)
-	(junction
-		(at 287.02 219.71)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "6069d21e-2cfd-45b5-b3b8-7d3cc337d689")
-	)
-	(junction
 		(at 403.86 214.63)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4317,12 +4305,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "6fda37f4-f188-474c-996e-c4c77122c4c3")
-	)
-	(junction
-		(at 92.71 113.03)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "73543e1c-c4d4-4335-ace8-4f7a7840190e")
 	)
 	(junction
 		(at 351.79 74.93)
@@ -5020,7 +5002,7 @@
 	)
 	(wire
 		(pts
-			(xy 92.71 111.76) (xy 92.71 113.03)
+			(xy 92.71 111.76) (xy 92.71 116.84)
 		)
 		(stroke
 			(width 0)
@@ -5231,7 +5213,7 @@
 	)
 	(wire
 		(pts
-			(xy 287.02 217.17) (xy 287.02 219.71)
+			(xy 287.02 217.17) (xy 287.02 222.25)
 		)
 		(stroke
 			(width 0)
@@ -5521,16 +5503,6 @@
 	)
 	(wire
 		(pts
-			(xy 92.71 113.03) (xy 92.71 116.84)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7e10f264-2350-415b-a677-ef4f1e5801c3")
-	)
-	(wire
-		(pts
 			(xy 128.27 220.98) (xy 128.27 223.52)
 		)
 		(stroke
@@ -5598,16 +5570,6 @@
 			(type default)
 		)
 		(uuid "860d36fb-eb4b-4c05-96d1-c0b27c4ef1a4")
-	)
-	(wire
-		(pts
-			(xy 39.37 54.61) (xy 39.37 57.15)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "87211719-4eed-4543-bd12-a361814c75fd")
 	)
 	(wire
 		(pts
@@ -5898,16 +5860,6 @@
 			(type default)
 		)
 		(uuid "aeb34d35-f9b5-46f4-a949-e7d89577e9ce")
-	)
-	(wire
-		(pts
-			(xy 287.02 219.71) (xy 287.02 222.25)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "af4bda1f-2cdf-40b9-8783-8999c618263d")
 	)
 	(wire
 		(pts
@@ -6482,7 +6434,7 @@
 	)
 	(wire
 		(pts
-			(xy 39.37 57.15) (xy 39.37 59.69)
+			(xy 39.37 54.61) (xy 39.37 59.69)
 		)
 		(stroke
 			(width 0)
@@ -6897,72 +6849,6 @@
 				)
 				(justify left)
 				(hide yes)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 287.02 219.71 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "002d8376-14d9-460e-bd5f-93a7147ca200")
-		(property "Reference" "#FLG07"
-			(at 288.925 219.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 289.814 219.71 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 287.02 219.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 287.02 219.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 287.02 219.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "3dc9e531-1c25-478d-862e-834301df91ae")
-		)
-		(instances
-			(project "Flight Controller"
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
-					(reference "#FLG07")
-					(unit 1)
-				)
 			)
 		)
 	)
@@ -7910,7 +7796,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+5V_USB"
+		(property "Value" "+5V"
 			(at 133.096 122.428 0)
 			(effects
 				(font
@@ -9455,7 +9341,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+5V_USB"
+		(property "Value" "+5V"
 			(at 139.446 100.838 0)
 			(effects
 				(font
@@ -10857,7 +10743,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+5V_USB"
+		(property "Value" "+5V"
 			(at 92.456 107.188 0)
 			(effects
 				(font
@@ -10982,72 +10868,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 92.71 113.03 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "8ea4c69f-e6cd-4c8f-af54-f8e4089c48ad")
-		(property "Reference" "#FLG03"
-			(at 90.805 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 89.916 113.03 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 92.71 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 92.71 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 92.71 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "f2b9c8d5-91d1-4f46-b7f1-0855f1acfadf")
-		)
-		(instances
-			(project "Flight Controller"
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
-					(reference "#FLG03")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Sensor_Energy:INA226")
 		(at 224.79 78.74 0)
 		(unit 1)
@@ -11144,72 +10964,6 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "U3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 39.37 57.15 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "9197b814-3e09-4dcf-8b6e-26f775d243fe")
-		(property "Reference" "#FLG01"
-			(at 37.465 57.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 36.576 57.15 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 39.37 57.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 39.37 57.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 39.37 57.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "843568e6-62cf-491d-a622-5ecc3cd3065b")
-		)
-		(instances
-			(project "Flight Controller"
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
-					(reference "#FLG01")
 					(unit 1)
 				)
 			)
@@ -11595,7 +11349,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 120.65 212.09 0)
 			(effects
 				(font
@@ -12043,7 +11797,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "VBAT"
+		(property "Value" "+VBAT"
 			(at 39.37 50.546 0)
 			(effects
 				(font
@@ -12094,10 +11848,10 @@
 		(lib_id "power:+15V")
 		(at 255.27 52.07 0)
 		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(uuid "ba8d2982-7ca6-4a99-b26f-7cc18b4dbaca")
 		(property "Reference" "#PWR026"
 			(at 255.27 55.88 0)

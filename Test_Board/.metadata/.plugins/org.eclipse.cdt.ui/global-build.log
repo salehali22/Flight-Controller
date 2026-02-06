@@ -1738,3 +1738,221 @@ arm-none-eabi-size  firmware.elf
   54332	    488	   3792	  58612	   e4f4	firmware.elf
 Finished building: default.size.stdout
  
+17:36:32 **** Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xB -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:131:12: warning: unused variable 'last_tick' [-Wunused-variable]
+  131 |   uint32_t last_tick = 0;
+      |            ^~~~~~~~~
+arm-none-eabi-gcc -o "firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: firmware.elf
+ 
+arm-none-eabi-size  firmware.elf 
+arm-none-eabi-objdump -h -S firmware.elf  > "firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  26620	    472	   2480	  29572	   7384	firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: firmware.list
+ 
+17:36:53 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-size  firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26620	    472	   2480	  29572	   7384	firmware.elf
+Finished building: default.size.stdout
+ 
+17:40:07 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-size  firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26620	    472	   2480	  29572	   7384	firmware.elf
+Finished building: default.size.stdout
+ 
+17:40:26 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-size  firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26620	    472	   2480	  29572	   7384	firmware.elf
+Finished building: default.size.stdout
+ 
+17:48:20 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xB -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:136:12: warning: unused variable 'last_tick' [-Wunused-variable]
+  136 |   uint32_t last_tick = 0;
+      |            ^~~~~~~~~
+arm-none-eabi-gcc -o "firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: firmware.elf
+ 
+arm-none-eabi-size  firmware.elf 
+arm-none-eabi-objdump -h -S firmware.elf  > "firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  26764	    472	   2488	  29724	   741c	firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: firmware.list
+ 
+17:49:09 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-size  firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26764	    472	   2488	  29724	   741c	firmware.elf
+Finished building: default.size.stdout
+ 
+18:08:15 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xB -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: firmware.elf
+ 
+arm-none-eabi-size  firmware.elf 
+arm-none-eabi-objdump -h -S firmware.elf  > "firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  27276	    472	   2528	  30276	   7644	firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: firmware.list
+ 
+18:23:58 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xB -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: firmware.elf
+ 
+arm-none-eabi-size  firmware.elf 
+arm-none-eabi-objdump -h -S firmware.elf  > "firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  27460	    472	  14528	  42460	   a5dc	firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: firmware.list
+ 
+18:43:25 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-size  firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  27460	    472	  14528	  42460	   a5dc	firmware.elf
+Finished building: default.size.stdout
+ 
+18:48:21 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-size  firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  27460	    472	  14528	  42460	   a5dc	firmware.elf
+Finished building: default.size.stdout
+ 
+19:09:37 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xB -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: firmware.elf
+ 
+arm-none-eabi-size  firmware.elf 
+arm-none-eabi-objdump -h -S firmware.elf  > "firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  29500	    472	   8552	  38524	   967c	firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: firmware.list
+ 
+19:15:13 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-size  firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  29500	    472	   8552	  38524	   967c	firmware.elf
+Finished building: default.size.stdout
+ 
+19:15:38 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-size  firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  29500	    472	   8552	  38524	   967c	firmware.elf
+Finished building: default.size.stdout
+ 
+19:26:29 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xB -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: firmware.elf
+ 
+arm-none-eabi-size  firmware.elf 
+arm-none-eabi-objdump -h -S firmware.elf  > "firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  29500	    472	   8552	  38524	   967c	firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: firmware.list
+ 
+19:27:02 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-size  firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  29500	    472	   8552	  38524	   967c	firmware.elf
+Finished building: default.size.stdout
+ 
+19:55:11 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xB -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: firmware.elf
+ 
+arm-none-eabi-size  firmware.elf 
+arm-none-eabi-objdump -h -S firmware.elf  > "firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  29500	    472	   8552	  38524	   967c	firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: firmware.list
+ 
+19:58:36 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xB -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: firmware.elf
+ 
+arm-none-eabi-size  firmware.elf 
+arm-none-eabi-objdump -h -S firmware.elf  > "firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  29500	    472	   8552	  38524	   967c	firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: firmware.list
+ 
+20:02:33 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xB -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: firmware.elf
+ 
+arm-none-eabi-size  firmware.elf 
+arm-none-eabi-objdump -h -S firmware.elf  > "firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  29500	    472	   8552	  38524	   967c	firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: firmware.list
+ 
+20:03:07 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-size  firmware.elf 
+   text	   data	    bss	    dec	    hex	filename
+  29500	    472	   8552	  38524	   967c	firmware.elf
+Finished building: default.size.stdout
+ 
+20:05:03 **** Incremental Build of configuration Debug for project firmware ****
+make -j32 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xB -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\Saleh work and edu\Desktop\Saleh Uni\sem 7\senior year project\Flight Controller\Test_Board\firmware\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: firmware.elf
+ 
+arm-none-eabi-size  firmware.elf 
+arm-none-eabi-objdump -h -S firmware.elf  > "firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+  29500	    472	   8552	  38524	   967c	firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: firmware.list
+ 

@@ -48,7 +48,7 @@
         "silk_text_thickness": 0.125,
         "silk_text_upright": false,
         "zones": {
-          "min_clearance": 0.15
+          "min_clearance": 0.2
         }
       },
       "diff_pair_dimensions": [
@@ -145,7 +145,7 @@
       "teardrop_options": [
         {
           "td_onpthpad": true,
-          "td_onroundshapesonly": false,
+          "td_onroundshapesonly": true,
           "td_onsmdpad": true,
           "td_ontrackend": false,
           "td_onvia": true
@@ -188,9 +188,13 @@
       ],
       "track_widths": [
         0.0,
+        0.1,
+        0.15,
         0.2,
         0.3,
-        0.4
+        0.4,
+        0.5,
+        0.7
       ],
       "tuning_pattern_settings": {
         "diff_pair_defaults": {
@@ -502,7 +506,24 @@
     "meta": {
       "version": 4
     },
-    "net_colors": null,
+    "net_colors": {
+      "+3.3V": "rgb(0, 72, 0)",
+      "+3V3_Sensors": "rgb(0, 72, 0)",
+      "+5V": "rgb(0, 0, 255)",
+      "+VABT": "rgb(253, 33, 0)",
+      "+VBAT": "rgb(255, 153, 0)",
+      "+pwr_out": "rgb(0, 72, 0)",
+      "GND": "rgb(132, 132, 132)",
+      "M1": "rgb(72, 0, 72)",
+      "M2": "rgb(72, 0, 72)",
+      "M3": "rgb(72, 0, 72)",
+      "M4": "rgb(72, 0, 72)",
+      "M5": "rgb(72, 0, 72)",
+      "M6": "rgb(72, 0, 72)",
+      "M7": "rgb(72, 0, 72)",
+      "M8": "rgb(72, 0, 72)",
+      "VBAT_Filtered": "rgb(255, 153, 0)"
+    },
     "netclass_assignments": null,
     "netclass_patterns": []
   },
