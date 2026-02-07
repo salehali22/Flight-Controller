@@ -1,4 +1,4 @@
-27053395227136376
+27055165670423642
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -107414,6 +107414,13 @@ memo
 0
 12
 12
+memo
+(zener)SOD-123F_L2.8-W1.8-LS3.7-RD
+
+
+0
+2
+2
 memo
 AO3407A
 

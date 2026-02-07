@@ -13,4 +13,5 @@
   (lib (name "AO3407A")(type "KiCad")(uri "${KIPRJMOD}/symbols/AO3407A.kicad_sym")(options "")(descr ""))
   (lib (name "AP7343")(type "KiCad")(uri "${KIPRJMOD}/symbols/AP7343.kicad_sym")(options "")(descr ""))
   (lib (name "mag")(type "KiCad")(uri "${KIPRJMOD}/symbols/mag.kicad_sym")(options "")(descr ""))
+  (lib (name "zener")(type "KiCad")(uri "${KIPRJMOD}/symbols/zener.kicad_sym")(options "")(descr ""))
 )
