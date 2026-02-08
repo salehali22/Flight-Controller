@@ -2803,28 +2803,6 @@
 			)
 		)
 	)
-	(global_label "I2C1_SCL"
-		(shape input)
-		(at 198.12 147.32 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.762 0.762)
-			)
-			(justify right)
-		)
-		(uuid "07b3644b-2ff6-485d-826a-301cf6a9df03")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 191.0671 147.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "ST_SWCLK"
 		(shape input)
 		(at 293.37 62.23 180)
@@ -2888,6 +2866,28 @@
 		(uuid "1b431b88-f411-45f3-a7c7-a7a853030128")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 226.4141 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "I2C1_SDA"
+		(shape input)
+		(at 198.12 147.32 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+			)
+			(justify right)
+		)
+		(uuid "1ce4cb23-c504-4c59-b44a-79c079df7d53")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 191.0309 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3183,6 +3183,28 @@
 			)
 		)
 	)
+	(global_label "I2C1_SCL"
+		(shape input)
+		(at 198.12 149.86 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+			)
+			(justify right)
+		)
+		(uuid "5f7bbb15-59ff-4655-bf99-4f70eed01a9e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 191.0671 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "DJI_TX"
 		(shape input)
 		(at 257.81 147.32 180)
@@ -3275,28 +3297,6 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "I2C1_SDA"
-		(shape input)
-		(at 198.12 149.86 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.762 0.762)
-			)
-			(justify right)
-		)
-		(uuid "77e98319-3e94-450c-a0c2-ab5e6b8ef860")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 191.0309 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
 				(hide yes)
 			)
 		)
@@ -8040,7 +8040,6 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "9a4caddc-628b-4824-a74a-7d14a2c2cabb")
 		(property "Reference" "#PWR0141"
 			(at 196.85 144.78 0)
@@ -8051,12 +8050,13 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+pwr_out"
-			(at 196.85 135.89 0)
+		(property "Value" "+3V3"
+			(at 192.278 136.652 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Footprint" ""
