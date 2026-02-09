@@ -1,0 +1,168 @@
+/**
+ * @file bmi270.h
+ * @brief BMI270 IMU Driver for STM32 HAL
+ *
+ * Based on Betaflight and Bosch official API
+ *
+ * REQUIREMENTS:
+ * - SPI Mode 3: CPOL=High, CPHA=2Edge
+ * - CS pin: Output Push-Pull, default HIGH
+ * - SPI Clock: ≤10MHz
+ * - SPI reads need dummy byte (3-byte transaction)
+ */
+
+#ifndef BMI270_H
+#define BMI270_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "stm32f1xx_hal.h"  // Change for your STM32 family
+#include <stdint.h>
+#include <stdbool.h>
+
+/*============================================================================*/
+/*                              REGISTERS                                     */
+/*============================================================================*/
+
+#define BMI270_REG_CHIP_ID          0x00
+#define BMI270_REG_ERR_REG          0x02
+#define BMI270_REG_STATUS           0x03
+#define BMI270_REG_ACC_DATA_X_LSB   0x0C
+#define BMI270_REG_GYR_DATA_X_LSB   0x12
+#define BMI270_REG_SENSORTIME_0     0x18
+#define BMI270_REG_INT_STATUS_1     0x1D
+#define BMI270_REG_INTERNAL_STATUS  0x21
+#define BMI270_REG_TEMP_LSB         0x22
+#define BMI270_REG_TEMP_MSB         0x23
+#define BMI270_REG_ACC_CONF         0x40
+#define BMI270_REG_ACC_RANGE        0x41
+#define BMI270_REG_GYR_CONF         0x42
+#define BMI270_REG_GYR_RANGE        0x43
+#define BMI270_REG_INT1_IO_CTRL     0x53
+#define BMI270_REG_INT_MAP_DATA     0x58
+#define BMI270_REG_INIT_CTRL        0x59
+#define BMI270_REG_INIT_ADDR_0      0x5B
+#define BMI270_REG_INIT_ADDR_1      0x5C
+#define BMI270_REG_INIT_DATA        0x5E
+#define BMI270_REG_PWR_CONF         0x7C
+#define BMI270_REG_PWR_CTRL         0x7D
+#define BMI270_REG_CMD              0x7E
+
+/*============================================================================*/
+/*                              CONSTANTS                                     */
+/*============================================================================*/
+
+#define BMI270_CHIP_ID              0x24
+#define BMI270_CMD_SOFTRESET        0xB6
+
+/* ACC_RANGE */
+#define BMI270_ACC_RANGE_2G         0x00
+#define BMI270_ACC_RANGE_4G         0x01
+#define BMI270_ACC_RANGE_8G         0x02
+#define BMI270_ACC_RANGE_16G        0x03
+
+/* GYR_RANGE */
+#define BMI270_GYR_RANGE_2000DPS    0x00
+#define BMI270_GYR_RANGE_1000DPS    0x01
+#define BMI270_GYR_RANGE_500DPS     0x02
+#define BMI270_GYR_RANGE_250DPS     0x03
+#define BMI270_GYR_RANGE_125DPS     0x04
+
+/* Sensitivities (LSB per unit) */
+#define BMI270_ACC_SENS_2G          16384.0f
+#define BMI270_ACC_SENS_4G          8192.0f
+#define BMI270_ACC_SENS_8G          4096.0f
+#define BMI270_ACC_SENS_16G         2048.0f
+
+#define BMI270_GYR_SENS_2000DPS     16.384f
+#define BMI270_GYR_SENS_1000DPS     32.768f
+#define BMI270_GYR_SENS_500DPS      65.536f
+#define BMI270_GYR_SENS_250DPS      131.072f
+#define BMI270_GYR_SENS_125DPS      262.144f
+
+/*============================================================================*/
+/*                              DATA TYPES                                    */
+/*============================================================================*/
+
+typedef enum {
+    BMI270_OK = 0,
+    BMI270_ERR_NULL,
+    BMI270_ERR_SPI,
+    BMI270_ERR_CHIP_ID,
+    BMI270_ERR_CONFIG,
+    BMI270_ERR_NOT_INIT
+} BMI270_Status;
+
+typedef struct {
+    int16_t x, y, z;
+} BMI270_RawData;
+
+typedef struct {
+    float x, y, z;
+} BMI270_ScaledData;
+
+typedef struct {
+    BMI270_RawData    accel_raw;
+    BMI270_RawData    gyro_raw;
+    BMI270_ScaledData accel_g;      // in g
+    BMI270_ScaledData gyro_dps;     // in deg/s
+    float             temp_c;        // in Celsius
+    uint32_t          sample_count;
+} BMI270_Data;
+
+typedef struct {
+    SPI_HandleTypeDef *hspi;
+    GPIO_TypeDef      *cs_port;
+    uint16_t          cs_pin;
+    float             accel_scale;   // LSB/g
+    float             gyro_scale;    // LSB/dps
+    uint8_t           chip_id;
+    uint8_t           init_status;
+    bool              ready;
+} BMI270_Device;
+
+/*============================================================================*/
+/*                              API FUNCTIONS                                 */
+/*============================================================================*/
+
+/**
+ * @brief Initialize BMI270
+ * @param dev Device handle
+ * @param hspi SPI handle (must be configured for Mode 3)
+ * @param cs_port CS GPIO port
+ * @param cs_pin CS GPIO pin
+ * @return BMI270_OK on success
+ */
+BMI270_Status BMI270_Init(BMI270_Device *dev, SPI_HandleTypeDef *hspi,
+                          GPIO_TypeDef *cs_port, uint16_t cs_pin);
+
+/**
+ * @brief Read all sensor data
+ * @param dev Device handle
+ * @param data Output data structure
+ * @return BMI270_OK on success
+ */
+BMI270_Status BMI270_ReadData(BMI270_Device *dev, BMI270_Data *data);
+
+/**
+ * @brief Read chip ID
+ * @param dev Device handle
+ * @param id Output chip ID (should be 0x24)
+ * @return BMI270_OK on success
+ */
+BMI270_Status BMI270_GetChipID(BMI270_Device *dev, uint8_t *id);
+
+/**
+ * @brief Perform soft reset
+ * @param dev Device handle
+ * @return BMI270_OK on success
+ */
+BMI270_Status BMI270_Reset(BMI270_Device *dev);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* BMI270_H */

@@ -1,0 +1,273 @@
+/**
+ * @file main.c
+ * @brief BMI270 Test Application for STM32F103C8T6 (Blue Pill)
+ *
+ * HARDWARE CONNECTIONS:
+ *   BMI270     STM32F103 (SPI1)
+ *   -------    -----------------
+ *   VDD        3.3V
+ *   GND        GND
+ *   SCK        PA5 (SPI1_SCK)
+ *   SDI/MOSI   PA7 (SPI1_MOSI)
+ *   SDO/MISO   PA6 (SPI1_MISO)
+ *   CSB        PB0 (GPIO Output, active LOW)
+ *
+ * CRITICAL STM32CUBEMX CONFIGURATION:
+ *
+ *   SPI1 Settings:
+ *   - Mode: Full-Duplex Master
+ *   - Data Size: 8 Bits
+ *   - First Bit: MSB First
+ *   - Prescaler: 32 (72MHz/32 = 2.25MHz, well under 10MHz limit)
+ *   - CPOL: LOW          <-- CRITICAL: Mode 0
+ *   - CPHA: 1 Edge       <-- CRITICAL: Mode 0
+ *   - NSS: Software (Disable)
+ *   - CRC: Disabled
+ *
+ *   GPIO PB0 (BMI270_CS):
+ *   - Mode: GPIO_Output
+ *   - Output Level: High
+ *   - GPIO mode: Output Push Pull
+ *   - GPIO Pull-up/Pull-down: No pull-up and no pull-down
+ *   - Maximum output speed: High
+ *
+ * DEBUG VARIABLES:
+ *   Watch these in STM32CubeIDE Live Expressions:
+ *   - g_chip_id       : Should be 0x24 (36 decimal)
+ *   - g_init_status   : Should be 0x01 after successful init
+ *   - g_init_result   : Should be 0 (BMI270_OK)
+ *   - g_accel_x/y/z   : Accelerometer in g (expect ~0, 0, 1 when flat)
+ *   - g_gyro_x/y/z    : Gyroscope in deg/s (expect near 0 when stationary)
+ *   - g_temp          : Temperature in Celsius
+ */
+
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include "bmi270.h"
+
+/* Private variables ---------------------------------------------------------*/
+SPI_HandleTypeDef hspi1;
+
+/* BMI270 CS pin configuration */
+#define BMI270_CS_PORT  GPIOB
+#define BMI270_CS_PIN   GPIO_PIN_0
+
+/* BMI270 device handle and data */
+BMI270_Handle g_bmi270;
+BMI270_Data   g_imu_data;
+
+/* Debug variables for Live Expressions (volatile to prevent optimization) */
+volatile uint8_t  g_chip_id      = 0;
+volatile uint8_t  g_init_status  = 0;
+volatile uint8_t  g_init_result  = 0xFF;  /* 0xFF = not yet attempted */
+volatile uint8_t  g_error_code   = 0;
+
+volatile float    g_accel_x = 0.0f;
+volatile float    g_accel_y = 0.0f;
+volatile float    g_accel_z = 0.0f;
+
+volatile float    g_gyro_x = 0.0f;
+volatile float    g_gyro_y = 0.0f;
+volatile float    g_gyro_z = 0.0f;
+
+volatile float    g_temp = 0.0f;
+volatile uint32_t g_sample_count = 0;
+
+/* Raw values for debugging */
+volatile int16_t  g_accel_raw_x = 0;
+volatile int16_t  g_accel_raw_y = 0;
+volatile int16_t  g_accel_raw_z = 0;
+
+volatile int16_t  g_gyro_raw_x = 0;
+volatile int16_t  g_gyro_raw_y = 0;
+volatile int16_t  g_gyro_raw_z = 0;
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_SPI1_Init(void);
+void Error_Handler(void);
+
+/**
+ * @brief  The application entry point.
+ */
+int main(void)
+{
+    /* MCU Configuration */
+    HAL_Init();
+    SystemClock_Config();
+    MX_GPIO_Init();
+    MX_SPI1_Init();
+
+    /* Ensure CS starts HIGH before BMI270 init */
+    HAL_GPIO_WritePin(BMI270_CS_PORT, BMI270_CS_PIN, GPIO_PIN_SET);
+    HAL_Delay(100);
+
+    /*=========================================================================*/
+    /*                        BMI270 INITIALIZATION                            */
+    /*=========================================================================*/
+
+    BMI270_Status status = BMI270_Init(&g_bmi270, &hspi1, BMI270_CS_PORT, BMI270_CS_PIN);
+
+    /* Copy to debug variables */
+    g_chip_id     = g_bmi270.chip_id;
+    g_init_status = g_bmi270.init_status;
+    g_init_result = (uint8_t)status;
+
+    if (status != BMI270_OK) {
+        g_error_code = (uint8_t)status;
+
+        /* Error codes:
+         * 1 = BMI270_ERR_NULL_PTR    - Null pointer passed
+         * 2 = BMI270_ERR_SPI         - SPI communication failed
+         * 3 = BMI270_ERR_CHIP_ID     - Wrong chip ID (not 0x24)
+         * 4 = BMI270_ERR_CONFIG_LOAD - Config upload failed (check init_status)
+         * 5 = BMI270_ERR_NOT_READY   - Sensor not initialized
+         */
+
+        /* *** SET BREAKPOINT HERE TO DEBUG INITIALIZATION FAILURE *** */
+        while (1) {
+            HAL_Delay(100);
+        }
+    }
+
+    /*=========================================================================*/
+    /*                           MAIN LOOP                                     */
+    /*=========================================================================*/
+
+    while (1)
+    {
+        /* Read all sensor data */
+        status = BMI270_ReadSensorData(&g_bmi270, &g_imu_data);
+
+        if (status == BMI270_OK) {
+            /* Copy to volatile debug variables */
+            g_accel_x = g_imu_data.accel_g.x;
+            g_accel_y = g_imu_data.accel_g.y;
+            g_accel_z = g_imu_data.accel_g.z;
+
+            g_gyro_x = g_imu_data.gyro_dps.x;
+            g_gyro_y = g_imu_data.gyro_dps.y;
+            g_gyro_z = g_imu_data.gyro_dps.z;
+
+            /* Raw values */
+            g_accel_raw_x = g_imu_data.accel_raw.x;
+            g_accel_raw_y = g_imu_data.accel_raw.y;
+            g_accel_raw_z = g_imu_data.accel_raw.z;
+
+            g_gyro_raw_x = g_imu_data.gyro_raw.x;
+            g_gyro_raw_y = g_imu_data.gyro_raw.y;
+            g_gyro_raw_z = g_imu_data.gyro_raw.z;
+
+            g_sample_count++;
+        }
+
+        /* Read temperature (less frequently) */
+        if ((g_sample_count % 100) == 0) {
+            BMI270_ReadTemperature(&g_bmi270, (float *)&g_temp);
+        }
+
+        HAL_Delay(10);  /* ~100Hz sample rate */
+    }
+}
+
+/**
+ * @brief SPI1 Initialization Function
+ *
+ * CRITICAL: Configure for Mode 0 (CPOL=LOW, CPHA=1EDGE)
+ * The BMI270 datasheet specifies Mode 0 for 4-wire SPI.
+ */
+static void MX_SPI1_Init(void)
+{
+    hspi1.Instance = SPI1;
+    hspi1.Init.Mode = SPI_MODE_MASTER;
+    hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+    hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+    hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;    /* CPOL = 0 (Mode 0) */
+    hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;        /* CPHA = 0 (Mode 0) */
+    hspi1.Init.NSS = SPI_NSS_SOFT;
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;  /* 72MHz/32 = 2.25MHz */
+    hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+    hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+    hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    hspi1.Init.CRCPolynomial = 10;
+
+    if (HAL_SPI_Init(&hspi1) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
+/**
+ * @brief GPIO Initialization Function
+ */
+static void MX_GPIO_Init(void)
+{
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+
+    /* Configure CS pin - Output Push-Pull, default HIGH */
+    HAL_GPIO_WritePin(BMI270_CS_PORT, BMI270_CS_PIN, GPIO_PIN_SET);
+
+    GPIO_InitStruct.Pin = BMI270_CS_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(BMI270_CS_PORT, &GPIO_InitStruct);
+}
+
+/**
+ * @brief System Clock Configuration
+ *
+ * Configures for 72MHz using 8MHz external crystal.
+ */
+void SystemClock_Config(void)
+{
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+    /* Configure HSE and PLL */
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;  /* 8MHz * 9 = 72MHz */
+
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+        Error_Handler();
+    }
+
+    /* Configure clocks */
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+                                | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;  /* APB1 = 36MHz */
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;  /* APB2 = 72MHz (SPI1 here) */
+
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
+/**
+ * @brief Error Handler
+ */
+void Error_Handler(void)
+{
+    __disable_irq();
+    while (1) {
+        /* Stay here */
+    }
+}
+
+#ifdef USE_FULL_ASSERT
+void assert_failed(uint8_t *file, uint32_t line)
+{
+    /* User can add error reporting here */
+}
+#endif

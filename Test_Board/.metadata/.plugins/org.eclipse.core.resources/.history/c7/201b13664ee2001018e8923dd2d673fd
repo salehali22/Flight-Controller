@@ -1,0 +1,306 @@
+/*
+ * bmi270.c
+ *
+ *  Created on: Dec 26, 2025
+ *      Author: Saleh work and edu
+ */
+
+
+/**
+ * @file bmi270.c
+ * @brief BMI270 6-axis IMU driver implementation
+ * @note Uses maximum_fifo config (328 bytes) - smallest config file
+ */
+
+#include "bmi270.h"
+#include <string.h>
+
+/* ============== Config File (maximum_fifo variant - 328 bytes) ============== */
+static const uint8_t bmi270_config_file[] = {
+    0xc8, 0x2e, 0x00, 0x2e, 0x80, 0x2e, 0x1a, 0x00, 0xc8, 0x2e, 0x00, 0x2e, 0xc8, 0x2e, 0x00, 0x2e,
+    0xc8, 0x2e, 0x00, 0x2e, 0xc8, 0x2e, 0x00, 0x2e, 0xc8, 0x2e, 0x00, 0x2e, 0xc8, 0x2e, 0x00, 0x2e,
+    0x90, 0x32, 0x21, 0x2e, 0x59, 0xf5, 0x10, 0x30, 0x21, 0x2e, 0x6a, 0xf5, 0x1a, 0x24, 0x22, 0x00,
+    0x80, 0x2e, 0x3b, 0x00, 0xc8, 0x2e, 0x44, 0x47, 0x22, 0x00, 0x37, 0x00, 0xa4, 0x00, 0xff, 0x0f,
+    0xd1, 0x00, 0x07, 0xad, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
+    0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1
+};
+
+#define BMI270_CONFIG_FILE_SIZE sizeof(bmi270_config_file)
+
+/* ============== Private Macros ============== */
+#define BMI270_READ_BIT         0x80
+#define BMI270_SPI_TIMEOUT      100
+#define BMI270_WR_LEN           256  // Burst write length
+
+/* ============== Private Functions ============== */
+
+static inline void CS_Low(void) {
+    HAL_GPIO_WritePin(BMI270_CS_PORT, BMI270_CS_PIN, GPIO_PIN_RESET);
+}
+
+static inline void CS_High(void) {
+    HAL_GPIO_WritePin(BMI270_CS_PORT, BMI270_CS_PIN, GPIO_PIN_SET);
+}
+
+/* BMI270 SPI read requires dummy byte after address */
+BMI270_Status_t BMI270_ReadReg(SPI_HandleTypeDef *hspi, uint8_t reg, uint8_t *data)
+{
+    uint8_t tx[3] = { reg | BMI270_READ_BIT, 0x00, 0x00 };  // addr + dummy + data
+    uint8_t rx[3] = { 0 };
+    HAL_StatusTypeDef status;
+
+    CS_Low();
+    status = HAL_SPI_TransmitReceive(hspi, tx, rx, 3, BMI270_SPI_TIMEOUT);
+    CS_High();
+
+    if (status != HAL_OK) {
+        return BMI270_ERR_SPI;
+    }
+
+    *data = rx[2];  // Data comes after dummy byte
+    return BMI270_OK;
+}
+
+BMI270_Status_t BMI270_WriteReg(SPI_HandleTypeDef *hspi, uint8_t reg, uint8_t data)
+{
+    uint8_t tx[2] = { reg & 0x7F, data };
+    HAL_StatusTypeDef status;
+
+    CS_Low();
+    status = HAL_SPI_Transmit(hspi, tx, 2, BMI270_SPI_TIMEOUT);
+    CS_High();
+
+    return (status == HAL_OK) ? BMI270_OK : BMI270_ERR_SPI;
+}
+
+static BMI270_Status_t BMI270_ReadMulti(SPI_HandleTypeDef *hspi, uint8_t reg, uint8_t *data, uint16_t len)
+{
+    HAL_StatusTypeDef status;
+    uint8_t tx_reg = reg | BMI270_READ_BIT;
+    uint8_t dummy = 0;
+
+    CS_Low();
+
+    // Send register address
+    status = HAL_SPI_Transmit(hspi, &tx_reg, 1, BMI270_SPI_TIMEOUT);
+    if (status != HAL_OK) { CS_High(); return BMI270_ERR_SPI; }
+
+    // Read and discard dummy byte
+    status = HAL_SPI_Receive(hspi, &dummy, 1, BMI270_SPI_TIMEOUT);
+    if (status != HAL_OK) { CS_High(); return BMI270_ERR_SPI; }
+
+    // Read actual data
+    status = HAL_SPI_Receive(hspi, data, len, BMI270_SPI_TIMEOUT);
+    CS_High();
+
+    return (status == HAL_OK) ? BMI270_OK : BMI270_ERR_SPI;
+}
+
+static BMI270_Status_t BMI270_WriteMulti(SPI_HandleTypeDef *hspi, uint8_t reg, const uint8_t *data, uint16_t len)
+{
+    HAL_StatusTypeDef status;
+    uint8_t tx_reg = reg & 0x7F;
+
+    CS_Low();
+    status = HAL_SPI_Transmit(hspi, &tx_reg, 1, BMI270_SPI_TIMEOUT);
+    if (status != HAL_OK) { CS_High(); return BMI270_ERR_SPI; }
+
+    status = HAL_SPI_Transmit(hspi, (uint8_t*)data, len, BMI270_SPI_TIMEOUT);
+    CS_High();
+
+    return (status == HAL_OK) ? BMI270_OK : BMI270_ERR_SPI;
+}
+
+static BMI270_Status_t BMI270_LoadConfigFile(SPI_HandleTypeDef *hspi)
+{
+    BMI270_Status_t status;
+    uint16_t index = 0;
+    uint8_t addr_array[2];
+    uint16_t write_len;
+
+    // Disable loading of configuration
+    status = BMI270_WriteReg(hspi, BMI270_REG_PWR_CONF, 0x00);
+    if (status != BMI270_OK) return status;
+    HAL_Delay(200);
+
+    // Disable advanced power save
+    status = BMI270_WriteReg(hspi, BMI270_REG_INIT_CTRL, 0x00);
+    if (status != BMI270_OK) return status;
+
+    // Write config file in chunks
+    for (index = 0; index < BMI270_CONFIG_FILE_SIZE; index += BMI270_WR_LEN) {
+        // Set burst write address (address is in words, so divide by 2)
+        addr_array[0] = (uint8_t)((index / 2) & 0x0F);
+        addr_array[1] = (uint8_t)((index / 2) >> 4);
+
+        status = BMI270_WriteMulti(hspi, BMI270_REG_INIT_ADDR_0, addr_array, 2);
+        if (status != BMI270_OK) return status;
+
+        // Calculate write length for this chunk
+        write_len = BMI270_CONFIG_FILE_SIZE - index;
+        if (write_len > BMI270_WR_LEN) {
+            write_len = BMI270_WR_LEN;
+        }
+
+        // Write config data
+        status = BMI270_WriteMulti(hspi, BMI270_REG_INIT_DATA, &bmi270_config_file[index], write_len);
+        if (status != BMI270_OK) return status;
+
+        HAL_Delay(200);
+    }
+
+    // Complete configuration load
+    status = BMI270_WriteReg(hspi, BMI270_REG_INIT_CTRL, 0x01);
+    if (status != BMI270_OK) return status;
+
+    // Wait for initialization to complete (max 150ms per datasheet)
+    HAL_Delay(150);
+
+    // Check initialization status
+    uint8_t init_status;
+    status = BMI270_ReadReg(hspi, BMI270_REG_INTERNAL_STATUS, &init_status);
+    if (status != BMI270_OK) return status;
+
+    if ((init_status & 0x0F) != BMI270_INIT_OK) {
+        return BMI270_ERR_INIT;
+    }
+
+    return BMI270_OK;
+}
+
+/* ============== Public Functions ============== */
+
+BMI270_Status_t BMI270_ReadID(SPI_HandleTypeDef *hspi, uint8_t *id)
+{
+    return BMI270_ReadReg(hspi, BMI270_REG_CHIP_ID, id);
+}
+
+BMI270_Status_t BMI270_Init(SPI_HandleTypeDef *hspi)
+{
+    BMI270_Status_t status;
+    uint8_t id;
+    uint8_t dummy;
+
+    // CS starts high
+    CS_High();
+    HAL_Delay(10);
+
+    // Dummy read to switch BMI270 from I2C to SPI mode
+    CS_Low();
+    HAL_Delay(1);
+    HAL_SPI_Receive(hspi, &dummy, 1, BMI270_SPI_TIMEOUT);
+    CS_High();
+    HAL_Delay(10);
+
+    // Soft reset
+    status = BMI270_WriteReg(hspi, BMI270_REG_CMD, BMI270_CMD_SOFTRESET);
+    if (status != BMI270_OK) return status;
+    HAL_Delay(10);
+
+    // Another dummy read after reset (required)
+    CS_Low();
+    HAL_Delay(1);
+    HAL_SPI_Receive(hspi, &dummy, 1, BMI270_SPI_TIMEOUT);
+    CS_High();
+    HAL_Delay(10);
+
+    // Verify chip ID
+    status = BMI270_ReadID(hspi, &id);
+    if (status != BMI270_OK) return status;
+
+    if (id != BMI270_CHIP_ID_VAL) {
+        return BMI270_ERR_ID;
+    }
+
+    // Load configuration file
+    status = BMI270_LoadConfigFile(hspi);
+    if (status != BMI270_OK) return status;
+
+    // Configure accelerometer: 1600Hz ODR, normal filter, performance mode
+    status = BMI270_WriteReg(hspi, BMI270_REG_ACC_CONF,
+                             BMI270_ACC_ODR_1600HZ | BMI270_ACC_BWP_NORMAL | BMI270_ACC_FILTER_PERF);
+    if (status != BMI270_OK) return status;
+
+    // Accel range: ±16g
+    status = BMI270_WriteReg(hspi, BMI270_REG_ACC_RANGE, BMI270_ACC_RANGE_16G);
+    if (status != BMI270_OK) return status;
+
+    // Configure gyroscope: 1600Hz ODR, normal filter, performance mode
+    status = BMI270_WriteReg(hspi, BMI270_REG_GYR_CONF,
+                             BMI270_GYR_ODR_1600HZ | BMI270_GYR_BWP_NORMAL |
+                             BMI270_GYR_NOISE_PERF | BMI270_GYR_FILTER_PERF);
+    if (status != BMI270_OK) return status;
+
+    // Gyro range: ±2000dps
+    status = BMI270_WriteReg(hspi, BMI270_REG_GYR_RANGE, BMI270_GYR_RANGE_2000DPS);
+    if (status != BMI270_OK) return status;
+
+    // Disable advanced power save
+    status = BMI270_WriteReg(hspi, BMI270_REG_PWR_CONF, 0x00);
+    if (status != BMI270_OK) return status;
+    HAL_Delay(1);
+
+    // Enable accelerometer, gyroscope, and temperature
+    status = BMI270_WriteReg(hspi, BMI270_REG_PWR_CTRL,
+                             BMI270_PWR_ACC_EN | BMI270_PWR_GYR_EN | BMI270_PWR_TEMP_EN);
+    if (status != BMI270_OK) return status;
+
+    HAL_Delay(100);  // Wait for sensors to stabilize
+
+    return BMI270_OK;
+}
+
+BMI270_Status_t BMI270_ReadAll(SPI_HandleTypeDef *hspi, BMI270_Data_t *data)
+{
+    BMI270_Status_t status;
+    uint8_t buf[12];  // Accel(6) + Gyro(6)
+    uint8_t temp_buf[2];
+
+    // Read accel and gyro data (0x0C to 0x17)
+    status = BMI270_ReadMulti(hspi, BMI270_REG_ACC_X_LSB, buf, 12);
+    if (status != BMI270_OK) return status;
+
+    // Read temperature
+    status = BMI270_ReadMulti(hspi, BMI270_REG_TEMPERATURE_LSB, temp_buf, 2);
+    if (status != BMI270_OK) return status;
+
+    // Parse raw data (Little Endian for BMI270)
+    data->accel_raw.x = (int16_t)(buf[0] | (buf[1] << 8));
+    data->accel_raw.y = (int16_t)(buf[2] | (buf[3] << 8));
+    data->accel_raw.z = (int16_t)(buf[4] | (buf[5] << 8));
+
+    data->gyro_raw.x = (int16_t)(buf[6] | (buf[7] << 8));
+    data->gyro_raw.y = (int16_t)(buf[8] | (buf[9] << 8));
+    data->gyro_raw.z = (int16_t)(buf[10] | (buf[11] << 8));
+
+    data->temp_raw = (int16_t)(temp_buf[0] | (temp_buf[1] << 8));
+
+    // Convert to physical units
+    data->accel_g.x = (float)data->accel_raw.x / BMI270_ACCEL_SENS_16G;
+    data->accel_g.y = (float)data->accel_raw.y / BMI270_ACCEL_SENS_16G;
+    data->accel_g.z = (float)data->accel_raw.z / BMI270_ACCEL_SENS_16G;
+
+    data->gyro_dps.x = (float)data->gyro_raw.x / BMI270_GYRO_SENS_2000DPS;
+    data->gyro_dps.y = (float)data->gyro_raw.y / BMI270_GYRO_SENS_2000DPS;
+    data->gyro_dps.z = (float)data->gyro_raw.z / BMI270_GYRO_SENS_2000DPS;
+
+    // Temperature formula: (temp_raw / 512) + 23
+    data->temp_c = ((float)data->temp_raw / BMI270_TEMP_SENS) + BMI270_TEMP_OFFSET;
+
+    return BMI270_OK;
+}

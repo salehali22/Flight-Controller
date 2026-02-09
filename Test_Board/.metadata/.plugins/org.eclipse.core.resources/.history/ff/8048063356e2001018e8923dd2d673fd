@@ -1,0 +1,75 @@
+#pragma once
+
+#include "stm32fxxx_hal.h"
+#include <stdint.h>
+#include <stdbool.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// ----- BMI270 Register Map (primary interface) -----
+#define BMI270_REG_CHIP_ID          0x00
+#define BMI270_REG_ERR_REG          0x02
+#define BMI270_REG_STATUS           0x03
+
+#define BMI270_REG_ACC_CONF         0x40
+#define BMI270_REG_ACC_RANGE        0x41
+#define BMI270_REG_GYR_CONF         0x42
+#define BMI270_REG_GYR_RANGE        0x43
+
+#define BMI270_REG_INTERNAL_STATUS  0x21
+
+#define BMI270_REG_PWR_CONF         0x7C
+#define BMI270_REG_PWR_CTRL         0x7D
+#define BMI270_REG_CMD              0x7E
+
+// Data registers (acc + gyr) (common BMI2 map)
+#define BMI270_REG_DATA_8           0x0C  // accel x LSB
+#define BMI270_REG_DATA_LEN         12    // ax,ay,az,gx,gy,gz => 12 bytes
+
+// ----- Expected values -----
+#define BMI270_CHIP_ID_VALUE        0x24
+
+// ----- Commands -----
+#define BMI270_CMD_SOFTRESET        0xB6
+
+typedef struct {
+    int16_t ax, ay, az;
+    int16_t gx, gy, gz;
+} bmi270_raw_t;
+
+typedef struct {
+    // scaled units: m/s^2 and rad/s if you want; here we keep it simple (g and dps)
+    float ax_g, ay_g, az_g;
+    float gx_dps, gy_dps, gz_dps;
+} bmi270_scaled_t;
+
+typedef struct {
+    SPI_HandleTypeDef *hspi;
+    GPIO_TypeDef *cs_port;
+    uint16_t cs_pin;
+
+    // config tracking
+    uint8_t acc_range_reg; // 0x00..0x03 (2g..16g)
+    uint8_t gyr_range_reg; // 0x00..0x04 (2000..125 dps)
+} bmi270_t;
+
+// Low-level
+HAL_StatusTypeDef bmi270_read_reg(bmi270_t *dev, uint8_t reg, uint8_t *val);
+HAL_StatusTypeDef bmi270_read_regs(bmi270_t *dev, uint8_t reg, uint8_t *buf, uint16_t len);
+HAL_StatusTypeDef bmi270_write_reg(bmi270_t *dev, uint8_t reg, uint8_t val);
+
+// High-level
+bool bmi270_begin(bmi270_t *dev,
+                  SPI_HandleTypeDef *hspi,
+                  GPIO_TypeDef *cs_port,
+                  uint16_t cs_pin);
+
+bool bmi270_init_basic(bmi270_t *dev); // accel+gyro on, 16g, 2000dps, 200Hz-ish defaults
+bool bmi270_read_raw(bmi270_t *dev, bmi270_raw_t *out);
+void bmi270_scale(const bmi270_t *dev, const bmi270_raw_t *raw, bmi270_scaled_t *out);
+
+#ifdef __cplusplus
+}
+#endif

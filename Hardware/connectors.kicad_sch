@@ -1815,6 +1815,26 @@
 	)
 	(wire
 		(pts
+			(xy 59.69 209.55) (xy 59.69 218.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0da24bed-8f68-41b7-aacc-ba17420ad4fb")
+	)
+	(wire
+		(pts
+			(xy 54.61 100.33) (xy 54.61 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1a664391-dd27-4861-9c86-1114c4d1ee8a")
+	)
+	(wire
+		(pts
 			(xy 114.3 53.34) (xy 114.3 67.31)
 		)
 		(stroke
@@ -1845,6 +1865,16 @@
 	)
 	(wire
 		(pts
+			(xy 76.2 228.6) (xy 76.2 226.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2d403b33-f85e-4f91-acde-ad549fd8c2f1")
+	)
+	(wire
+		(pts
 			(xy 95.25 53.34) (xy 95.25 67.31)
 		)
 		(stroke
@@ -1862,16 +1892,6 @@
 			(type default)
 		)
 		(uuid "3567153d-574f-4fa2-ba62-ec25a16abe00")
-	)
-	(wire
-		(pts
-			(xy 76.2 53.34) (xy 76.2 67.31)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "369e25d9-50d0-4024-89cb-20197539a2bd")
 	)
 	(wire
 		(pts
@@ -2075,26 +2095,6 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 67.31) (xy 76.2 67.31)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "61fe1647-0645-4bdc-9be9-7887b9c59b0e")
-	)
-	(wire
-		(pts
-			(xy 68.58 59.69) (xy 68.58 67.31)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "62b1a638-ed64-415f-a73a-2cb732a35fed")
-	)
-	(wire
-		(pts
 			(xy 257.81 187.96) (xy 259.08 187.96)
 		)
 		(stroke
@@ -2285,6 +2285,16 @@
 	)
 	(wire
 		(pts
+			(xy 59.69 97.79) (xy 59.69 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "856b0ef3-7d80-4274-b97e-42be9702c2b5")
+	)
+	(wire
+		(pts
 			(xy 106.68 67.31) (xy 114.3 67.31)
 		)
 		(stroke
@@ -2455,6 +2465,16 @@
 	)
 	(wire
 		(pts
+			(xy 52.07 218.44) (xy 59.69 218.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b103953b-10e2-4707-ad38-c3ca795ab9ee")
+	)
+	(wire
+		(pts
 			(xy 114.3 220.98) (xy 114.3 217.17)
 		)
 		(stroke
@@ -2482,16 +2502,6 @@
 			(type default)
 		)
 		(uuid "b352e935-6c23-4f68-b7f1-b52069f96944")
-	)
-	(wire
-		(pts
-			(xy 55.88 219.71) (xy 46.99 219.71)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b6aa7f83-f87f-4331-a9ec-81976dabd1ff")
 	)
 	(wire
 		(pts
@@ -2585,6 +2595,16 @@
 	)
 	(wire
 		(pts
+			(xy 54.61 104.14) (xy 59.69 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "db9cea8e-b1ff-475e-bb03-0be39c1fb0fb")
+	)
+	(wire
+		(pts
 			(xy 38.1 53.34) (xy 38.1 67.31)
 		)
 		(stroke
@@ -2595,16 +2615,6 @@
 	)
 	(wire
 		(pts
-			(xy 81.28 139.7) (xy 81.28 138.43)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "dec246a8-a7d4-4970-918e-fef831d12986")
-	)
-	(wire
-		(pts
 			(xy 196.85 95.25) (xy 200.66 95.25)
 		)
 		(stroke
@@ -2612,16 +2622,6 @@
 			(type default)
 		)
 		(uuid "e2c1c941-ab4f-48d5-bd8b-bc8dd736f6f9")
-	)
-	(wire
-		(pts
-			(xy 63.5 219.71) (xy 71.12 219.71)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e35084e1-e697-49a0-a220-102746f14d43")
 	)
 	(wire
 		(pts
@@ -2685,16 +2685,6 @@
 	)
 	(wire
 		(pts
-			(xy 71.12 219.71) (xy 71.12 212.09)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f6b0187c-1320-461e-8ad4-ba60331ae377")
-	)
-	(wire
-		(pts
 			(xy 290.83 54.61) (xy 290.83 57.15)
 		)
 		(stroke
@@ -2712,16 +2702,6 @@
 			(type default)
 		)
 		(uuid "fc352b64-b5a4-466d-ad8b-48e2a9bbac14")
-	)
-	(wire
-		(pts
-			(xy 46.99 213.36) (xy 46.99 219.71)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fea98760-897e-485f-89cb-c2fc5d230244")
 	)
 	(wire
 		(pts
@@ -2818,54 +2798,6 @@
 		(uuid "0be2eeee-9765-4611-a7cf-7d8d7bde9d78")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 285.6687 62.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "WIFI/RC_RX"
-		(shape input)
-		(at 234.95 60.96 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.762 0.762)
-				(thickness 0.1524)
-				(bold yes)
-			)
-			(justify right)
-		)
-		(uuid "18171804-8b02-4318-a473-b965fac45e70")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 226.4141 60.96 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "WIFI/RC_TX"
-		(shape input)
-		(at 234.95 58.42 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.762 0.762)
-				(thickness 0.1524)
-				(bold yes)
-			)
-			(justify right)
-		)
-		(uuid "1b431b88-f411-45f3-a7c7-a7a853030128")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 226.4141 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3159,9 +3091,9 @@
 			)
 		)
 	)
-	(global_label "CAN_P"
+	(global_label "GPS_SDA"
 		(shape input)
-		(at 71.12 212.09 90)
+		(at 76.2 228.6 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3169,16 +3101,16 @@
 				(thickness 0.1524)
 				(bold yes)
 			)
-			(justify left)
+			(justify right)
 		)
-		(uuid "5cc4a33e-b332-490d-b87c-d62a8c87f694")
+		(uuid "5ded4a0a-758f-4c78-a5fe-236c8923461d")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 71.12 207.0014 90)
+			(at 76.2 235.648 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 				(hide yes)
 			)
 		)
@@ -3249,30 +3181,6 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "CAN_N"
-		(shape input)
-		(at 46.99 213.36 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.762 0.762)
-				(thickness 0.1524)
-				(bold yes)
-			)
-			(justify left)
-		)
-		(uuid "6d1d351c-06b6-4ac8-9618-2a34a6bcf350")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 46.99 208.4528 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
 				(hide yes)
 			)
 		)
@@ -3491,6 +3399,30 @@
 			)
 		)
 	)
+	(global_label "WIFI/RC_TX"
+		(shape input)
+		(at 234.95 60.96 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "a841dbb5-4ca2-47e7-992d-56d221c64074")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 226.4141 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "S4"
 		(shape input)
 		(at 91.44 168.91 270)
@@ -3515,6 +3447,30 @@
 			)
 		)
 	)
+	(global_label "WIFI/RC_RX"
+		(shape input)
+		(at 234.95 58.42 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "b04beb79-02f1-42f6-8ab9-6a3458bccd23")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 226.4141 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "EXPANSION_TX"
 		(shape input)
 		(at 259.08 193.04 180)
@@ -3530,6 +3486,30 @@
 		(uuid "ba2e6923-c108-45d2-891b-59f41009b0c7")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 248.6211 193.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "GPS_SCL"
+		(shape input)
+		(at 68.58 227.33 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "bc286de4-4576-4a1f-b5dd-d35d3e5c0460")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 68.58 234.3418 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3749,6 +3729,30 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "VIDEO_IN"
+		(shape input)
+		(at 59.69 209.55 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify left)
+		)
+		(uuid "dc9a796d-f142-4417-9097-1344c9634eb1")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 59.69 202.4656 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 				(hide yes)
 			)
 		)
@@ -4167,81 +4171,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 63.5 219.71 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "0ec33313-ce10-4654-93b1-2db47d982d60")
-		(property "Reference" "TP38"
-			(at 60.8825 212.3635 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "sensors"
-			(at 60.1205 214.6496 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Solderpoint:Solderpad"
-			(at 68.58 219.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 68.58 219.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "test point"
-			(at 63.5 219.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Link" ""
-			(at 63.5 219.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "9fa1ae65-5f35-48ad-aed7-007eceb8e071")
-		)
-		(instances
-			(project "Flight Controller"
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
-					(reference "TP38")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 196.85 154.94 0)
 		(unit 1)
@@ -4394,82 +4323,6 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
 					(reference "J9")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 81.28 138.43 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "11639a7e-0205-4256-b060-99519df1d4cc")
-		(property "Reference" "TP19"
-			(at 83.82 133.8579 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "GND"
-			(at 83.82 136.3979 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Solderpoint:Solderpad"
-			(at 86.36 138.43 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 86.36 138.43 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "test point"
-			(at 81.28 138.43 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Link" ""
-			(at 81.28 138.43 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "0b78c0ee-6284-4f88-a874-30a920fb44a0")
-		)
-		(instances
-			(project "Flight Controller"
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
-					(reference "TP19")
 					(unit 1)
 				)
 			)
@@ -4687,6 +4540,81 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
 					(reference "TP2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 54.61 100.33 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "1f29585e-cdce-4666-bd3d-0dd504985357")
+		(property "Reference" "TP25"
+			(at 48.26 96.0119 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "power"
+			(at 47.498 98.298 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Solderpoint:Solderpad"
+			(at 59.69 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 59.69 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 54.61 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
+			(at 54.61 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "d31f5fd3-b9eb-4bb5-a593-33ebf0e1ee7b")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
+					(reference "TP25")
 					(unit 1)
 				)
 			)
@@ -5039,72 +4967,6 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
 					(reference "TP1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+5V")
-		(at 76.2 53.34 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "2ae79a6a-5e7d-4aeb-ad87-f4b7032bdd8d")
-		(property "Reference" "#PWR0121"
-			(at 76.2 57.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+pwr_out"
-			(at 76.2 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 76.2 53.34 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 76.2 53.34 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 76.2 53.34 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "3f3956d8-11d7-4b1d-96e3-0b3b446f86d9")
-		)
-		(instances
-			(project "Flight Controller"
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
-					(reference "#PWR0121")
 					(unit 1)
 				)
 			)
@@ -7809,81 +7671,6 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 68.58 59.69 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "9755f4a7-667e-4bc2-9d08-ec28c36b2144")
-		(property "Reference" "TP11"
-			(at 62.23 55.3719 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "power"
-			(at 61.468 57.658 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Solderpoint:Solderpad"
-			(at 73.66 59.69 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 73.66 59.69 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "test point"
-			(at 68.58 59.69 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Link" ""
-			(at 68.58 59.69 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "8edafcf5-f324-4878-a517-9fa4dd27896b")
-		)
-		(instances
-			(project "Flight Controller"
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
-					(reference "TP11")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:TestPoint")
 		(at 49.53 59.69 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -8050,7 +7837,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+3V3"
+		(property "Value" "+3.3V"
 			(at 192.278 136.652 0)
 			(effects
 				(font
@@ -8726,81 +8513,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 55.88 219.71 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "acf07b69-5c15-4814-9a6a-a12d42e22009")
-		(property "Reference" "TP37"
-			(at 53.2625 212.3635 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "sensors"
-			(at 52.5005 214.6496 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Solderpoint:Solderpad"
-			(at 60.96 219.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 60.96 219.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "test point"
-			(at 55.88 219.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Link" ""
-			(at 55.88 219.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "c2027b40-a76c-4c5e-afb9-efd23751cac6")
-		)
-		(instances
-			(project "Flight Controller"
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
-					(reference "TP37")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 36.83 139.7 0)
 		(unit 1)
@@ -8869,6 +8581,72 @@
 	)
 	(symbol
 		(lib_id "power:+5V")
+		(at 59.69 97.79 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ad5398f5-3e7a-4cdf-bcee-810d31687bd9")
+		(property "Reference" "#PWR0128"
+			(at 59.69 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 59.944 93.726 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 59.69 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 59.69 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 59.69 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "8a2b1eea-0ec3-4a17-8917-8aac653d0507")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
+					(reference "#PWR0128")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
 		(at 250.19 137.16 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -8927,6 +8705,81 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
 					(reference "#PWR0146")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 68.58 227.33 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b230ed70-cfdc-43a7-85b6-f4975dcddc2c")
+		(property "Reference" "TP37"
+			(at 64.262 218.694 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "sensors"
+			(at 63.5 220.9801 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Solderpoint:Solderpad"
+			(at 73.66 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 73.66 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 68.58 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
+			(at 68.58 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "d3e16495-aecb-480b-8c8d-fb173ee25920")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
+					(reference "TP37")
 					(unit 1)
 				)
 			)
@@ -9585,6 +9438,81 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 52.07 218.44 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "d0da2cc0-89e3-4a42-b9ca-cb69e50e8414")
+		(property "Reference" "TP28"
+			(at 50.038 211.0739 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "sensors"
+			(at 49.276 213.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Solderpoint:Solderpad"
+			(at 57.15 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 57.15 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 52.07 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
+			(at 52.07 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "8ff31e70-b76f-4d05-8e7d-f47e6bdd67d9")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
+					(reference "TP28")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+5V")
 		(at 38.1 53.34 0)
 		(unit 1)
@@ -9918,17 +9846,34 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 81.28 139.7 0)
+		(lib_id "Connector:TestPoint")
+		(at 76.2 226.06 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "e1196e62-d278-4dc4-ab7e-f4b9ea2a39c4")
-		(property "Reference" "#PWR0125"
-			(at 81.28 146.05 0)
+		(uuid "de90312d-b93f-474e-a3fe-9e4a5a4725e9")
+		(property "Reference" "TP38"
+			(at 71.882 217.424 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "sensors"
+			(at 71.12 219.7101 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Solderpoint:Solderpad"
+			(at 81.28 226.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9936,8 +9881,8 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "GND"
-			(at 81.28 144.78 0)
+		(property "Datasheet" "~"
+			(at 81.28 226.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9945,8 +9890,8 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
-			(at 81.28 139.7 0)
+		(property "Description" "test point"
+			(at 76.2 226.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9954,17 +9899,8 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" ""
-			(at 81.28 139.7 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 81.28 139.7 0)
+		(property "Link" ""
+			(at 76.2 226.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9973,12 +9909,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "f3ccb198-7e68-475c-94ea-d8bc05f57666")
+			(uuid "584e6685-e420-48a9-a9a9-70c68427377a")
 		)
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab"
-					(reference "#PWR0125")
+					(reference "TP38")
 					(unit 1)
 				)
 			)
