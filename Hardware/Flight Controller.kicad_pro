@@ -535,7 +535,7 @@
       "plot": "",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "Flight Controller.step",
       "svg": "",
       "vrml": ""
     },
