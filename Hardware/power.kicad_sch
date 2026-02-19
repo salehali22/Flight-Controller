@@ -1059,6 +1059,155 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Diode:PMEG2010EH"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "D"
+				(at 0 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "PMEG2010EH"
+				(at 0 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "Diode_SMD:D_SOD-123F"
+				(at 0 -4.445 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PMEG2010EH_EJ_ET.pdf"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "20V, 1A very low Vf MEGA Schottky barrier rectifier, SOD-123F"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "forward voltage diode"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "D*SOD?123F*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "PMEG2010EH_0_1"
+				(polyline
+					(pts
+						(xy -1.905 0.635) (xy -1.905 1.27) (xy -1.27 1.27) (xy -1.27 -1.27) (xy -0.635 -1.27) (xy -0.635 -0.635)
+					)
+					(stroke
+						(width 0.2032)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 1.27) (xy 1.27 -1.27) (xy -1.27 0) (xy 1.27 1.27)
+					)
+					(stroke
+						(width 0.2032)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 0) (xy -1.27 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "PMEG2010EH_1_1"
+				(pin passive line
+					(at -3.81 0 0)
+					(length 2.54)
+					(name "K"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 3.81 0 180)
+					(length 2.54)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Diode:SMF26A"
 			(pin_numbers
 				(hide yes)
@@ -4337,10 +4486,10 @@
 		(uuid "29494cae-7558-4e08-8b08-c124c8c6b055")
 	)
 	(junction
-		(at 351.79 69.85)
+		(at 351.79 58.42)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "2d110d59-c252-4ed3-810c-8dbe97e5aae0")
+		(uuid "2d51eb63-ddb8-48b6-a0c7-f2fe5faf9692")
 	)
 	(junction
 		(at 361.95 214.63)
@@ -4545,6 +4694,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "dbfeb19b-afbe-4459-ab4a-c66459cdf830")
+	)
+	(junction
+		(at 337.82 58.42)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "e16ed4c7-d427-4bac-af7e-8152da5a4cea")
 	)
 	(junction
 		(at 415.29 213.36)
@@ -5064,16 +5219,6 @@
 	)
 	(wire
 		(pts
-			(xy 351.79 69.85) (xy 351.79 74.93)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2bfc08d8-dfbb-4170-afb9-3d434c25133b")
-	)
-	(wire
-		(pts
 			(xy 119.38 129.54) (xy 119.38 135.89)
 		)
 		(stroke
@@ -5081,6 +5226,16 @@
 			(type default)
 		)
 		(uuid "2f259602-7b40-40cb-8301-51a2a971f1f8")
+	)
+	(wire
+		(pts
+			(xy 337.82 58.42) (xy 337.82 60.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2f654cb0-798f-4c31-8769-2a6ed42b0801")
 	)
 	(wire
 		(pts
@@ -5141,6 +5296,16 @@
 			(type default)
 		)
 		(uuid "380a2cfb-c1f1-4478-9bc1-28b006a1f90c")
+	)
+	(wire
+		(pts
+			(xy 337.82 57.15) (xy 337.82 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "39a2d7d5-b017-46dc-a0f7-7dfdc7267ecc")
 	)
 	(wire
 		(pts
@@ -5221,6 +5386,16 @@
 			(type default)
 		)
 		(uuid "463b5ac0-07a0-4656-aa43-085ec198d2f8")
+	)
+	(wire
+		(pts
+			(xy 337.82 74.93) (xy 351.79 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "46b17fce-25b2-4e79-9394-b10b2b9aad5c")
 	)
 	(wire
 		(pts
@@ -5485,7 +5660,7 @@
 	)
 	(wire
 		(pts
-			(xy 351.79 66.04) (xy 351.79 69.85)
+			(xy 351.79 57.15) (xy 351.79 58.42)
 		)
 		(stroke
 			(width 0)
@@ -5582,6 +5757,16 @@
 			(type default)
 		)
 		(uuid "7612f1de-556e-4fff-b109-85edb8a70764")
+	)
+	(wire
+		(pts
+			(xy 351.79 58.42) (xy 351.79 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "76b8f370-b72f-42d1-a0f6-f0778ef70d1f")
 	)
 	(wire
 		(pts
@@ -5842,6 +6027,16 @@
 			(type default)
 		)
 		(uuid "9709f77b-7e62-4f30-ad67-410aa7cb5bca")
+	)
+	(wire
+		(pts
+			(xy 337.82 68.58) (xy 337.82 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "97157c0d-a067-46c9-b744-10913c387eb9")
 	)
 	(wire
 		(pts
@@ -6858,6 +7053,16 @@
 	)
 	(wire
 		(pts
+			(xy 340.36 58.42) (xy 337.82 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "feee6352-7427-4469-8376-bb5d9950d52b")
+	)
+	(wire
+		(pts
 			(xy 34.29 121.92) (xy 34.29 127)
 		)
 		(stroke
@@ -7097,6 +7302,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -7161,6 +7372,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR016")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -7241,6 +7458,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "R?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -7317,6 +7540,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "R?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -7379,6 +7608,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR020")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -7449,6 +7684,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -7512,6 +7753,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#FLG04")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#FLG?")
 					(unit 1)
 				)
 			)
@@ -7604,6 +7851,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "U?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -7667,6 +7920,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR06")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -7734,6 +7993,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR01")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -7810,6 +8075,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "R10")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -7891,6 +8162,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -7958,68 +8235,9 @@
 					(unit 1)
 				)
 			)
-		)
-	)
-	(symbol
-		(lib_id "power:+5V")
-		(at 133.35 127 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "219c9cfe-a312-4167-b636-8b46b8e748de")
-		(property "Reference" "#PWR014"
-			(at 133.35 130.81 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+5V"
-			(at 133.096 122.428 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 133.35 127 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 133.35 127 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 133.35 127 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "b2ebc3bf-7317-4999-be9d-3a7b83b31020")
-		)
-		(instances
-			(project "Flight Controller"
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
-					(reference "#PWR014")
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#FLG?")
 					(unit 1)
 				)
 			)
@@ -8103,6 +8321,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "D?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -8166,6 +8390,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#FLG06")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#FLG?")
 					(unit 1)
 				)
 			)
@@ -8247,6 +8477,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -8310,6 +8546,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR010")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -8379,6 +8621,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -8443,6 +8691,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR022")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -8535,6 +8789,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "U?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -8608,6 +8868,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "R13")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -8706,6 +8972,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "U?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -8785,6 +9057,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -8848,6 +9126,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR013")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -8930,6 +9214,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -9005,6 +9295,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "C6")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -9084,6 +9380,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "R?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -9159,6 +9461,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "C13")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -9241,6 +9549,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "R?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -9304,6 +9618,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#FLG02")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#FLG?")
 					(unit 1)
 				)
 			)
@@ -9373,6 +9693,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -9435,6 +9761,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR037")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -9516,6 +9848,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -9583,68 +9921,9 @@
 					(unit 1)
 				)
 			)
-		)
-	)
-	(symbol
-		(lib_id "power:+5V")
-		(at 139.7 105.41 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "54f5d45c-432d-40a1-b8e5-a7cc1287e652")
-		(property "Reference" "#PWR015"
-			(at 139.7 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+5V"
-			(at 139.446 100.838 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 139.7 105.41 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 139.7 105.41 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 139.7 105.41 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "d78f8a79-4f37-428f-87ca-f6910b0f5159")
-		)
-		(instances
-			(project "Flight Controller"
-				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
-					(reference "#PWR015")
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -9711,6 +9990,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR012")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -9794,6 +10079,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "JP?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -9872,6 +10163,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -9939,6 +10236,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -10003,6 +10306,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR07")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -10085,6 +10394,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "D?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -10160,6 +10475,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "C20")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -10252,6 +10573,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "Q?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -10336,6 +10663,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "R12")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -10539,6 +10872,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "J?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -10601,6 +10940,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR034")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -10695,6 +11040,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "U?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -10759,6 +11110,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR030")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -10839,6 +11196,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "L?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -10903,6 +11266,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR05")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -10985,6 +11354,77 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 139.7 105.41 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "85876bd1-b187-4b91-8375-8b40b9165aaf")
+		(property "Reference" "#PWR?"
+			(at 139.7 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+VBUS"
+			(at 139.446 100.838 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 139.7 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 139.7 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 139.7 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "87e35388-5094-41b0-9d4f-88fcd6488482")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
+					(reference "#PWR?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -11005,7 +11445,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+5V"
+		(property "Value" "+VBUS"
 			(at 92.456 107.188 0)
 			(effects
 				(font
@@ -11047,6 +11487,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR08")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -11124,6 +11570,84 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "C5")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 340.36 58.42 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "8a7996a3-1c0a-4f16-94c9-506ceef12bbc")
+		(property "Reference" "#FLG01"
+			(at 342.265 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 345.186 56.388 0)
+			(effects
+				(font
+					(size 0.762 0.762)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 340.36 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 340.36 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 340.36 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "08e33e5b-4726-43f9-a8b0-371f8800a3d0")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
+					(reference "#FLG01")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#FLG?")
 					(unit 1)
 				)
 			)
@@ -11229,6 +11753,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "U?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -11292,6 +11822,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR041")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -11373,6 +11909,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -11435,6 +11977,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR09")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -11501,6 +12049,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR028")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -11582,6 +12136,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -11657,6 +12217,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "C8")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -11746,6 +12312,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "D?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -11832,6 +12404,84 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "U?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 337.82 57.15 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a842f09f-0e34-4411-97cf-236691b4f59f")
+		(property "Reference" "#PWR0121"
+			(at 337.82 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+VBUS"
+			(at 337.82 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 337.82 57.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 337.82 57.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 337.82 57.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ecf08f82-1d29-4c0a-a0f0-74d31507b4a9")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
+					(reference "#PWR0121")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -11894,6 +12544,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR02")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -11960,6 +12616,83 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR036")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 133.35 127 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ad1c5d8b-080a-4083-b743-508dd1c54078")
+		(property "Reference" "#PWR014"
+			(at 133.35 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+VBUS"
+			(at 133.096 122.428 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 133.35 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 133.35 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 133.35 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "980c3016-3319-4e8d-9b86-5343b741058b")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
+					(reference "#PWR014")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -12039,6 +12772,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "R?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -12104,6 +12843,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -12166,6 +12911,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR026")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -12248,6 +12999,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "R?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -12323,6 +13080,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "C9")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -12404,6 +13167,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "R5C?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -12467,6 +13236,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#FLG05")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#FLG?")
 					(unit 1)
 				)
 			)
@@ -12537,6 +13312,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -12604,6 +13385,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -12668,6 +13455,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR027")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -12757,6 +13550,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "D?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -12821,6 +13620,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR038")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -12903,6 +13708,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -12982,11 +13793,17 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 351.79 69.85 270)
+		(at 351.79 58.42 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -12994,7 +13811,7 @@
 		(dnp no)
 		(uuid "de39d49d-01ff-425c-9a23-3fcc84538b83")
 		(property "Reference" "#FLG08"
-			(at 353.695 69.85 0)
+			(at 353.695 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13003,7 +13820,7 @@
 			)
 		)
 		(property "Value" "PWR_FLAG"
-			(at 356.616 67.818 0)
+			(at 356.616 56.388 0)
 			(effects
 				(font
 					(size 0.762 0.762)
@@ -13012,7 +13829,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 351.79 69.85 0)
+			(at 351.79 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13021,7 +13838,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 351.79 69.85 0)
+			(at 351.79 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13030,7 +13847,7 @@
 			)
 		)
 		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 351.79 69.85 0)
+			(at 351.79 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13045,6 +13862,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#FLG08")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#FLG?")
 					(unit 1)
 				)
 			)
@@ -13126,6 +13949,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "R5B?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -13204,6 +14033,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -13269,20 +14104,100 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
-		(lib_id "power:+5V")
-		(at 351.79 66.04 0)
+		(lib_id "Diode:PMEG2010EH")
+		(at 337.82 64.77 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
+		(uuid "e9814298-7e23-46fd-b50c-285a78d82a26")
+		(property "Reference" "D3"
+			(at 320.802 64.008 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "PMEG2010EH"
+			(at 320.802 66.548 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Diode_SMD:D_SOD-123F"
+			(at 342.265 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PMEG2010EH_EJ_ET.pdf"
+			(at 337.82 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "20V, 1A very low Vf MEGA Schottky barrier rectifier, SOD-123F"
+			(at 337.82 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "f85e22a7-98bc-4e31-8ad7-345cc375088d")
+		)
+		(pin "1"
+			(uuid "e7e3702b-a78a-49bb-b0df-8540a5f58556")
+		)
+		(instances
+			(project ""
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
+					(reference "D3")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "D?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 351.79 57.15 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
 		(uuid "eab0c3ed-bb91-410e-983d-203f375ee769")
 		(property "Reference" "#PWR035"
-			(at 351.79 69.85 0)
+			(at 351.79 60.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13291,15 +14206,16 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 351.79 60.96 0)
+			(at 348.488 51.816 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Footprint" ""
-			(at 351.79 66.04 0)
+			(at 351.79 57.15 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13308,7 +14224,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 351.79 66.04 0)
+			(at 351.79 57.15 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13317,7 +14233,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 351.79 66.04 0)
+			(at 351.79 57.15 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13332,6 +14248,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR035")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -13398,6 +14320,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR04")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -13477,6 +14405,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "R?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -13539,6 +14473,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "#PWR031")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -13620,6 +14560,12 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol
@@ -13694,6 +14640,12 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
 					(reference "L2")
+					(unit 1)
+				)
+			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "L?")
 					(unit 1)
 				)
 			)
@@ -13775,6 +14727,18 @@
 					(unit 1)
 				)
 			)
+			(project "power"
+				(path "/b4112538-0d92-4df9-b556-22604565f847"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 		)
 	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
 )
