@@ -463,7 +463,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     PA6     ------> SPI1_MISO
     PA7     ------> SPI1_MOSI
     */
-    GPIO_InitStruct.Pin = OSD_SCK_Pin|OSD_MISO_Pin|OSD_MOSI_Pin;
+    GPIO_InitStruct.Pin = FLASH_SCK_Pin|FLASH_MISO_Pin|FLASH_MOSI_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -498,7 +498,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     PC11     ------> SPI3_MISO
     PC12     ------> SPI3_MOSI
     */
-    GPIO_InitStruct.Pin = IMU2_SCLK_Pin|IMU2_MISO_Pin|IMU2_MOSI_Pin;
+    GPIO_InitStruct.Pin = IMU_SCLK_Pin|IMU_MISO_Pin|IMU_MOSI_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -533,7 +533,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     PE5     ------> SPI4_MISO
     PE6     ------> SPI4_MOSI
     */
-    GPIO_InitStruct.Pin = IMU_SCK_Pin|IMU_MISO_Pin|IMU_MOSI_Pin;
+    GPIO_InitStruct.Pin = OSD_SCK_Pin|OSD_MISO_Pin|OSD_MOSI_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -568,7 +568,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     PB4 (NJTRST)     ------> SPI6_MISO
     PB5     ------> SPI6_MOSI
     */
-    GPIO_InitStruct.Pin = FLASH_SCLK_Pin|FLASH_MISO_Pin|FLASH_MOSI_Pin;
+    GPIO_InitStruct.Pin = IMU2_SCLK_Pin|IMU2_MISO_Pin|IMU2_MOSI_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -603,7 +603,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
     PA6     ------> SPI1_MISO
     PA7     ------> SPI1_MOSI
     */
-    HAL_GPIO_DeInit(GPIOA, OSD_SCK_Pin|OSD_MISO_Pin|OSD_MOSI_Pin);
+    HAL_GPIO_DeInit(GPIOA, FLASH_SCK_Pin|FLASH_MISO_Pin|FLASH_MOSI_Pin);
 
     /* USER CODE BEGIN SPI1_MspDeInit 1 */
 
@@ -622,7 +622,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
     PC11     ------> SPI3_MISO
     PC12     ------> SPI3_MOSI
     */
-    HAL_GPIO_DeInit(GPIOC, IMU2_SCLK_Pin|IMU2_MISO_Pin|IMU2_MOSI_Pin);
+    HAL_GPIO_DeInit(GPIOC, IMU_SCLK_Pin|IMU_MISO_Pin|IMU_MOSI_Pin);
 
     /* USER CODE BEGIN SPI3_MspDeInit 1 */
 
@@ -641,7 +641,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
     PE5     ------> SPI4_MISO
     PE6     ------> SPI4_MOSI
     */
-    HAL_GPIO_DeInit(GPIOE, IMU_SCK_Pin|IMU_MISO_Pin|IMU_MOSI_Pin);
+    HAL_GPIO_DeInit(GPIOE, OSD_SCK_Pin|OSD_MISO_Pin|OSD_MOSI_Pin);
 
     /* USER CODE BEGIN SPI4_MspDeInit 1 */
 
@@ -660,7 +660,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
     PB4 (NJTRST)     ------> SPI6_MISO
     PB5     ------> SPI6_MOSI
     */
-    HAL_GPIO_DeInit(GPIOB, FLASH_SCLK_Pin|FLASH_MISO_Pin|FLASH_MOSI_Pin);
+    HAL_GPIO_DeInit(GPIOB, IMU2_SCLK_Pin|IMU2_MISO_Pin|IMU2_MOSI_Pin);
 
     /* USER CODE BEGIN SPI6_MspDeInit 1 */
 
@@ -989,7 +989,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     PB12     ------> UART5_RX
     PB13     ------> UART5_TX
     */
-    GPIO_InitStruct.Pin = ESC_RX_Pin|ESC_TX_Pin;
+    GPIO_InitStruct.Pin = TELEMETRY_RX_Pin|TELEMETRY_TX_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1091,7 +1091,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     PB14     ------> USART1_TX
     PB15     ------> USART1_RX
     */
-    GPIO_InitStruct.Pin = WIFI_RC_TX_Pin|WIFI_RC_RX_Pin;
+    GPIO_InitStruct.Pin = Expansion_TX_Pin|Expansion_RX_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1159,7 +1159,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     PD8     ------> USART3_TX
     PD9     ------> USART3_RX
     */
-    GPIO_InitStruct.Pin = TELEMETRY_TX_Pin|TELEMETRY_RX_Pin;
+    GPIO_InitStruct.Pin = WIFI_RC_TX_Pin|WIFI_RC_RX_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1211,7 +1211,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
     PB12     ------> UART5_RX
     PB13     ------> UART5_TX
     */
-    HAL_GPIO_DeInit(GPIOB, ESC_RX_Pin|ESC_TX_Pin);
+    HAL_GPIO_DeInit(GPIOB, TELEMETRY_RX_Pin|TELEMETRY_TX_Pin);
 
     /* USER CODE BEGIN UART5_MspDeInit 1 */
 
@@ -1265,7 +1265,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
     PB14     ------> USART1_TX
     PB15     ------> USART1_RX
     */
-    HAL_GPIO_DeInit(GPIOB, WIFI_RC_TX_Pin|WIFI_RC_RX_Pin);
+    HAL_GPIO_DeInit(GPIOB, Expansion_TX_Pin|Expansion_RX_Pin);
 
     /* USER CODE BEGIN USART1_MspDeInit 1 */
 
@@ -1301,7 +1301,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
     PD8     ------> USART3_TX
     PD9     ------> USART3_RX
     */
-    HAL_GPIO_DeInit(GPIOD, TELEMETRY_TX_Pin|TELEMETRY_RX_Pin);
+    HAL_GPIO_DeInit(GPIOD, WIFI_RC_TX_Pin|WIFI_RC_RX_Pin);
 
     /* USER CODE BEGIN USART3_MspDeInit 1 */
 
