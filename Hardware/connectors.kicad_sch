@@ -4265,7 +4265,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_SH_SM06B-SRSS-TB_1x06-1MP_P1.00mm_Horizontal"
+		(property "Footprint" "Connector_JST:JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_Horizontal"
 			(at 262.89 147.32 0)
 			(effects
 				(font
@@ -7044,7 +7044,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "memo:CONN-SMD_4P-P1.00_SM04B-SRSS-TB-LF-SN"
+		(property "Footprint" "Connector_JST:JST_GH_SM04B-GHS-TB_1x04-1MP_P1.25mm_Horizontal"
 			(at 299.72 143.51 0)
 			(effects
 				(font

@@ -11371,7 +11371,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "85876bd1-b187-4b91-8375-8b40b9165aaf")
-		(property "Reference" "#PWR?"
+		(property "Reference" "#PWR0125"
 			(at 139.7 109.22 0)
 			(effects
 				(font
@@ -11421,7 +11421,7 @@
 		(instances
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/4a7cbebd-f698-4bee-b98f-1e10a25991ff"
-					(reference "#PWR?")
+					(reference "#PWR0125")
 					(unit 1)
 				)
 			)
@@ -11435,7 +11435,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "85876bd1-b187-4b91-8375-8b40b9165aaf")
+		(uuid "85876bd1-b187-4b91-8375-8b40b9165ab0")
 		(property "Reference" "#PWR08"
 			(at 92.71 115.57 0)
 			(effects
@@ -11481,7 +11481,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "87e35388-5094-41b0-9d4f-88fcd6488482")
+			(uuid "87e35388-5094-41b0-9d4f-88fcd6488483")
 		)
 		(instances
 			(project "Flight Controller"
