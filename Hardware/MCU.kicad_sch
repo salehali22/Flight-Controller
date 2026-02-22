@@ -4781,6 +4781,16 @@
 	)
 	(wire
 		(pts
+			(xy 68.58 186.69) (xy 68.58 190.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "27940083-b16c-4307-83d4-9713075a608c")
+	)
+	(wire
+		(pts
 			(xy 73.66 201.93) (xy 73.66 199.39)
 		)
 		(stroke
@@ -5221,16 +5231,6 @@
 	)
 	(wire
 		(pts
-			(xy 83.82 190.5) (xy 91.44 190.5)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8cfa7333-539f-46c1-9f7b-1fdf74f8896b")
-	)
-	(wire
-		(pts
 			(xy 57.15 226.06) (xy 57.15 228.6)
 		)
 		(stroke
@@ -5371,7 +5371,7 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 190.5) (xy 73.66 190.5)
+			(xy 73.66 190.5) (xy 91.44 190.5)
 		)
 		(stroke
 			(width 0)
@@ -5621,7 +5621,7 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 179.07) (xy 68.58 190.5)
+			(xy 68.58 179.07) (xy 68.58 181.61)
 		)
 		(stroke
 			(width 0)
@@ -10963,7 +10963,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small")
-		(at 81.28 190.5 90)
+		(at 68.58 184.15 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10971,7 +10971,7 @@
 		(dnp no)
 		(uuid "c4c365fc-0442-42c2-9f17-62862bee49f0")
 		(property "Reference" "R16"
-			(at 81.534 188.468 90)
+			(at 66.548 183.896 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -10979,7 +10979,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 81.534 192.786 90)
+			(at 70.866 183.896 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10987,7 +10987,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 81.28 190.5 0)
+			(at 68.58 184.15 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10996,7 +10996,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 81.28 190.5 0)
+			(at 68.58 184.15 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11005,7 +11005,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 81.28 190.5 0)
+			(at 68.58 184.15 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11014,7 +11014,7 @@
 			)
 		)
 		(property "Link" ""
-			(at 81.28 190.5 90)
+			(at 68.58 184.15 90)
 			(effects
 				(font
 					(size 1.27 1.27)
