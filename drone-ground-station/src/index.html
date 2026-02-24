@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drone Ground Station</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <circle cx="14" cy="14" r="4" fill="#00d4ff"/>
+          <line x1="14" y1="14" x2="4" y2="4" stroke="#00d4ff" stroke-width="2"/>
+          <line x1="14" y1="14" x2="24" y2="4" stroke="#00d4ff" stroke-width="2"/>
+          <line x1="14" y1="14" x2="4" y2="24" stroke="#00d4ff" stroke-width="2"/>
+          <line x1="14" y1="14" x2="24" y2="24" stroke="#00d4ff" stroke-width="2"/>
+          <circle cx="4" cy="4" r="3" fill="#00d4ff" opacity="0.7"/>
+          <circle cx="24" cy="4" r="3" fill="#00d4ff" opacity="0.7"/>
+          <circle cx="4" cy="24" r="3" fill="#00d4ff" opacity="0.7"/>
+          <circle cx="24" cy="24" r="3" fill="#00d4ff" opacity="0.7"/>
+        </svg>
+        <span>DRONE GS</span>
+      </div>
+    </div>
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="dashboard">
+        <span class="tab-icon">&#9632;</span> Dashboard
+      </button>
+      <button class="tab-btn" data-tab="mission">
+        <span class="tab-icon">&#9650;</span> Mission Planner
+      </button>
+      <button class="tab-btn" data-tab="pid">
+        <span class="tab-icon">&#9881;</span> PID Tuning
+      </button>
+      <button class="tab-btn" data-tab="config">
+        <span class="tab-icon">&#9881;</span> Configuration
+      </button>
+    </nav>
+    <div class="header-right">
+      <div class="connection-status" id="connectionStatus">
+        <span class="status-dot disconnected"></span>
+        <span id="statusText">DISCONNECTED</span>
+      </div>
+      <button class="btn-connect" id="connectBtn">CONNECT</button>
+    </div>
+  </header>
+
+  <!-- Connect Modal -->
+  <div class="modal-overlay" id="connectModal" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Connect to Flight Controller</h2>
+        <button class="modal-close" id="closeModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Serial Port</label>
+          <select id="portSelect" class="select-input">
+            <option value="">-- Select Port --</option>
+          </select>
+          <button class="btn-secondary" id="refreshPorts" style="margin-top:8px;">Refresh Ports</button>
+        </div>
+        <div class="form-group">
+          <label>Baud Rate</label>
+          <select id="baudSelect" class="select-input">
+            <option value="9600">9600</option>
+            <option value="57600">57600</option>
+            <option value="115200" selected>115200</option>
+            <option value="230400">230400</option>
+            <option value="460800">460800</option>
+            <option value="921600">921600</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="checkbox" id="useSimulator" checked style="width:16px; height:16px;">
+            Use Simulator (no FC needed)
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancelConnect">Cancel</button>
+        <button class="btn-primary" id="confirmConnect">Connect</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Arm Confirmation Modal -->
+  <div class="modal-overlay" id="armModal" style="display:none;">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2 id="armModalTitle">Confirm Action</h2>
+      </div>
+      <div class="modal-body">
+        <p id="armModalText">Are you sure you want to ARM the drone?</p>
+        <p style="color:#ff4444; font-size:12px; margin-top:8px;" id="armWarning">
+          WARNING: Arming will spin the motors. Ensure props are clear!
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancelArm">Cancel</button>
+        <button class="btn-danger" id="confirmArm">CONFIRM</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- DASHBOARD TAB -->
+    <div class="tab-content active" id="tab-dashboard">
+      <div class="dashboard-layout">
+
+        <!-- Left: Telemetry Cards -->
+        <div class="telemetry-panel">
+          <div class="panel-title">TELEMETRY</div>
+
+          <div class="telemetry-grid">
+            <div class="telem-card" id="card-roll">
+              <div class="telem-label">ROLL</div>
+              <div class="telem-value" id="val-roll">0.0</div>
+              <div class="telem-unit">deg</div>
+            </div>
+            <div class="telem-card" id="card-pitch">
+              <div class="telem-label">PITCH</div>
+              <div class="telem-value" id="val-pitch">0.0</div>
+              <div class="telem-unit">deg</div>
+            </div>
+            <div class="telem-card" id="card-yaw">
+              <div class="telem-label">YAW</div>
+              <div class="telem-value" id="val-yaw">0.0</div>
+              <div class="telem-unit">deg</div>
+            </div>
+            <div class="telem-card" id="card-alt">
+              <div class="telem-label">ALTITUDE</div>
+              <div class="telem-value" id="val-altitude">0.0</div>
+              <div class="telem-unit">m</div>
+            </div>
+            <div class="telem-card" id="card-bat">
+              <div class="telem-label">BATTERY</div>
+              <div class="telem-value" id="val-battery">16.8</div>
+              <div class="telem-unit">V</div>
+            </div>
+            <div class="telem-card telem-card-wide" id="card-gps">
+              <div class="telem-label">GPS</div>
+              <div class="telem-value telem-small" id="val-gps">41.7151, 44.8271</div>
+              <div class="telem-unit">lat / lon</div>
+            </div>
+            <div class="telem-card" id="card-mode">
+              <div class="telem-label">FLIGHT MODE</div>
+              <div class="telem-value telem-mode" id="val-mode">MANUAL</div>
+            </div>
+            <div class="telem-card" id="card-arm">
+              <div class="telem-label">ARM STATUS</div>
+              <div class="telem-value arm-status disarmed" id="val-arm">DISARMED</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center: 3D Model -->
+        <div class="model-panel">
+          <div class="panel-title">3D ATTITUDE</div>
+          <div id="threejs-container"></div>
+          <div class="attitude-indicator">
+            <span id="attitude-text">Roll: 0.0° | Pitch: 0.0° | Yaw: 0.0°</span>
+          </div>
+        </div>
+
+        <!-- Right: RC Channels -->
+        <div class="rc-panel">
+          <div class="panel-title">RC CHANNELS</div>
+          <div class="rc-channels" id="rcChannels">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MISSION PLANNER TAB -->
+    <div class="tab-content" id="tab-mission">
+      <div class="mission-layout">
+        <div class="map-container">
+          <div id="map"></div>
+          <div class="map-info">
+            <span id="missionDistance">Total distance: 0.00 km</span>
+          </div>
+        </div>
+        <div class="mission-sidebar">
+          <div class="sidebar-header">
+            <div class="panel-title">WAYPOINTS</div>
+            <div class="mission-actions">
+              <button class="btn-primary btn-sm" id="uploadMission">UPLOAD TO FC</button>
+              <button class="btn-secondary btn-sm" id="clearWaypoints">CLEAR ALL</button>
+              <button class="btn-secondary btn-sm" id="saveMission">SAVE</button>
+              <button class="btn-secondary btn-sm" id="loadMission">LOAD</button>
+            </div>
+          </div>
+          <div class="waypoint-list" id="waypointList">
+            <div class="no-waypoints">Click on the map to add waypoints</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PID TUNING TAB -->
+    <div class="tab-content" id="tab-pid">
+      <div class="pid-layout">
+        <div class="pid-panel">
+          <div class="panel-title">PID TUNING</div>
+          <div class="pid-grid">
+
+            <!-- Roll PID -->
+            <div class="pid-group">
+              <div class="pid-axis-label">ROLL</div>
+              <div class="pid-row">
+                <label>P</label>
+                <input type="range" class="pid-slider" id="roll-p" min="0" max="10" step="0.1" value="4.5">
+                <span class="pid-value" id="val-roll-p">4.5</span>
+              </div>
+              <div class="pid-row">
+                <label>I</label>
+                <input type="range" class="pid-slider" id="roll-i" min="0" max="10" step="0.01" value="0.45">
+                <span class="pid-value" id="val-roll-i">0.45</span>
+              </div>
+              <div class="pid-row">
+                <label>D</label>
+                <input type="range" class="pid-slider" id="roll-d" min="0" max="10" step="0.001" value="0.04">
+                <span class="pid-value" id="val-roll-d">0.04</span>
+              </div>
+            </div>
+
+            <!-- Pitch PID -->
+            <div class="pid-group">
+              <div class="pid-axis-label">PITCH</div>
+              <div class="pid-row">
+                <label>P</label>
+                <input type="range" class="pid-slider" id="pitch-p" min="0" max="10" step="0.1" value="4.5">
+                <span class="pid-value" id="val-pitch-p">4.5</span>
+              </div>
+              <div class="pid-row">
+                <label>I</label>
+                <input type="range" class="pid-slider" id="pitch-i" min="0" max="10" step="0.01" value="0.45">
+                <span class="pid-value" id="val-pitch-i">0.45</span>
+              </div>
+              <div class="pid-row">
+                <label>D</label>
+                <input type="range" class="pid-slider" id="pitch-d" min="0" max="10" step="0.001" value="0.04">
+                <span class="pid-value" id="val-pitch-d">0.04</span>
+              </div>
+            </div>
+
+            <!-- Yaw PID -->
+            <div class="pid-group">
+              <div class="pid-axis-label">YAW</div>
+              <div class="pid-row">
+                <label>P</label>
+                <input type="range" class="pid-slider" id="yaw-p" min="0" max="10" step="0.1" value="3.0">
+                <span class="pid-value" id="val-yaw-p">3.0</span>
+              </div>
+              <div class="pid-row">
+                <label>I</label>
+                <input type="range" class="pid-slider" id="yaw-i" min="0" max="10" step="0.01" value="0.30">
+                <span class="pid-value" id="val-yaw-i">0.30</span>
+              </div>
+              <div class="pid-row">
+                <label>D</label>
+                <input type="range" class="pid-slider" id="yaw-d" min="0" max="10" step="0.001" value="0.00">
+                <span class="pid-value" id="val-yaw-d">0.00</span>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="pid-actions">
+            <button class="btn-primary" id="sendPID">SEND TO FC</button>
+            <button class="btn-secondary" id="resetPID">RESET TO DEFAULT</button>
+          </div>
+
+          <div class="pid-status" id="pidStatus"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIGURATION TAB -->
+    <div class="tab-content" id="tab-config">
+      <div class="config-layout">
+        <div class="config-panel">
+          <div class="panel-title">SERIAL CONNECTION</div>
+          <div class="config-group">
+            <div class="form-group">
+              <label>Serial Port</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <select id="cfgPortSelect" class="select-input" style="flex:1;">
+                  <option value="">-- Select Port --</option>
+                </select>
+                <button class="btn-secondary" id="cfgRefreshPorts">Refresh</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Baud Rate</label>
+              <select id="cfgBaudSelect" class="select-input">
+                <option value="9600">9600</option>
+                <option value="57600">57600</option>
+                <option value="115200" selected>115200</option>
+                <option value="230400">230400</option>
+                <option value="460800">460800</option>
+                <option value="921600">921600</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <button class="btn-primary" id="cfgConnectBtn">CONNECT</button>
+              <button class="btn-secondary" id="cfgDisconnectBtn" style="margin-left:8px;" disabled>DISCONNECT</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-panel">
+          <div class="panel-title">FLIGHT CONTROLLER INFO</div>
+          <div class="fc-info">
+            <div class="fc-info-row">
+              <span class="fc-label">FC Type</span>
+              <span class="fc-value" id="fcType">STM32H743VIT6</span>
+            </div>
+            <div class="fc-info-row">
+              <span class="fc-label">Firmware Version</span>
+              <span class="fc-value" id="fcFirmware">v1.0.0-dev</span>
+            </div>
+            <div class="fc-info-row">
+              <span class="fc-label">MCU</span>
+              <span class="fc-value" id="fcMCU">STM32H743</span>
+            </div>
+            <div class="fc-info-row">
+              <span class="fc-label">Build Date</span>
+              <span class="fc-value" id="fcBuild">2025-01-01</span>
+            </div>
+            <div class="fc-info-row">
+              <span class="fc-label">Target</span>
+              <span class="fc-value" id="fcTarget">CUSTOM_H743</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-panel">
+          <div class="panel-title">ARM CONTROL</div>
+          <div class="arm-control">
+            <div class="arm-indicator" id="cfgArmIndicator">
+              <div class="arm-led disarmed" id="cfgArmLed"></div>
+              <span id="cfgArmText">DISARMED</span>
+            </div>
+            <button class="btn-arm" id="cfgArmBtn">ARM DRONE</button>
+          </div>
+          <div class="arm-warning">
+            <span>&#9888;</span> Always ensure propellers are clear before arming
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Scripts -->
+  <!-- Three.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- App Scripts -->
+  <script src="js/simulator.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/mission.js"></script>
+  <script src="js/pid.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

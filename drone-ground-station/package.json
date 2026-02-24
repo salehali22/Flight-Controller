@@ -1,0 +1,41 @@
+{
+  "name": "drone-ground-station",
+  "version": "1.0.0",
+  "description": "Professional drone ground station for STM32H743VIT6 flight controller",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build": "electron-builder --win --mac"
+  },
+  "build": {
+    "appId": "com.dronefc.groundstation",
+    "productName": "Drone Ground Station",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ]
+  },
+  "dependencies": {
+    "serialport": "^12.0.0"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "keywords": ["drone", "ground-station", "electron", "flight-controller"],
+  "author": "Capstone Project",
+  "license": "MIT"
+}
