@@ -4306,7 +4306,7 @@
 		)
 		(uuid "896f054f-6cb3-429e-83fd-b8efb55dfacb")
 	)
-	(text "IMU_INT1 -> GPIO_EXTI4\nIMU_INT2 -> GPIO_EXTI2\nBMP388_INT -> GPIO_EXTI1\nif you wish to change, make sure  \nGPIO_EXT are diff for each sensor"
+	(text "IMU_INT1 -> GPIO_EXTI2\nIMU2_INT -> GPIO_EXTI4\nBMP388_INT -> GPIO_EXTI1\nif you wish to change, make sure  \nGPIO_EXT are diff for each sensor"
 		(exclude_from_sim no)
 		(at 380.746 119.38 0)
 		(effects

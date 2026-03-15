@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Drone Ground Station</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com https://nasa3d.arc.nasa.gov;">
+  <link rel="stylesheet" href="./css/reset.css" />
+  <link rel="stylesheet" href="./css/variables.css" />
+  <link rel="stylesheet" href="./css/layout.css" />
+  <link rel="stylesheet" href="./css/components.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "../node_modules/three/build/three.module.js",
+      "three/addons/": "../node_modules/three/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app-root">
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <div class="app-title">[DRONE GS]</div>
+      </div>
+      <nav class="top-tabs">
+        <button class="tab-button tab-active" data-tab="dashboard">● DASHBOARD</button>
+        <button class="tab-button" data-tab="mission">MISSION PLANNER</button>
+        <button class="tab-button" data-tab="pid">PID TUNING</button>
+        <button class="tab-button" data-tab="config">CONFIG</button>
+      </nav>
+      <div class="top-bar-right">
+        <div class="data-source-selector">
+          <label for="data-source">DATA SOURCE:</label>
+          <select id="data-source">
+            <option value="simulator">Simulator</option>
+            <option value="serial">Serial Port</option>
+          </select>
+        </div>
+        <div class="port-selector hidden" id="port-selector">
+          <label for="serial-port">PORT:</label>
+          <select id="serial-port">
+            <option value="">No ports detected</option>
+          </select>
+        </div>
+        <button type="button" id="connect-btn" class="btn btn-connect">CONNECT</button>
+        <div id="connection-status" class="status-indicator status-disconnected">
+          <span class="status-dot"></span>
+          <span class="status-text">DISCONNECTED</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-layout">
+      <!-- Telemetry left sidebar -->
+      <section class="sidebar sidebar-left">
+        <div class="telemetry-card" id="card-roll">
+          <div class="telemetry-label">ROLL</div>
+          <div class="telemetry-value" id="roll-value">0.0°</div>
+          <canvas class="telemetry-sparkline" id="roll-sparkline"></canvas>
+        </div>
+        <div class="telemetry-card" id="card-pitch">
+          <div class="telemetry-label">PITCH</div>
+          <div class="telemetry-value" id="pitch-value">0.0°</div>
+          <canvas class="telemetry-sparkline" id="pitch-sparkline"></canvas>
+        </div>
+        <div class="telemetry-card" id="card-yaw">
+          <div class="telemetry-label">YAW</div>
+          <div class="telemetry-value" id="yaw-value">0.0°</div>
+          <canvas class="telemetry-sparkline" id="yaw-sparkline"></canvas>
+        </div>
+        <div class="telemetry-card" id="card-altitude">
+          <div class="telemetry-label">ALTITUDE</div>
+          <div class="telemetry-value" id="altitude-value">0.0 m</div>
+          <canvas class="telemetry-sparkline" id="altitude-sparkline"></canvas>
+        </div>
+        <div class="telemetry-card" id="card-battery">
+          <div class="telemetry-label">BATTERY</div>
+          <div class="telemetry-value" id="battery-value">0.0 V</div>
+          <canvas class="telemetry-sparkline" id="battery-sparkline"></canvas>
+        </div>
+        <div class="telemetry-card" id="card-gps">
+          <div class="telemetry-label">GPS</div>
+          <div class="telemetry-gps">
+            <div id="gps-lat">Lat: 0.00000</div>
+            <div id="gps-lon">Lon: 0.00000</div>
+          </div>
+        </div>
+        <div class="telemetry-card" id="card-mode">
+          <div class="telemetry-label">FLIGHT MODE</div>
+          <button type="button" class="mode-badge mode-btn" id="flight-mode" title="Click to cycle">MANUAL</button>
+        </div>
+        <div class="telemetry-card" id="card-arm">
+          <div class="telemetry-label">ARM STATUS</div>
+          <div class="arm-status" id="arm-status">DISARMED</div>
+        </div>
+      </section>
+
+      <!-- Center column: 3D view + charts -->
+      <section class="center-column">
+        <div class="panel panel-3d">
+          <div class="panel-header">
+            <div class="panel-title">ATTITUDE / MODEL VIEW</div>
+            <div class="vehicle-selector">
+              <label for="vehicle-type">VEHICLE:</label>
+              <select id="vehicle-type">
+                <option value="quadcopter">Quadcopter</option>
+                <option value="tricopter">Tricopter</option>
+                <option value="hexacopter">Hexacopter</option>
+                <option value="fixedwing">Fixed-Wing</option>
+              </select>
+            </div>
+          </div>
+          <div id="three-container" class="three-container"></div>
+          <div class="panel-footer" id="attitude-status">
+            Roll: <span id="status-roll">0.0°</span> |
+            Pitch: <span id="status-pitch">0.0°</span> |
+            Yaw: <span id="status-yaw">0.0°</span>
+          </div>
+        </div>
+
+        <div class="panel panel-charts">
+          <div class="panel-header">
+            <div class="panel-title">TELEMETRY GRAPHS (LAST 60s)</div>
+          </div>
+          <div class="charts-row">
+            <div class="chart-wrapper">
+              <div class="chart-label">ROLL</div>
+              <canvas id="chart-roll"></canvas>
+            </div>
+            <div class="chart-wrapper">
+              <div class="chart-label">PITCH</div>
+              <canvas id="chart-pitch"></canvas>
+            </div>
+            <div class="chart-wrapper">
+              <div class="chart-label">YAW</div>
+              <canvas id="chart-yaw"></canvas>
+            </div>
+            <div class="chart-wrapper">
+              <div class="chart-label">ALTITUDE</div>
+              <canvas id="chart-altitude"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RC channels right sidebar -->
+      <section class="sidebar sidebar-right">
+        <div class="sidebar-title">RC CHANNELS</div>
+        <div id="rc-channels">
+          <!-- Channels will be populated by app.js -->
+        </div>
+      </section>
+    </main>
+
+    <!-- Placeholder content for future tabs -->
+    <div id="tab-mission" class="tab-placeholder hidden">MISSION PLANNER (COMING SOON)</div>
+    <div id="tab-pid" class="tab-placeholder hidden">PID TUNING (COMING SOON)</div>
+    <div id="tab-config" class="tab-placeholder hidden">CONFIGURATION (COMING SOON)</div>
+  </div>
+
+  <!-- Error modal -->
+  <div id="error-modal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <h3>CONNECTION ERROR</h3>
+      <p id="error-message">Failed to start data simulator</p>
+      <div class="modal-actions">
+        <button id="error-retry" class="btn">RETRY</button>
+        <button id="error-dismiss" class="btn btn-secondary">DISMISS</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart.js (global for charts.js) -->
+  <script src="../node_modules/chart.js/dist/chart.umd.js"></script>
+
+  <!-- App (ES module: loads Three.js inside dashboard.js) -->
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
+

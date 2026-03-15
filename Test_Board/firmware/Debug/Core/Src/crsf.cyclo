@@ -1,0 +1,7 @@
+../Core/Src/crsf.c:27:16:crc8_dvb_s2	4
+../Core/Src/crsf.c:39:14:map_stick	5
+../Core/Src/crsf.c:53:14:map_throttle	3
+../Core/Src/crsf.c:62:13:parse_rc_channels	3
+../Core/Src/crsf.c:86:13:process_byte	9
+../Core/Src/crsf.c:123:6:CRSF_Init	1
+../Core/Src/crsf.c:135:6:CRSF_Process	2

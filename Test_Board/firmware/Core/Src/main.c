@@ -18,59 +18,26 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+#include "crsf.h"
 #include "icm42688p.h"
+#include "complementary_filter.h"
+#include <stdio.h>
+#include "pid.h"
 #include <math.h>
+/* USER CODE END Includes */
 
-/* ============== Configuration ============== */
-#define LPF_ALPHA           0.1f
-#define CAL_SAMPLES         200
-#define COMP_FILTER_ALPHA   0.98f   // Trust gyro 98%, accel 2%
-#define RAD_TO_DEG          57.2957795f
-#define DEG_TO_RAD          0.0174532925f
-#define DT                  0.01f   // 10ms loop = 100Hz
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
 
-/* ============== Data Logging ============== */
-#define LOG_SIZE            500
-
-volatile float log_roll[LOG_SIZE];
-volatile float log_pitch[LOG_SIZE];
-volatile float log_yaw[LOG_SIZE];
-volatile uint16_t log_idx = 0;
-volatile uint8_t log_done = 0;
-
-/* ============== Attitude (output of sensor fusion) ============== */
-volatile float roll  = 0;   // degrees, rotation around X
-volatile float pitch = 0;   // degrees, rotation around Y
-volatile float yaw   = 0;   // degrees, rotation around Z (drifts without mag)
-
-/* ============== Debug Variables ============== */
-volatile uint8_t device_id = 0;
-volatile ICM42688P_Status_t imu_status = ICM42688P_ERR_ID;
-volatile ICM42688P_Data_t imu_data = {0};
-
-volatile uint32_t read_count = 0;
-volatile uint32_t error_count = 0;
-
-// Raw data (after bias removal)
-volatile float raw_ax = 0, raw_ay = 0, raw_az = 0;
-volatile float raw_gx = 0, raw_gy = 0, raw_gz = 0;
-
-// Filtered data
-volatile float filt_ax = 0, filt_ay = 0, filt_az = 0;
-volatile float filt_gx = 0, filt_gy = 0, filt_gz = 0;
-
-// Calibration
-volatile float gyro_bias_x = 0, gyro_bias_y = 0, gyro_bias_z = 0;
-volatile float accel_bias_x = 0, accel_bias_y = 0, accel_bias_z = 0;
-volatile uint8_t calibrated = 0;
-
-// Accel angles (for debugging)
-volatile float accel_roll = 0, accel_pitch = 0;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define SIM_MODE 0   // 1 = simulation, 0 = real IMU
+#define SIM_GAIN 0.05f  // how responsive sim drone is
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -87,14 +54,48 @@ SPI_HandleTypeDef hspi2;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
+DMA_HandleTypeDef hdma_usart1_tx;
+DMA_HandleTypeDef hdma_usart2_rx;
 
 /* USER CODE BEGIN PV */
+//char buf[96];      // ← add these
+int len = 0;       // ← add these
+/*
+ * IMU + attitude filter instances.
+ * Add these to your Live Expressions / Watch window in STM32CubeIDE:
+ *   attitude.roll      (degrees, stable, accel-corrected)
+ *   attitude.pitch     (degrees, stable, accel-corrected)
+ *   attitude.yaw       (degrees, relative to power-on heading, will drift)
+ *   imu_data.accel_g   (raw accel in g for verification)
+ *   imu_data.gyro_dps  (raw gyro in deg/s)
+ */
+static float pid_roll_out      = 0.0f;
+static float pid_pitch_out     = 0.0f;
+//static float sim_time          = 0.0f;
+//static float sim_roll_setpoint = 0.0f;
+//static float sim_pitch_setpoint= 0.0f;
+static PID_Handle_t pid_roll;
+static PID_Handle_t pid_pitch;
+///////////
+// sim //
+
+static PID_Handle_t pid_yaw;
+static float pid_yaw_out = 0.0f;
+//////////
+
+static ICM42688P_Data_t  imu_data;
+static CF_Handle_t       attitude;
+
+/* Loop timing */
+#define ATTITUDE_DT_MS  1U       /* Call CF_Update() every 1 ms (1 kHz) */
+#define ATTITUDE_DT_S   0.001f   /* Same in seconds — passed to CF_Update() */
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_SPI1_Init(void);
@@ -107,184 +108,147 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-float lpf_update(float new_val, float prev_filtered, float alpha)
-{
-    return alpha * new_val + (1.0f - alpha) * prev_filtered;
-}
 
-void calibrate_imu(SPI_HandleTypeDef *hspi)
-{
-    float sum_gx = 0, sum_gy = 0, sum_gz = 0;
-    float sum_ax = 0, sum_ay = 0, sum_az = 0;
+/* USER CODE END 0 */
 
-    for (uint16_t i = 0; i < CAL_SAMPLES; i++)
-    {
-        ICM42688P_ReadAll(hspi, (ICM42688P_Data_t*)&imu_data);
-
-        sum_gx += imu_data.gyro_dps.x;
-        sum_gy += imu_data.gyro_dps.y;
-        sum_gz += imu_data.gyro_dps.z;
-
-        sum_ax += imu_data.accel_g.x;
-        sum_ay += imu_data.accel_g.y;
-        sum_az += imu_data.accel_g.z;
-
-        HAL_Delay(10);
-    }
-
-    gyro_bias_x = sum_gx / CAL_SAMPLES;
-    gyro_bias_y = sum_gy / CAL_SAMPLES;
-    gyro_bias_z = sum_gz / CAL_SAMPLES;
-
-    accel_bias_x = sum_ax / CAL_SAMPLES;
-    accel_bias_y = sum_ay / CAL_SAMPLES;
-    accel_bias_z = (sum_az / CAL_SAMPLES) - 1.0f;
-
-    calibrated = 1;
-}
-
-// FIXED: Corrected atan2 arguments for proper pitch/roll convention per datasheet
-void compute_accel_angles(float ax, float ay, float az)
-{
-    accel_roll  = atan2f(-ax, sqrtf(ay*ay + az*az)) * RAD_TO_DEG;
-    accel_pitch = atan2f(ay, az) * RAD_TO_DEG;
-}
-
-void complementary_filter_update(float gx, float gy, float gz, float dt)
-{
-    // X gyro -> roll, Y gyro -> pitch
-	roll  += gy * dt;  // was gx
-	pitch += gx * dt;
-    yaw   += gz * dt;
-
-    // Correct with accel
-    roll  = COMP_FILTER_ALPHA * roll  + (1.0f - COMP_FILTER_ALPHA) * accel_roll;
-    pitch = COMP_FILTER_ALPHA * pitch + (1.0f - COMP_FILTER_ALPHA) * accel_pitch;
-}
 /**
   * @brief  The application entry point.
   * @retval int
   */
 int main(void)
 {
-    HAL_Init();
-    SystemClock_Config();
 
-    MX_GPIO_Init();
-    MX_I2C1_Init();
-    MX_I2C2_Init();
-    MX_SPI1_Init();
-    MX_SPI2_Init();
-    MX_USART1_UART_Init();
-    MX_USART2_UART_Init();
+  /* USER CODE BEGIN 1 */
 
-    HAL_Delay(100);
+  /* USER CODE END 1 */
 
-    /*=========================================================================*/
-    /*                     ICM-42688-P INITIALIZATION                          */
-    /*=========================================================================*/
+  /* MCU Configuration--------------------------------------------------------*/
 
-    imu_status = ICM42688P_ReadID(&hspi2, (uint8_t*)&device_id);
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
-    if (device_id != ICM42688P_WHO_AM_I_VAL)
-    {
-        error_count++;
-        Error_Handler();
-    }
+  /* USER CODE BEGIN Init */
 
-    imu_status = ICM42688P_Init(&hspi2);
+  /* USER CODE END Init */
 
-    if (imu_status != ICM42688P_OK)
-    {
-        error_count++;
-        Error_Handler();
-    }
+  /* Configure the system clock */
+  SystemClock_Config();
 
-    /*=========================================================================*/
-    /*                     CALIBRATION (keep board STILL!)                     */
-    /*=========================================================================*/
+  /* USER CODE BEGIN SysInit */
 
-    HAL_Delay(500);
-    calibrate_imu(&hspi2);
+  /* USER CODE END SysInit */
 
-    // Initialize roll/pitch from accel (starting orientation)
-    ICM42688P_ReadAll(&hspi2, (ICM42688P_Data_t*)&imu_data);
-    raw_ax = imu_data.accel_g.x - accel_bias_x;
-    raw_ay = imu_data.accel_g.y - accel_bias_y;
-    raw_az = imu_data.accel_g.z - accel_bias_z;
-    compute_accel_angles(raw_ax, raw_ay, raw_az);
-    roll = accel_roll;
-    pitch = accel_pitch;
-    yaw = 0;
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_I2C1_Init();
+  MX_I2C2_Init();
+  MX_SPI1_Init();
+  MX_SPI2_Init();
+  MX_USART1_UART_Init();
+  MX_USART2_UART_Init();
+  /* USER CODE BEGIN 2 */
+  PID_Init(&pid_roll,  2.0f, 0.05f, 0.5f, 50.0f, 100.0f);
+  PID_Init(&pid_pitch, 2.0f, 0.05f, 0.5f, 50.0f, 100.0f);
 
-    /*=========================================================================*/
-    /*                          MAIN LOOP                                      */
-    /*=========================================================================*/
+  // sim //
+  PID_Init(&pid_yaw, 2.0f, 0.05f, 0.5f, 50.0f, 100.0f);
+  ////////////
 
-    uint32_t last_time = HAL_GetTick();
+  CRSF_Init(&huart2);
 
-    while (1)
-    {
-        // Compute actual dt
-        uint32_t now = HAL_GetTick();
-        float dt = (now - last_time) / 1000.0f;  // ms to seconds
-        if (dt < 0.001f) dt = 0.01f;  // Minimum 1ms
-        last_time = now;
+  /* --- Initialize ICM-42688-P --- */
+  if (ICM42688P_Init(&hspi2) != ICM42688P_OK) {
+      Error_Handler();
+  }
 
-        imu_status = ICM42688P_ReadAll(&hspi2, (ICM42688P_Data_t*)&imu_data);
+  /* --- Initialize attitude filter --- */
+  CF_Init(&attitude, CF_KP_DEFAULT, CF_KI_DEFAULT);
 
-        if (imu_status == ICM42688P_OK)
-        {
-            read_count++;
+  /*
+   * Board alignment: ICM-42688-P pin-1 dot faces the drone nose.
+   * From the datasheet, this puts ICM +Y = forward, ICM +X = right.
+   * CF_REMAP_Y_FWD corrects the axis swap so:
+   *   attitude.pitch > 0  = nose up
+   *   attitude.roll  > 0  = left wing up  (negate if you want right-wing-up > 0)
+   *   attitude.yaw        = relative heading, no sign guarantee yet
+   */
+  CF_SetAxisRemap(&attitude, CF_REMAP_Y_FWD);
 
-            // Bias correction
-            raw_ax = imu_data.accel_g.x - accel_bias_x;
-            raw_ay = imu_data.accel_g.y - accel_bias_y;
-            raw_az = imu_data.accel_g.z - accel_bias_z;
+  /*
+   * Seed the quaternion from the first accel reading so the filter
+   * starts at the correct roll/pitch instead of converging from zero.
+   * Take a few readings and average to avoid startup noise.
+   */
+  {
+      ICM42688P_Data_t seed = {0};
+      float ax = 0.0f, ay = 0.0f, az = 0.0f;
+      for (int i = 0; i < 32; i++) {
+          ICM42688P_ReadAll(&hspi2, &seed);
+          ax += seed.accel_g.x;
+          ay += seed.accel_g.y;
+          az += seed.accel_g.z;
+          HAL_Delay(2);
+      }
+      CF_InitFromAccel(&attitude, ax / 32.0f, ay / 32.0f, az / 32.0f);
+  }
 
-            raw_gx = imu_data.gyro_dps.x - gyro_bias_x;
-            raw_gy = imu_data.gyro_dps.y - gyro_bias_y;
-            raw_gz = imu_data.gyro_dps.z - gyro_bias_z;
 
-            // Low-pass filter
-            filt_ax = lpf_update(raw_ax, filt_ax, LPF_ALPHA);
-            filt_ay = lpf_update(raw_ay, filt_ay, LPF_ALPHA);
-            filt_az = lpf_update(raw_az, filt_az, LPF_ALPHA);
 
-            filt_gx = lpf_update(raw_gx, filt_gx, LPF_ALPHA);
-            filt_gy = lpf_update(raw_gy, filt_gy, LPF_ALPHA);
-            filt_gz = lpf_update(raw_gz, filt_gz, LPF_ALPHA);
+  /* USER CODE END 2 */
 
-            // Compute accel angles (for complementary filter)
-            compute_accel_angles(filt_ax, filt_ay, filt_az);
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+    /* USER CODE END WHILE */
 
-            // Sensor fusion: complementary filter (pass dt now)
-            complementary_filter_update(filt_gx, filt_gy, filt_gz, dt);
+    /* USER CODE BEGIN 3 */
 
-            // Log attitude data
-            if (log_idx < LOG_SIZE)
-            {
-                log_roll[log_idx]  = roll;
-                log_pitch[log_idx] = pitch;
-                log_yaw[log_idx]   = yaw;
-                log_idx++;
+	    CRSF_Process();
+	    uint32_t now = HAL_GetTick();
 
-                if (log_idx >= LOG_SIZE)
-                {
-                    log_done = 1;
-                }
-            }
-        }
-        else
-        {
-            error_count++;
-        }
+	    // 1kHz attitude update
+	    static uint32_t last_tick = 0U;
+	    if ((now - last_tick) >= ATTITUDE_DT_MS) {
+	        last_tick = now;
+	        if (ICM42688P_ReadAll(&hspi2, &imu_data) == ICM42688P_OK) {
+	            CF_Update(&attitude, &imu_data, ATTITUDE_DT_S);
+	        }
+	    }
 
-        HAL_Delay(10);  // ~100Hz
-    }
+	    // 20Hz transmit
+	    static uint32_t print_tick = 0;
+	    if ((now - print_tick) >= 50) {
+	        print_tick = now;
+
+	        if (huart1.gState == HAL_UART_STATE_READY) {
+	            float sp_roll  = crsf_data.roll;
+	            float sp_pitch = crsf_data.pitch;
+	            float sp_yaw   = crsf_data.yaw;
+
+	            pid_roll_out  = PID_Update(&pid_roll,  sp_roll,  attitude.roll,  0.05f);
+	            pid_pitch_out = PID_Update(&pid_pitch, sp_pitch, attitude.pitch, 0.05f);
+	            pid_yaw_out   = PID_Update(&pid_yaw,   sp_yaw,   attitude.yaw,   0.05f);
+
+	            static char buf[128];
+	            int len = snprintf(buf, sizeof(buf),
+	                "%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
+	                attitude.roll, attitude.pitch, attitude.yaw,
+	                sp_roll, sp_pitch, sp_yaw,
+	                pid_roll_out, pid_pitch_out, pid_yaw_out,
+	                crsf_data.throttle);
+
+	            HAL_UART_Transmit(&huart1, (uint8_t *)buf, len, 5);
+	        }
+	    }
+
+	    if (crsf_data.new_frame) {
+	        crsf_data.new_frame = false;
+	    }
+  /* USER CODE END 3 */
 }
-
-
+}
 /**
   * @brief System Clock Configuration
   * @retval None
@@ -516,7 +480,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = 420000;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -530,6 +494,25 @@ static void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+  /* DMA1_Channel6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
 
 }
 
