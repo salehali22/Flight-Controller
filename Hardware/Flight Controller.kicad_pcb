@@ -3780,9 +3780,9 @@
 	(footprint "LOGO"
 		(layer "F.Cu")
 		(uuid "2e78bd60-f531-4967-a36d-246303a570bf")
-		(at 142.418004 112.710349 180)
+		(at 142.019501 112.181012 90)
 		(property "Reference" "G***"
-			(at 0 0 0)
+			(at 0 0 90)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "62ee20d5-7c85-4be6-b634-7a476c2ccf01")
@@ -3794,7 +3794,7 @@
 			)
 		)
 		(property "Value" "LOGO"
-			(at 0.75 0 0)
+			(at 0.75 0 90)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "0c56b1b6-5830-40ab-b68a-d830c682d2bb")
@@ -3806,7 +3806,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 0)
+			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "b04aeddf-5de8-435c-84d6-8fbd813cbfdb")
@@ -3818,7 +3818,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 0)
+			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "8cba84ec-745e-40cd-9c03-0f06b8fdef04")
@@ -29440,12 +29440,12 @@
 	(footprint "LOGO"
 		(layer "B.Cu")
 		(uuid "914971c9-575c-49d7-92b6-d6deb4ccb362")
-		(at 126.881509 95.230155)
+		(at 126.64686 96.409699 180)
 		(property "Reference" "G***"
 			(at 0 0 0)
 			(layer "B.SilkS")
 			(hide yes)
-			(uuid "76575a4e-f3d1-41e0-9de4-2cca1025a20c")
+			(uuid "2de7ac38-87d0-4dcc-8094-0374d62475fc")
 			(effects
 				(font
 					(size 1.5 1.5)
@@ -29458,7 +29458,7 @@
 			(at 0.75 0 0)
 			(layer "B.SilkS")
 			(hide yes)
-			(uuid "123ec446-e027-46d6-8e65-2621c3d2127e")
+			(uuid "511be7bc-191f-40f2-ba61-33f6a0f8baab")
 			(effects
 				(font
 					(size 1.5 1.5)
@@ -29471,7 +29471,7 @@
 			(at 0 0 0)
 			(layer "B.Fab")
 			(hide yes)
-			(uuid "b3114b4d-1ca8-428f-bcb0-d0029302fbd7")
+			(uuid "a66c09f9-c75e-482c-8afe-589e995986d7")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -29484,7 +29484,7 @@
 			(at 0 0 0)
 			(layer "B.Fab")
 			(hide yes)
-			(uuid "0fa349bb-946e-418a-bd4b-bf5bc47f988f")
+			(uuid "c4e06b5e-306d-4192-8b42-256330b706c7")
 			(effects
 				(font
 					(size 1.27 1.27)
