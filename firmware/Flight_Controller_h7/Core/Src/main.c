@@ -1567,10 +1567,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(OSD_CS_GPIO_Port, OSD_CS_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, OSD_CSC13_Pin|STATUS_LED_2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, OSD_CS_Pin|STATUS_LED_2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(FLASH_CS_GPIO_Port, FLASH_CS_Pin, GPIO_PIN_RESET);
@@ -1581,21 +1578,14 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, IMU_CS_Pin|IMU2_CS_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : OSD_CS_Pin */
-  GPIO_InitStruct.Pin = OSD_CS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(OSD_CS_GPIO_Port, &GPIO_InitStruct);
-
   /*Configure GPIO pin : IMU2_INT_Pin */
   GPIO_InitStruct.Pin = IMU2_INT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(IMU2_INT_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : OSD_CSC13_Pin STATUS_LED_2_Pin */
-  GPIO_InitStruct.Pin = OSD_CSC13_Pin|STATUS_LED_2_Pin;
+  /*Configure GPIO pins : OSD_CS_Pin STATUS_LED_2_Pin */
+  GPIO_InitStruct.Pin = OSD_CS_Pin|STATUS_LED_2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

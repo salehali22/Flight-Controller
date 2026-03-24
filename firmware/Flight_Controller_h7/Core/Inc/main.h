@@ -61,16 +61,14 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define OSD_SCK_Pin GPIO_PIN_2
 #define OSD_SCK_GPIO_Port GPIOE
-#define OSD_CS_Pin GPIO_PIN_3
-#define OSD_CS_GPIO_Port GPIOE
 #define IMU2_INT_Pin GPIO_PIN_4
 #define IMU2_INT_GPIO_Port GPIOE
 #define OSD_MISO_Pin GPIO_PIN_5
 #define OSD_MISO_GPIO_Port GPIOE
 #define OSD_MOSI_Pin GPIO_PIN_6
 #define OSD_MOSI_GPIO_Port GPIOE
-#define OSD_CSC13_Pin GPIO_PIN_13
-#define OSD_CSC13_GPIO_Port GPIOC
+#define OSD_CS_Pin GPIO_PIN_13
+#define OSD_CS_GPIO_Port GPIOC
 #define ADC_VOLTAGE_Pin GPIO_PIN_1
 #define ADC_VOLTAGE_GPIO_Port GPIOC
 #define ADC_CURR_Pin GPIO_PIN_3

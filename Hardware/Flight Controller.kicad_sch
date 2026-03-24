@@ -1,7 +1,7 @@
 (kicad_sch
-	(version 20250114)
+	(version 20260306)
 	(generator "eeschema")
-	(generator_version "9.0")
+	(generator_version "10.0")
 	(uuid "affbaa1c-796a-43e2-b357-d8056264fe45")
 	(paper "User" 711.2 342.9)
 	(lib_symbols)
@@ -15,7 +15,7 @@
 		(fill
 			(type none)
 		)
-		(uuid 1d9dca4d-0738-431e-9e8d-3159f7610faf)
+		(uuid "1d9dca4d-0738-431e-9e8d-3159f7610faf")
 	)
 	(arc
 		(start 438.404 81.407)
@@ -28,7 +28,7 @@
 		(fill
 			(type none)
 		)
-		(uuid 214211e9-6cb7-4f18-ae0f-115cfd29ba76)
+		(uuid "214211e9-6cb7-4f18-ae0f-115cfd29ba76")
 	)
 	(arc
 		(start 438.404 81.407)
@@ -41,7 +41,7 @@
 		(fill
 			(type none)
 		)
-		(uuid 3542dd32-c051-4c38-b43d-eadca0640895)
+		(uuid "3542dd32-c051-4c38-b43d-eadca0640895")
 	)
 	(text "Flight Controller Design"
 		(exclude_from_sim no)
@@ -273,11 +273,13 @@
 			(type solid)
 		)
 		(fill
-			(color 0 0 0 0.0000)
+			(color 0 0 0 0)
 		)
 		(uuid "4a7cbebd-f698-4bee-b98f-1e10a25991ff")
 		(property "Sheetname" "Power"
 			(at 46.99 42.4684 0)
+			(show_name no)
+			(do_not_autoplace no)
 			(effects
 				(font
 					(size 3.81 3.81)
@@ -289,6 +291,8 @@
 		)
 		(property "Sheetfile" "power.kicad_sch"
 			(at 46.99 161.8746 0)
+			(show_name no)
+			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -317,11 +321,13 @@
 			(type solid)
 		)
 		(fill
-			(color 0 0 0 0.0000)
+			(color 0 0 0 0)
 		)
 		(uuid "8463a60f-8f72-494c-88d1-488c894f8e30")
 		(property "Sheetname" "MCU"
 			(at 201.295 59.6134 0)
+			(show_name no)
+			(do_not_autoplace no)
 			(effects
 				(font
 					(size 3.81 3.81)
@@ -333,6 +339,8 @@
 		)
 		(property "Sheetfile" "MCU.kicad_sch"
 			(at 201.295 264.1096 0)
+			(show_name no)
+			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -360,11 +368,13 @@
 			(type solid)
 		)
 		(fill
-			(color 0 0 0 0.0000)
+			(color 0 0 0 0)
 		)
 		(uuid "a99ea3ed-fb5b-48bc-9f0d-b1d710dec9ab")
 		(property "Sheetname" "Connectors"
 			(at 414.147 79.375 0)
+			(show_name no)
+			(do_not_autoplace no)
 			(effects
 				(font
 					(size 3.81 3.81)
@@ -376,6 +386,8 @@
 		)
 		(property "Sheetfile" "connectors.kicad_sch"
 			(at 415.29 232.41 0)
+			(show_name no)
+			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -403,11 +415,13 @@
 			(type solid)
 		)
 		(fill
-			(color 0 0 0 0.0000)
+			(color 0 0 0 0)
 		)
 		(uuid "cba678f1-cd76-4d72-9114-2cc1e511120c")
 		(property "Sheetname" "Sensors and Peripherals"
 			(at 48.768 180.848 0)
+			(show_name no)
+			(do_not_autoplace no)
 			(effects
 				(font
 					(size 3.81 3.81)
@@ -419,6 +433,8 @@
 		)
 		(property "Sheetfile" "Sensors.kicad_sch"
 			(at 47.498 305.816 0)
+			(show_name no)
+			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
