@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include "pid.h"
 #include <math.h>
+#include "bmi270_stm32.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -38,6 +39,12 @@
 /* USER CODE BEGIN PD */
 #define SIM_MODE 0   // 1 = simulation, 0 = real IMU
 #define SIM_GAIN 0.05f  // how responsive sim drone is
+
+//struct bmi2_dev bmi;
+struct bmi2_dev bmi;
+volatile int8_t result;
+volatile uint8_t chip_id = 0;
+volatile int16_t ax, ay, az, gx, gy, gz;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -148,6 +155,28 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+
+
+//  uint8_t chip_id = 0;
+//  int8_t result;
+
+  // Read chip ID
+  result = bmi270_interface_init(&bmi);
+  if (result != BMI2_OK) {
+      Error_Handler(); // Init failed
+  }
+
+  result = bmi2_get_regs(BMI2_CHIP_ID_ADDR, &chip_id, 1, &bmi);
+  if (chip_id != 0x24) {
+      Error_Handler(); // Wrong chip ID
+  }
+
+  result = bmi270_configure_sensor(&bmi);
+  if (result != BMI2_OK) {
+      Error_Handler(); // Config failed
+  }
+
+
   PID_Init(&pid_roll,  2.0f, 0.05f, 0.5f, 50.0f, 100.0f);
   PID_Init(&pid_pitch, 2.0f, 0.05f, 0.5f, 50.0f, 100.0f);
 
@@ -205,6 +234,8 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
+	    result = bmi270_read_sensor_data(&bmi, &ax, &ay, &az, &gx, &gy, &gz);
+	    HAL_Delay(10);
 	    CRSF_Process();
 	    uint32_t now = HAL_GetTick();
 

@@ -26,7 +26,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
  ../Core/Inc/crsf.h ../Core/Inc/icm42688p.h \
  ../Core/Inc/complementary_filter.h ../Core/Inc/icm42688p.h \
- ../Core/Inc/pid.h
+ ../Core/Inc/pid.h ../Core/Inc/bmi270_stm32.h ../Core/Inc/bmi2.h \
+ ../Core/Inc/bmi2_defs.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
@@ -58,3 +59,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/complementary_filter.h:
 ../Core/Inc/icm42688p.h:
 ../Core/Inc/pid.h:
+../Core/Inc/bmi270_stm32.h:
+../Core/Inc/bmi2.h:
+../Core/Inc/bmi2_defs.h:
