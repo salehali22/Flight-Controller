@@ -1,0 +1,7 @@
+../Core/Src/dshot.c:50:17:_pack	1
+../Core/Src/dshot.c:61:13:_fill_all	6
+../Core/Src/dshot.c:78:13:_arm_dma	3
+../Core/Src/dshot.c:98:6:DSHOT_Init	1
+../Core/Src/dshot.c:122:6:DSHOT_IsReady	1
+../Core/Src/dshot.c:124:6:DSHOT_SendThrottle	5
+../Core/Src/dshot.c:175:6:DSHOT_Disarm	1

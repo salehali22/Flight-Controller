@@ -1,0 +1,6 @@
+../Core/Src/complementary_filter.c:32:14:CF_InvSqrt	1
+../Core/Src/complementary_filter.c:44:13:CF_Init	2
+../Core/Src/complementary_filter.c:62:6:CF_SetAxisRemap	1
+../Core/Src/complementary_filter.c:67:13:CF_InitFromAccel	2
+../Core/Src/complementary_filter.c:92:6:CF_Reset	1
+../Core/Src/complementary_filter.c:102:13:CF_Update	4

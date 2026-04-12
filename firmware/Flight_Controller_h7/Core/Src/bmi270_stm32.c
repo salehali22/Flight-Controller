@@ -1,0 +1,296 @@
+/**
+ * @file bmi270_stm32.c
+ * @brief STM32 HAL wrapper for Bosch BMI270 SensorAPI
+ *
+ * REQUIRED FILES FROM BOSCH GITHUB:
+ *   1. bmi2.c
+ *   2. bmi2.h
+ *   3. bmi2_defs.h
+ *   4. bmi270.c
+ *   5. bmi270.h
+ *
+ * HARDWARE CONNECTIONS (directly on PCB, no external pull-ups needed):
+ *   BMI270       STM32
+ *   ------       -----
+ *   VDD          3.3V
+ *   GND          GND
+ *   SCK          SPI_SCK  (e.g., PA5)
+ *   SDI (MOSI)   SPI_MOSI (e.g., PA7)
+ *   SDO (MISO)   SPI_MISO (e.g., PA6)
+ *   CSB          GPIO OUT (e.g., PB0) - active LOW
+ *
+ * STM32CUBEMX SPI SETTINGS:
+ *   - Mode: Full-Duplex Master
+ *   - CPOL: LOW (Mode 0)
+ *   - CPHA: 1 Edge (Mode 0)
+ *   - Prescaler: 32 or 64 (keep under 10MHz)
+ *   - NSS: Software
+ *   - Data Size: 8 bits
+ *   - First Bit: MSB
+ */
+
+#include "bmi270.h"
+#include "bmi2.h"
+#include <string.h>
+
+/* Change this include for your STM32 family */
+//#include "stm32f1xx_hal.h"  /* F1 */
+// #include "stm32f4xx_hal.h"  /* F4 */
+ #include "stm32h7xx_hal.h"  /* H7 */
+
+/*============================================================================*/
+/*                         CONFIGURATION                                      */
+/*============================================================================*/
+
+/* SPI handle - must match your CubeMX config */
+extern SPI_HandleTypeDef hspi3;  // BMI270 is on SPI3
+
+#define BMI270_CS_PORT      GPIOD
+#define BMI270_CS_PIN       GPIO_PIN_3
+
+/* Maximum burst length for SPI transfers */
+#define BMI270_READ_WRITE_LEN  32
+
+/* SPI transfer buffer (must be larger than config file chunks) */
+static uint8_t spi_tx_buf[512];
+static uint8_t spi_rx_buf[512];
+
+/* DEBUG: Raw SPI bytes for chip ID read */
+volatile uint8_t g_debug_chip_id = 0;
+volatile uint8_t g_debug_rx0 = 0;  /* First byte received */
+volatile uint8_t g_debug_rx1 = 0;  /* Second byte received */
+volatile uint8_t g_debug_rx2 = 0;  /* Third byte received */
+volatile uint8_t g_debug_len = 0;  /* Length requested */
+
+/*============================================================================*/
+/*                         SPI CALLBACKS FOR BOSCH API                        */
+/*============================================================================*/
+
+/**
+ * @brief SPI read callback for Bosch API
+ *
+ * Bosch API handles dummy byte via dev->dummy_byte field.
+ * Our job: send address, receive exactly 'len' bytes, return them all.
+ */
+BMI2_INTF_RETURN_TYPE bmi2_spi_read(uint8_t reg_addr, uint8_t *reg_data,
+                                     uint32_t len, void *intf_ptr)
+{
+    (void)intf_ptr;
+
+    if (len == 0 || reg_data == NULL) {
+        return BMI2_E_NULL_PTR;
+    }
+
+    /* TX buffer: address + zeros for clocking out data */
+    spi_tx_buf[0] = reg_addr | 0x80;  /* Read bit */
+    memset(&spi_tx_buf[1], 0, len);
+
+    /* CS LOW */
+    HAL_GPIO_WritePin(BMI270_CS_PORT, BMI270_CS_PIN, GPIO_PIN_RESET);
+
+    /* TransmitReceive: 1 addr byte + len data bytes */
+    HAL_StatusTypeDef status = HAL_SPI_TransmitReceive(&hspi3, spi_tx_buf, spi_rx_buf,
+                                                        len + 1, 1000);
+
+    /* CS HIGH */
+    HAL_GPIO_WritePin(BMI270_CS_PORT, BMI270_CS_PIN, GPIO_PIN_SET);
+
+    if (status != HAL_OK) {
+        return BMI2_E_COM_FAIL;
+    }
+
+    /* Return ALL received data after address byte - NO SKIPPING */
+    /* Bosch API will handle dummy byte offset internally */
+    memcpy(reg_data, &spi_rx_buf[1], len);
+
+    /* DEBUG - capture raw bytes when reading chip ID register */
+    if (reg_addr == 0x00) {
+        g_debug_len = len;
+        g_debug_rx0 = spi_rx_buf[0];
+        g_debug_rx1 = spi_rx_buf[1];
+        g_debug_rx2 = spi_rx_buf[2];
+        g_debug_chip_id = spi_rx_buf[1];
+    }
+
+    return BMI2_INTF_RET_SUCCESS;
+}
+
+/**
+ * @brief SPI write callback for Bosch API
+ *
+ * BMI270 SPI write format:
+ *   TX: [reg_addr & 0x7F] [data0] [data1] ...
+ *
+ * CRITICAL: Must send address + data in ONE SPI transaction.
+ * Splitting into two HAL_SPI_Transmit calls will FAIL.
+ */
+BMI2_INTF_RETURN_TYPE bmi2_spi_write(uint8_t reg_addr, const uint8_t *reg_data,
+                                      uint32_t len, void *intf_ptr)
+{
+    (void)intf_ptr;  /* Unused */
+
+    if (len == 0 || reg_data == NULL) {
+        return BMI2_E_NULL_PTR;
+    }
+
+    /* Build single TX buffer: [addr][data0][data1]... */
+    spi_tx_buf[0] = reg_addr & 0x7F;  /* Write bit = 0 */
+    memcpy(&spi_tx_buf[1], reg_data, len);
+
+    /* CS LOW */
+    HAL_GPIO_WritePin(BMI270_CS_PORT, BMI270_CS_PIN, GPIO_PIN_RESET);
+
+    /* Single transmit with addr + data */
+    HAL_StatusTypeDef status = HAL_SPI_Transmit(&hspi3, spi_tx_buf, len + 1, 1000);
+
+    /* CS HIGH */
+    HAL_GPIO_WritePin(BMI270_CS_PORT, BMI270_CS_PIN, GPIO_PIN_SET);
+
+    return (status == HAL_OK) ? BMI2_INTF_RET_SUCCESS : BMI2_E_COM_FAIL;
+}
+
+/**
+ * @brief Delay callback for Bosch API
+ *
+ * @param period Delay in microseconds
+ * @param intf_ptr Interface pointer (unused)
+ */
+void bmi2_delay_us(uint32_t period, void *intf_ptr)
+{
+    (void)intf_ptr;
+
+    if (period >= 1000) {
+        /* Use HAL_Delay for millisecond delays */
+        HAL_Delay((period + 999) / 1000);
+    } else {
+        /* Busy-wait for microsecond delays.
+         * At 75 MHz with ~4 cycles/iteration (NOP + loop overhead): 75/4 ≈ 19 counts/µs. */
+        volatile uint32_t count = period * 19u;
+        while (count--) {
+            __NOP();
+        }
+    }
+}
+
+/*============================================================================*/
+/*                         INTERFACE INITIALIZATION                           */
+/*============================================================================*/
+
+/**
+ * @brief Initialize BMI270 device structure and sensor
+ *
+ * @param bmi Pointer to bmi2_dev structure
+ * @return int8_t BMI2_OK on success, error code otherwise
+ *
+ * USAGE:
+ *   struct bmi2_dev bmi;
+ *   int8_t rslt = bmi270_interface_init(&bmi);
+ *   if (rslt == BMI2_OK) {
+ *       // Success!
+ *   }
+ */
+int8_t bmi270_interface_init(struct bmi2_dev *bmi)
+{
+    int8_t rslt;
+
+    if (bmi == NULL) {
+        return BMI2_E_NULL_PTR;
+    }
+
+    /* Clear device structure */
+    memset(bmi, 0, sizeof(struct bmi2_dev));
+
+    /* Ensure CS starts HIGH before anything else */
+    HAL_GPIO_WritePin(BMI270_CS_PORT, BMI270_CS_PIN, GPIO_PIN_SET);
+    HAL_Delay(10);
+
+    /* Assign SPI interface */
+    bmi->intf = BMI2_SPI_INTF;
+    bmi->read = bmi2_spi_read;
+    bmi->write = bmi2_spi_write;
+    bmi->delay_us = bmi2_delay_us;
+    bmi->intf_ptr = NULL;
+    bmi->read_write_len = BMI270_READ_WRITE_LEN;
+    bmi->config_file_ptr = NULL;  /* Use default config from bmi270.c */
+
+    /* CRITICAL: For SPI, dummy byte must be set to 1 BEFORE init */
+    bmi->dummy_byte = 1;
+
+    /* Perform dummy read to switch BMI270 from I2C to SPI mode */
+    uint8_t dummy;
+    bmi2_spi_read(0x00, &dummy, 1, NULL);
+    HAL_Delay(2);
+
+    /* Initialize BMI270 - this uploads the config file */
+    rslt = bmi270_init(bmi);
+
+    return rslt;
+}
+
+/**
+ * @brief Configure and enable accelerometer + gyroscope
+ *
+ * @param bmi Pointer to initialized bmi2_dev structure
+ * @return int8_t BMI2_OK on success
+ *
+ * Call this AFTER bmi270_interface_init() succeeds.
+ */
+int8_t bmi270_configure_sensor(struct bmi2_dev *bmi)
+{
+    int8_t rslt;
+    uint8_t sens_list[2] = { BMI2_ACCEL, BMI2_GYRO };
+    struct bmi2_sens_config sens_cfg[2];
+
+    /* Enable accel and gyro */
+    rslt = bmi2_sensor_enable(sens_list, 2, bmi);
+    if (rslt != BMI2_OK) return rslt;
+
+    /* Configure accelerometer */
+    sens_cfg[0].type = BMI2_ACCEL;
+    sens_cfg[0].cfg.acc.odr = BMI2_ACC_ODR_800HZ;
+    sens_cfg[0].cfg.acc.range = BMI2_ACC_RANGE_16G;
+    sens_cfg[0].cfg.acc.bwp = BMI2_ACC_OSR2_AVG2;
+    sens_cfg[0].cfg.acc.filter_perf = BMI2_PERF_OPT_MODE;
+
+    /* Configure gyroscope */
+    sens_cfg[1].type = BMI2_GYRO;
+    sens_cfg[1].cfg.gyr.odr = BMI2_GYR_ODR_3200HZ;
+    sens_cfg[1].cfg.gyr.range = BMI2_GYR_RANGE_2000;
+    sens_cfg[1].cfg.gyr.bwp = BMI2_GYR_OSR4_MODE;
+    sens_cfg[1].cfg.gyr.noise_perf = BMI2_PERF_OPT_MODE;
+    sens_cfg[1].cfg.gyr.filter_perf = BMI2_PERF_OPT_MODE;
+
+    /* Apply configuration */
+    rslt = bmi2_set_sensor_config(sens_cfg, 2, bmi);
+
+    return rslt;
+}
+
+/**
+ * @brief Read accelerometer and gyroscope data
+ *
+ * @param bmi Pointer to bmi2_dev
+ * @param acc_x/y/z Output: acceleration in mg (milli-g)
+ * @param gyr_x/y/z Output: angular rate in mdps (milli-degrees per second)
+ * @return int8_t BMI2_OK on success
+ */
+int8_t bmi270_read_sensor_data(struct bmi2_dev *bmi,
+                                int16_t *acc_x, int16_t *acc_y, int16_t *acc_z,
+                                int16_t *gyr_x, int16_t *gyr_y, int16_t *gyr_z)
+{
+    int8_t rslt;
+    struct bmi2_sens_data sensor_data = { 0 };
+
+    rslt = bmi2_get_sensor_data(&sensor_data, bmi);
+    if (rslt != BMI2_OK) return rslt;
+
+    *acc_x = sensor_data.acc.x;
+    *acc_y = sensor_data.acc.y;
+    *acc_z = sensor_data.acc.z;
+
+    *gyr_x = sensor_data.gyr.x;
+    *gyr_y = sensor_data.gyr.y;
+    *gyr_z = sensor_data.gyr.z;
+
+    return BMI2_OK;
+}

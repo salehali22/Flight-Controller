@@ -1,0 +1,9 @@
+../Core/Src/crsf.c:62:13:_start_dma	8	static
+../Core/Src/crsf.c:90:16:crc8_dvb_s2	24	static
+../Core/Src/crsf.c:102:14:map_stick	24	static
+../Core/Src/crsf.c:117:14:map_throttle	24	static
+../Core/Src/crsf.c:126:13:parse_rc_channels	24	static
+../Core/Src/crsf.c:150:13:process_byte	24	static
+../Core/Src/crsf.c:192:6:CRSF_Init	16	static
+../Core/Src/crsf.c:201:6:CRSF_Process	32	static,ignoring_inline_asm
+../Core/Src/crsf.c:233:6:CRSF_IsAlive	8	static

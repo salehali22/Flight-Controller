@@ -1,0 +1,8 @@
+../Core/Src/icm42688p.c:17:20:CS_Low	1
+../Core/Src/icm42688p.c:21:20:CS_High	1
+../Core/Src/icm42688p.c:27:20:ICM42688P_ReadReg	2
+../Core/Src/icm42688p.c:45:20:ICM42688P_WriteReg	2
+../Core/Src/icm42688p.c:61:20:ICM42688P_ReadID	1
+../Core/Src/icm42688p.c:66:27:ICM42688P_ReadMulti	3
+../Core/Src/icm42688p.c:90:20:ICM42688P_Init	8
+../Core/Src/icm42688p.c:129:20:ICM42688P_ReadAll	2
