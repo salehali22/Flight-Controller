@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Saleh/.claude/skills/ui-ux-pro-max/**)",
+      "Bash(python3 scripts/search.py \"flight controller drone configurator dashboard dark professional embedded\" --design-system -p \"FC Configurator\")",
+      "Bash(py -3 \"C:/Users/Saleh/.claude/skills/ui-ux-pro-max/scripts/search.py\" \"flight controller drone configurator dashboard dark professional embedded\" --design-system -p \"FC Configurator\")",
+      "Bash(mkdir -p \"C:/Users/Saleh/Desktop/Saleh Uni/sem 7/senior year project/Flight Controller/configurator/src/msp\")",
+      "Bash(mkdir -p \"C:/Users/Saleh/Desktop/Saleh Uni/sem 7/senior year project/Flight Controller/configurator/src/store\")",
+      "Bash(mkdir -p \"C:/Users/Saleh/Desktop/Saleh Uni/sem 7/senior year project/Flight Controller/configurator/src/components\")",
+      "Bash(mkdir -p \"C:/Users/Saleh/Desktop/Saleh Uni/sem 7/senior year project/Flight Controller/configurator/src/tabs\")",
+      "Bash(mkdir -p \"C:/Users/Saleh/Desktop/Saleh Uni/sem 7/senior year project/Flight Controller/configurator/server\")",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(taskkill /f /im node.exe)"
+    ]
+  }
+}
