@@ -22,45 +22,69 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "bmi270_stm32.h"
-#include "complementary_filter.h"
 #include "icm42688p.h"
-#include "bmp388.h"
 #include "dshot.h"
 #include "motor_mix.h"
-#include "usbd_cdc_if.h"
-#include <stdio.h>
 #include "crsf.h"
+#include "pid.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-/* ---- BMI270 (SPI3) -------------------------------------------------------- */
-volatile int16_t ax, ay, az, gx, gy, gz;   /* raw LSB — divide by BMI270_ACC/GYR_SENSITIVITY */
-volatile int8_t rslt;
-struct bmi2_dev bmi;
-volatile uint8_t bmi_chip_id;     /* expect 0x24 after init */
-
-/* ---- ICM42688P (SPI6) — primary IMU for complementary filter -------------- */
-ICM42688P_Data_t icm_data;
-volatile ICM42688P_Status_t icm_status;
-volatile uint8_t icm_id;          /* expect 0x47 after init */
-
-/* ---- BMP388 barometer (I2C2) ---------------------------------------------- */
-BMP388_Handle bmp;
-BMP388_Data bmp_data;
-volatile BMP388_Status bmp_status;
-volatile uint8_t bmp_chip_id;
-
-/* ---- Complementary filter (Mahony, driven by ICM42688P) ------------------- */
-CF_Handle_t cf;
-/* g_roll, g_pitch, g_yaw are defined in complementary_filter.c as volatile floats.
- * Watch them in Live Expressions without halting execution.
- * NOTE: az_raw ≈ 2048 at rest IS CORRECT — ±16g range gives 2048 LSB/g (= 1 g gravity). */
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+/*
+ * ── Stick → rate setpoints ───────────────────────────────────────────────────
+ * How fast (deg/s) the quad rotates at full stick deflection.
+ * Conservative for a first flight — increase after confirming stability.
+ */
+#define MAX_ROLL_RATE    200.0f
+#define MAX_PITCH_RATE   200.0f
+#define MAX_YAW_RATE     150.0f
+
+/*
+ * ── Gyro axis sign correction ────────────────────────────────────────────────
+ * Verify by moving the board and watching gyro values in the debugger.
+ * Convention:
+ *   Roll board right   → gyro_roll  must be POSITIVE  (flip GYRO_SIGN_ROLL  if not)
+ *   Pitch nose up      → gyro_pitch must be POSITIVE  (flip GYRO_SIGN_PITCH if not)
+ *   Yaw nose clockwise → gyro_yaw   must be POSITIVE  (flip GYRO_SIGN_YAW   if not)
+ */
+#define GYRO_SIGN_ROLL    1
+#define GYRO_SIGN_PITCH   1
+#define GYRO_SIGN_YAW     1
+
+/*
+ * ── Arming ───────────────────────────────────────────────────────────────────
+ * AUX1 switch must be HIGH and throttle below ARM_THR_MAX for ARM_HOLD_MS
+ * before the quad arms. Prevents accidental arming.
+ */
+#define ARM_THR_MAX       5.0f    /* % throttle ceiling for arming */
+#define ARM_HOLD_MS       500U    /* ms to hold conditions before arm */
+
+/*
+ * ── PID gains ────────────────────────────────────────────────────────────────
+ * D = 0 for first flight. No software gyro LPF yet, so D would amplify noise.
+ * Add D (e.g. ROLL_KD 0.000025f) only after P+I is confirmed flyable.
+ *
+ * If quad oscillates fast  → reduce Kp 20%
+ * If quad drifts slowly    → increase Ki 20%
+ * If quad feels very lazy  → increase Kp 20%
+ */
+#define ROLL_KP    0.0015f
+#define ROLL_KI    0.002f
+#define ROLL_KD    0.0f
+
+#define PITCH_KP   0.0015f
+#define PITCH_KI   0.002f
+#define PITCH_KD   0.0f
+
+#define YAW_KP     0.0012f
+#define YAW_KI     0.004f
+#define YAW_KD     0.0f
 
 /* USER CODE END PD */
 
@@ -106,19 +130,11 @@ UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_uart8_rx;
 
 /* USER CODE BEGIN PV */
-/* USER CODE BEGIN PV */
-volatile uint32_t dbg_sysclk;
-volatile uint32_t dbg_hclk;
-volatile uint32_t dbg_pclk2;
-volatile uint32_t dbg_stream5_cr;
-volatile uint32_t dbg_stream5_ndtr;
-volatile uint32_t dbg_stream5_m0ar;
-volatile uint32_t dbg_tim1_ccr1;
-volatile uint32_t dbg_tim1_dier;
-volatile uint32_t dbg_tim1_dcr;
-volatile uint32_t dbg_tim1_sr;
-volatile uint32_t dbg_tim1_ccr1_live;
-volatile uint32_t dbg_tim1_cnt;
+static PID_t             pid_roll, pid_pitch, pid_yaw;
+static ICM42688P_Data_t  icm_data;
+static bool              armed         = false;
+static uint32_t          arm_timer     = 0;  /* HAL_GetTick() stamp when arm conditions first met */
+static uint32_t          loop_last_cnt = 0;  /* TIM2 CNT snapshot for 1 kHz gate */
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -221,7 +237,42 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
+  /* ── DSHOT on TIM1 (M5=PE9, M6=PE11, M7=PE13, M8=PE14) ──────────────── */
   DSHOT_Init(&htim1);
+
+  /* ── CRSF receiver on UART8 (PE0=RX, PE1=TX) at 420 kbaud ───────────── */
+  CRSF_Init(&huart8);
+
+  /* ── ICM42688P on SPI6 (PB3/4/5), CS=PD7 ────────────────────────────── *
+   * Blink LED1 fast until sensor responds. LED1 steady ON = IMU OK.        *
+   * If LED1 never stops blinking: check SPI6 wiring / CS pin / power.      */
+  while (ICM42688P_Init(&hspi6) != ICM42688P_OK) {
+      HAL_GPIO_TogglePin(STATUS_LED_1_GPIO_Port, STATUS_LED_1_Pin);
+      HAL_Delay(50);
+  }
+  HAL_GPIO_WritePin(STATUS_LED_1_GPIO_Port, STATUS_LED_1_Pin, GPIO_PIN_RESET); /* steady ON */
+
+  /* ── PIDs ─────────────────────────────────────────────────────────────── */
+  PID_Init(&pid_roll,  ROLL_KP,  ROLL_KI,  ROLL_KD,  0.30f);
+  PID_Init(&pid_pitch, PITCH_KP, PITCH_KI, PITCH_KD, 0.30f);
+  PID_Init(&pid_yaw,   YAW_KP,   YAW_KI,   YAW_KD,   0.40f);
+
+  /* ── ESC startup ─────────────────────────────────────────────────────── *
+   * BLHeli32 needs DSHOT throttle=0 for ~2 s before it considers itself    *
+   * armed and ready to accept real throttle commands. 3 s is generous.      */
+  {
+      uint32_t t0 = HAL_GetTick();
+      while (HAL_GetTick() - t0 < 3000U) {
+          MOTOR_Disarm();
+          HAL_Delay(10);
+      }
+  }
+
+  /* ── Start TIM2 for precise 1kHz loop gate ───────────────────────────── *
+   * TIM2 is a 32-bit free-run counter at 120 MHz (TIM2 clock = 2×APB1).   *
+   * 120 000 ticks = 1 ms exactly.                                           */
+  HAL_TIM_Base_Start(&htim2);
+  loop_last_cnt = TIM2->CNT;
 
   /* USER CODE END 2 */
 
@@ -229,28 +280,87 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    /* ── 1 kHz loop gate ────────────────────────────────────────────────── *
+     * TIM2 is a 32-bit free-run counter at 120 MHz (HCLK).                  *
+     * 120 000 ticks = exactly 1 ms.  Spin here until the tick arrives.       */
+    uint32_t now = TIM2->CNT;
+    if ((uint32_t)(now - loop_last_cnt) < 120000U) {
+        continue;
+    }
+    loop_last_cnt = now;
+    const float dt = 0.001f;   /* seconds — matches the gate above */
 
-	  dbg_sysclk        = HAL_RCC_GetSysClockFreq();
-	      dbg_hclk          = HAL_RCC_GetHCLKFreq();
-	      dbg_pclk2         = HAL_RCC_GetPCLK2Freq();
-	      dbg_stream5_cr    = DMA1_Stream5->CR;
-	      dbg_stream5_ndtr  = DMA1_Stream5->NDTR;
-	      dbg_stream5_m0ar  = DMA1_Stream5->M0AR;
-	      dbg_tim1_ccr1     = TIM1->CCR1;
-	      dbg_tim1_dier     = TIM1->DIER;
-	      dbg_tim1_dcr      = TIM1->DCR;
-	      dbg_tim1_sr       = TIM1->SR;
-	      dbg_tim1_ccr1_live = TIM1->CCR1;
-	      dbg_tim1_cnt       = TIM1->CNT;
+    /* ── Drain CRSF circular-DMA buffer ────────────────────────────────── *
+     * CRSF runs ~150 Hz; we call this at 1 kHz so we never miss a frame.    */
+    CRSF_Process();
 
-      /* Send disarm for 3 seconds, then spin all motors at 10% throttle */
-      if (HAL_GetTick() < 3000) {
-          MOTOR_Disarm();
-      } else {
-          MOTOR_Mix(0.30f, 0.0f, 0.0f, 0.0f);
-      }
+    /* ── Read IMU (SPI6, blocking, ~20 µs) ─────────────────────────────── */
+    ICM42688P_ReadAll(&hspi6, &icm_data);
 
-      HAL_Delay(10);  /* 100 Hz loop */
+    /* ── Gyro axis sign correction ──────────────────────────────────────── *
+     * Before first flight, hold the board and rotate it slowly:              *
+     *   Roll board clockwise (right wing down) → gyro_roll  must be +       *
+     *   Pitch nose up                          → gyro_pitch must be +       *
+     *   Yaw nose clockwise                     → gyro_yaw   must be +       *
+     * Flip the matching GYRO_SIGN_* define in PD if the sign is wrong.      */
+    float gyro_roll  = (float)GYRO_SIGN_ROLL  * icm_data.gyro_dps.x;
+    float gyro_pitch = (float)GYRO_SIGN_PITCH * icm_data.gyro_dps.y;
+    float gyro_yaw   = (float)GYRO_SIGN_YAW   * icm_data.gyro_dps.z;
+
+    /* ── Failsafe / forced disarm ───────────────────────────────────────── *
+     * Disarm immediately if CRSF link is lost or AUX1 goes LOW.             */
+    if (crsf_data.failsafe || !crsf_data.armed) {
+        if (armed) {
+            armed = false;
+            PID_Reset(&pid_roll);
+            PID_Reset(&pid_pitch);
+            PID_Reset(&pid_yaw);
+        }
+        arm_timer = 0;
+    }
+
+    /* ── Arm logic ──────────────────────────────────────────────────────── *
+     * Conditions: AUX1 HIGH + throttle < ARM_THR_MAX + link alive.          *
+     * All three must hold for ARM_HOLD_MS before armed becomes true.         *
+     * Any condition failing resets the timer → must start over.             */
+    if (!armed
+        && crsf_data.armed
+        && (crsf_data.throttle < ARM_THR_MAX)
+        && !crsf_data.failsafe)
+    {
+        if (arm_timer == 0U) {
+            arm_timer = HAL_GetTick();
+        } else if ((HAL_GetTick() - arm_timer) >= ARM_HOLD_MS) {
+            armed     = true;
+            arm_timer = 0U;
+        }
+    } else if (!crsf_data.armed || (crsf_data.throttle >= ARM_THR_MAX)) {
+        arm_timer = 0U;   /* abort countdown */
+    }
+
+    /* ── Flight loop ────────────────────────────────────────────────────── */
+    if (armed) {
+
+        /* Stick position → rate setpoints (deg/s)
+         * CRSF roll/pitch/yaw are ±100.0 at full deflection. */
+        float sp_roll  = (crsf_data.roll  / 100.0f) * MAX_ROLL_RATE;
+        float sp_pitch = (crsf_data.pitch / 100.0f) * MAX_PITCH_RATE;
+        float sp_yaw   = (crsf_data.yaw   / 100.0f) * MAX_YAW_RATE;
+
+        /* Rate PIDs — output is normalised ≈ ±1.0 for MOTOR_Mix */
+        float out_roll  = PID_Update(&pid_roll,  sp_roll,  gyro_roll,  dt);
+        float out_pitch = PID_Update(&pid_pitch, sp_pitch, gyro_pitch, dt);
+        float out_yaw   = PID_Update(&pid_yaw,   sp_yaw,  gyro_yaw,   dt);
+
+        /* Throttle: CRSF 0–100 → MOTOR_Mix 0–1 */
+        float thr = crsf_data.throttle / 100.0f;
+
+        MOTOR_Mix(thr, out_roll, out_pitch, out_yaw);
+
+    } else {
+        MOTOR_Disarm();
+    }
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
