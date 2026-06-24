@@ -1,3 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;firmware/Core/Inc/ICM-42688p.h&apos; to &apos;icm42688p.h&apos;" description="Rename resource &apos;ICM-42688p.h&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Core/Inc/ICM-42688p.h" name="icm42688p.h" stamp="1766744084859" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;firmware/Core/Src/bmpp388.c&apos; to &apos;bmp388.c&apos;" description="Rename resource &apos;bmpp388.c&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Core/Src/bmpp388.c" name="bmp388.c" stamp="1766763341468" updateReferences="true"/>
-</session>

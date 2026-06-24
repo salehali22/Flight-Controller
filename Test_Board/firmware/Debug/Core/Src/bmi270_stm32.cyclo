@@ -1,6 +1,0 @@
-../Core/Src/bmi270_stm32.c:76:23:bmi2_spi_read	5
-../Core/Src/bmi270_stm32.c:128:23:bmi2_spi_write	4
-../Core/Src/bmi270_stm32.c:159:6:bmi2_delay_us	3
-../Core/Src/bmi270_stm32.c:193:8:bmi270_interface_init	2
-../Core/Src/bmi270_stm32.c:239:8:bmi270_configure_sensor	2
-../Core/Src/bmi270_stm32.c:278:8:bmi270_read_sensor_data	2

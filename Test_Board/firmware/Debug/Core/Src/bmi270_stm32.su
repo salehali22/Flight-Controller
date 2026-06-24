@@ -1,6 +1,0 @@
-../Core/Src/bmi270_stm32.c:76:23:bmi2_spi_read	40	static
-../Core/Src/bmi270_stm32.c:128:23:bmi2_spi_write	32	static
-../Core/Src/bmi270_stm32.c:159:6:bmi2_delay_us	24	static,ignoring_inline_asm
-../Core/Src/bmi270_stm32.c:193:8:bmi270_interface_init	24	static
-../Core/Src/bmi270_stm32.c:239:8:bmi270_configure_sensor	128	static
-../Core/Src/bmi270_stm32.c:278:8:bmi270_read_sensor_data	72	static
