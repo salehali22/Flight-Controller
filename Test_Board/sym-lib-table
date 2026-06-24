@@ -1,0 +1,7 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "mine")(type "KiCad")(uri "${KIPRJMOD}/symbols/ICM-42688-P.kicad_sym")(options "")(descr ""))
+  (lib (name "baro")(type "KiCad")(uri "${KIPRJMOD}/symbols/BMP388.kicad_sym")(options "")(descr ""))
+  (lib (name "QMC")(type "KiCad")(uri "${KIPRJMOD}/symbols/QMC5883P.kicad_sym")(options "")(descr ""))
+  (lib (name "bmi270")(type "KiCad")(uri "${KIPRJMOD}/symbols/BMI270.kicad_sym")(options "")(descr ""))
+)
