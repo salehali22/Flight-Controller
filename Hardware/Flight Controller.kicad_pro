@@ -555,7 +555,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "",
-      "plot": "",
+      "plot": "dimensions/",
       "pos_files": "",
       "specctra_dsn": "",
       "step": "Flight Controller.step",

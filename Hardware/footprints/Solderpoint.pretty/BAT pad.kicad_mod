@@ -1,13 +1,13 @@
 (footprint "BAT pad"
-	(version 20241229)
+	(version 20260206)
 	(generator "pcbnew")
-	(generator_version "9.0")
+	(generator_version "10.0")
 	(layer "F.Cu")
 	(property "Reference" "REF**"
-		(at 0 -0.5 0)
+		(at 0 -3 0)
 		(unlocked yes)
 		(layer "F.SilkS")
-		(uuid "d8fe2c01-e928-47ec-a9bd-73bbd8649969")
+		(uuid "d8670fa1-f785-4809-963f-d44a9639dd56")
 		(effects
 			(font
 				(size 1 1)
@@ -16,10 +16,10 @@
 		)
 	)
 	(property "Value" "BAT pad"
-		(at 0 1 0)
+		(at 0 3.5 0)
 		(unlocked yes)
 		(layer "F.Fab")
-		(uuid "3506b985-66da-49ff-94e8-3fe11e234dc0")
+		(uuid "0ac09e4b-0225-48a9-800a-77855d98ce7f")
 		(effects
 			(font
 				(size 1 1)
@@ -32,7 +32,7 @@
 		(unlocked yes)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "3e73bc64-65c1-48a5-9418-5bcdbcad061e")
+		(uuid "ff7a43ea-2b6e-4ffd-a52e-fd1159e91af3")
 		(effects
 			(font
 				(size 1 1)
@@ -45,7 +45,7 @@
 		(unlocked yes)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "29638503-6642-40fa-bb9c-7b858bfa14f9")
+		(uuid "34ae4d81-687b-499d-a95d-ebe94b363e73")
 		(effects
 			(font
 				(size 1 1)
@@ -54,11 +54,12 @@
 		)
 	)
 	(attr smd)
+	(duplicate_pad_numbers_are_jumpers no)
 	(fp_text user "${REFERENCE}"
-		(at 0 2.5 0)
+		(at 0 5 0)
 		(unlocked yes)
 		(layer "F.Fab")
-		(uuid "cda26382-98f9-44fb-bd60-1cd40970c0b1")
+		(uuid "45166921-8d6d-4dce-bb57-dbd08a998e4a")
 		(effects
 			(font
 				(size 1 1)
@@ -68,10 +69,10 @@
 	)
 	(pad "1" smd roundrect
 		(at 0 0.5)
-		(size 1.4 2.3)
+		(size 4 4)
 		(layers "F.Cu" "F.Mask")
 		(roundrect_rratio 0.25)
-		(uuid "a8480d16-f8a1-445c-88e9-201ac117e244")
+		(uuid "84f89212-4c6c-41d1-bfdb-b8f210f6cee9")
 	)
 	(embedded_fonts no)
 )
