@@ -1,7 +1,0 @@
-../Core/Src/crsf.c:27:16:crc8_dvb_s2	24	static
-../Core/Src/crsf.c:39:14:map_stick	24	static
-../Core/Src/crsf.c:53:14:map_throttle	24	static
-../Core/Src/crsf.c:62:13:parse_rc_channels	24	static
-../Core/Src/crsf.c:86:13:process_byte	24	static
-../Core/Src/crsf.c:123:6:CRSF_Init	16	static
-../Core/Src/crsf.c:135:6:CRSF_Process	16	static
