@@ -1,0 +1,199 @@
+# hwdef.dat — SALEHFC main firmware
+# Custom STM32H743VIT6 flight controller
+# Based on MatekH743 pattern, pin mapping from Betaflight/iNAV configs
+
+MCU STM32H7xx STM32H743xx
+
+APJ_BOARD_ID 1215
+
+OSCILLATOR_HZ 8000000
+
+# 8MHz passive crystal (ASE-8.000MHZ-LC-T) — no HSE bypass
+
+env USE_ALT_RAM_MAP 1
+
+FLASH_SIZE_KB 2048
+FLASH_RESERVE_START_KB 128
+
+# ChibiOS system timer
+STM32_ST_USE_TIMER 12
+define CH_CFG_ST_RESOLUTION 16
+
+# Storage
+define HAL_STORAGE_SIZE 32768
+STORAGE_FLASH_PAGE 14
+
+# ============================================================
+# USB
+# ============================================================
+PA11 OTG_FS_DM OTG1
+PA12 OTG_FS_DP OTG1
+define BOARD_OTG_NOVBUSSENS 1
+
+# SWD
+PA13 JTMS-SWDIO SWD
+PA14 JTCK-SWCLK SWD
+
+# ============================================================
+# LEDs
+# ============================================================
+PB0 LED0 OUTPUT LOW GPIO(90)
+PC5 LED1 OUTPUT LOW GPIO(91)
+define HAL_GPIO_A_LED_PIN 90
+define HAL_GPIO_B_LED_PIN 91
+define HAL_LED_ON 0
+
+# ============================================================
+# UARTs
+# ============================================================
+SERIAL_ORDER OTG1 USART2 USART3 UART4 UART5 UART7 UART8 USART1
+
+# USART1 (SERIAL7)
+PB14 USART1_TX USART1 NODMA
+PB15 USART1_RX USART1 NODMA
+
+# USART2 (SERIAL1)
+PA2 USART2_TX USART2
+PA3 USART2_RX USART2
+
+# USART3 (SERIAL2)
+PD8 USART3_TX USART3
+PD9 USART3_RX USART3
+
+# UART4 (SERIAL3)
+PA0 UART4_TX UART4
+PA1 UART4_RX UART4
+
+# UART5 (SERIAL4)
+PB13 UART5_TX UART5 NODMA
+PB12 UART5_RX UART5 NODMA
+
+# UART7 (SERIAL5)
+PE8 UART7_TX UART7
+PE7 UART7_RX UART7
+
+# UART8 (SERIAL6) — default RC input (CRSF)
+PE1 UART8_TX UART8 NODMA
+PE0 UART8_RX UART8 NODMA
+
+# Default RC on SERIAL6 (UART8)
+define DEFAULT_SERIAL6_PROTOCOL SerialProtocol_RCIN
+
+# ============================================================
+# SPI buses
+# ============================================================
+# SPI1 — W25Q128 Flash
+PA5  SPI1_SCK  SPI1
+PA6  SPI1_MISO SPI1
+PA7  SPI1_MOSI SPI1
+
+# SPI3 — BMI270 IMU
+PC10 SPI3_SCK  SPI3
+PC11 SPI3_MISO SPI3
+PC12 SPI3_MOSI SPI3
+
+# SPI4 — MAX7456 OSD
+PE2  SPI4_SCK  SPI4
+PE5  SPI4_MISO SPI4
+PE6  SPI4_MOSI SPI4
+
+# SPI6 — ICM42688P — omitted for now (BDMA domain, unverified in ArduPilot)
+# Can be added later once BMI270 is confirmed working
+
+# CS pins
+PA4  FLASH_CS  CS
+PD3  BMI270_CS CS
+PC13 OSD_CS    CS
+PD7  ICM_CS    CS    # held high even though SPI6 not used
+
+# ============================================================
+# I2C buses
+# ============================================================
+I2C_ORDER I2C2 I2C4
+
+# I2C2 — BMP388 barometer
+PB10 I2C2_SCL I2C2
+PB11 I2C2_SDA I2C2
+
+# I2C4 — Magnetometer (external, future)
+PB6  I2C4_SCL I2C4
+PB7  I2C4_SDA I2C4
+
+# ============================================================
+# SPI devices
+# ============================================================
+SPIDEV bmi270     SPI3 DEVID1 BMI270_CS  MODE3  1*MHZ 10*MHZ
+SPIDEV osd        SPI4 DEVID4 OSD_CS     MODE0 10*MHZ 10*MHZ
+SPIDEV dataflash  SPI1 DEVID1 FLASH_CS   MODE3  1*MHZ 50*MHZ
+
+DMA_NOSHARE SPI3*
+
+# ============================================================
+# IMU
+# ============================================================
+# BMI270 on SPI3 — sole IMU (ICM42688P on SPI6 can be added later)
+IMU BMI270 SPI:bmi270 ROTATION_NONE
+
+define HAL_DEFAULT_INS_FAST_SAMPLE 1
+
+# ============================================================
+# Barometer — BMP388 on I2C2
+# ============================================================
+BARO BMP388 I2C:0:0x76
+
+# ============================================================
+# Compass — external only
+# ============================================================
+define ALLOW_ARM_NO_COMPASS
+define AP_COMPASS_PROBING_ENABLED 1
+define HAL_I2C_INTERNAL_MASK 0
+define HAL_COMPASS_AUTO_ROT_DEFAULT 2
+
+# ============================================================
+# OSD — MAX7456 on SPI4
+# ============================================================
+define OSD_ENABLED 1
+define HAL_OSD_TYPE_DEFAULT 1
+ROMFS_WILDCARD libraries/AP_OSD/fonts/font*.bin
+
+# ============================================================
+# ADC
+# ============================================================
+PC1 BATT_VOLTAGE_SENS ADC1 SCALE(1)
+PC3 BATT_CURRENT_SENS ADC3 SCALE(1)
+
+define HAL_BATT_MONITOR_DEFAULT 4
+define HAL_BATT_VOLT_PIN 11
+define HAL_BATT_CURR_PIN 13
+define HAL_BATT_VOLT_SCALE 11.0
+define HAL_BATT_CURR_SCALE 40.0
+
+# ============================================================
+# Motor outputs — TIM1 for primary quad (DSHOT capable)
+# ============================================================
+PE9  TIM1_CH1 TIM1 PWM(1) GPIO(50)   # M1 — FR
+PE11 TIM1_CH2 TIM1 PWM(2) GPIO(51)   # M2 — FL
+PE13 TIM1_CH3 TIM1 PWM(3) GPIO(52)   # M3 — RR
+PE14 TIM1_CH4 TIM1 PWM(4) GPIO(53)   # M4 — RL
+
+# Aux outputs — TIM8
+PC6  TIM8_CH1 TIM8 PWM(5) GPIO(54)
+PC7  TIM8_CH2 TIM8 PWM(6) GPIO(55)
+PC8  TIM8_CH3 TIM8 PWM(7) GPIO(56)
+PC9  TIM8_CH4 TIM8 PWM(8) GPIO(57)
+
+# Servo outputs — TIM4
+PD12 TIM4_CH1 TIM4 PWM(9) GPIO(58)
+PD13 TIM4_CH2 TIM4 PWM(10) GPIO(59)
+PD14 TIM4_CH3 TIM4 PWM(11) GPIO(60)
+PD15 TIM4_CH4 TIM4 PWM(12) GPIO(61)
+
+DMA_PRIORITY S*
+
+# ============================================================
+# Features
+# ============================================================
+define HAL_HAVE_SAFETY_SWITCH 0
+
+# Logging to flash
+define HAL_LOGGING_DATAFLASH_ENABLED 1

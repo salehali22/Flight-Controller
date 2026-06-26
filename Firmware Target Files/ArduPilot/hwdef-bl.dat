@@ -1,0 +1,45 @@
+# hwdef-bl.dat — SALEHFC bootloader
+# Custom STM32H743VIT6 flight controller
+
+MCU STM32H7xx STM32H743xx
+
+# Use a unique board ID (1215 is fine if not registered)
+APJ_BOARD_ID 1215
+
+OSCILLATOR_HZ 8000000
+
+# 8MHz passive crystal (ASE-8.000MHZ-LC-T) — no HSE bypass
+
+FLASH_SIZE_KB 2048
+FLASH_RESERVE_START_KB 0
+FLASH_BOOTLOADER_LOAD_KB 128
+
+# USB — bootloader needs USB to flash firmware
+SERIAL_ORDER OTG1
+
+PA11 OTG_FS_DM OTG1
+PA12 OTG_FS_DP OTG1
+define BOARD_OTG_NOVBUSSENS 1
+
+# SWD
+PA13 JTMS-SWDIO SWD
+PA14 JTCK-SWCLK SWD
+
+# Bootloader LED
+PB0 LED_BOOTLOADER OUTPUT LOW
+define HAL_LED_ON 0
+
+# All CS pins HIGH during bootloader to prevent bus contention
+PA4  FLASH_CS   CS
+PD3  BMI270_CS  CS
+PD7  ICM_CS     CS
+PC13 OSD_CS     CS
+
+# ChibiOS heap/thread config for bootloader
+define CH_CFG_USE_MEMCORE 1
+define CH_CFG_USE_HEAP 1
+define CH_CFG_USE_SEMAPHORES 0
+define CH_CFG_USE_MUTEXES 1
+define CH_CFG_USE_DYNAMIC 1
+define CH_CFG_USE_WAITEXIT 1
+define CH_CFG_USE_REGISTRY 1
