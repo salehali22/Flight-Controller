@@ -1,7 +1,6 @@
 <p align="center">
-  <img src="Renders and Images/main.png" alt="SAL FC Front" width="420"/>
-  &nbsp;&nbsp;&nbsp;
-  <img src="Renders and Images/main2.png" alt="SAL FC Back" width="420"/>
+  <img src="Renders%20and%20Images/main.png" alt="SAL FC Front" width="49%"/>
+  <img src="Renders%20and%20Images/main2.png" alt="SAL FC Back" width="49%"/>
 </p>
 
 <h1 align="center">SAL FC</h1>
@@ -159,32 +158,30 @@ SAL FC is a custom 40.5 x 40.5 mm, six-layer flight controller PCB designed to b
 
 ### CubeMX Pin Map
 
-<!-- Replace the path below with your actual CubeMX screenshot filename -->
 <p align="center">
-  <img src="Renders and Images/pinout.png" alt="STM32CubeMX Pin Assignment" width="700"/>
+  <img src="Renders%20and%20Images/pinout.png" alt="STM32CubeMX Pin Assignment"/>
 </p>
 
 ### Board Layout
 
 <p align="center">
-  <img src="Renders%20and%20Images/FC_P1.png" alt="SAL FC Top View Labeled" width="500"/>
+  <img src="Renders%20and%20Images/FC_P1.png" alt="SAL FC Top View Labeled"/>
 </p>
 
 <p align="center">
-  <img src="Renders%20and%20Images/FC_P2.png" alt="SAL FC Bottom View" width="500"/>
+  <img src="Renders%20and%20Images/FC_P2.png" alt="SAL FC Bottom View"/>
 </p>
 
 ---
 
 ## Wiring Diagrams
 
-<!-- Replace with your actual wiring diagram image filenames -->
 <p align="center">
-  <img src="Renders and Images/wiring.png" alt="SAL FC Wiring Diagram" width="700"/>
+  <img src="Renders%20and%20Images/wiring.png" alt="SAL FC Wiring Diagram"/>
 </p>
 
 <p align="center">
-  <img src="Renders and Images/expansion.png" alt="Expansion Board Wiring" width="700"/>
+  <img src="Renders%20and%20Images/expansion.png" alt="Expansion Board Wiring"/>
 </p>
 
 ---
@@ -237,7 +234,7 @@ SAL FC is a custom 40.5 x 40.5 mm, six-layer flight controller PCB designed to b
 Once the bootloader is installed, future firmware updates can be done through Mission Planner: **Setup > Install Firmware > Load custom firmware** and select the new `.apk` / `.hex` file.
 
 > [!IMPORTANT]
-> The SAL FC uses a passive 8 MHz crystal, **not** an active oscillator. The ArduPilot `hwdef.dat` must set `STM32_HSE_BYPASS` to **disabled** (i.e., do not define it). If bypass mode is enabled, the PLL will fail to lock and USB will not enumerate. The target files in this repository are already configured correctly.
+> The SAL FC uses an 8 MHz oscillator, **not** a passive crystal. The ArduPilot `hwdef.dat` must **not** define `STM32_HSE_BYPASS`. If bypass mode is enabled, the PLL will fail to lock and USB will not enumerate. The target files in this repository are already configured correctly.
 
 ---
 
@@ -255,11 +252,11 @@ cd betaflight
 git checkout v4.5.1
 
 # Copy SAL FC target files into the source tree
-cp -r "/path/to/Firmware Target Files/Betaflight/SALEHFC" src/main/target/SALEHFC
+cp -r "/path/to/Firmware Target Files/Betaflight/SALFC" src/main/target/SALFC
 
-make TARGET=SALEHFC
+make TARGET=SALFC
 
-# Output hex: obj/betaflight_4.5.1_SALEHFC.hex
+# Output hex: obj/betaflight_4.5.1_SALFC.hex
 ```
 
 </details>
@@ -276,7 +273,7 @@ cd inav
 git checkout v9.0.1
 
 # Copy SAL FC target
-cp -r "/path/to/Firmware Target Files/iNAV/SALEHFC" src/main/target/SALEHFC
+cp -r "/path/to/Firmware Target Files/iNAV/SALFC" src/main/target/SALFC
 
 # Apply SPI6 patch (5 files, ~60 lines)
 # This extends iNAV's SPI bus abstraction from SPI4 to SPI6
@@ -285,9 +282,9 @@ git apply "/path/to/Firmware Target Files/iNAV/spi6-patch/inav-spi6.patch"
 
 mkdir build && cd build
 cmake ..
-make SALEHFC
+make SALFC
 
-# Output hex: build/bin/inav_9.0.1_SALEHFC.hex
+# Output hex: build/bin/inav_9.0.1_SALFC.hex
 ```
 
 The SPI6 patch modifies five files:
@@ -295,7 +292,7 @@ The SPI6 patch modifies five files:
 - `src/main/drivers/bus.h` -- adds `BUS_SPI5`, `BUS_SPI6` defines and `busIndex_e` entries
 - `src/main/drivers/bus_spi_stm32h7xx.h` -- adds GPIO AF8 mappings for SPI6 pins (PB3/PB4/PB5)
 - `src/main/drivers/bus_spi_hal_ll.c` -- adds SPI6 hardware map entry (APB4 clock, pin assignment)
-- `target/SALEHFC/target.h` -- enables `USE_SPI_DEVICE_6` and registers ICM42688P on SPI6
+- `target/SALFC/target.h` -- enables `USE_SPI_DEVICE_6` and registers ICM42688P on SPI6
 
 SPI6 operates in polling mode (not DMA), so BDMA/SRAM4 constraints do not apply.
 
@@ -312,16 +309,16 @@ Tools/environment_install/install-prereqs-ubuntu.sh -y
 . ~/.profile
 
 # Copy SAL FC hardware definition
-cp -r "/path/to/Firmware Target Files/ArduPilot/SALEHFC" libraries/AP_HAL_ChibiOS/hwdef/SALEHFC
+cp -r "/path/to/Firmware Target Files/ArduPilot/SALFC" libraries/AP_HAL_ChibiOS/hwdef/SALFC
 
-./waf configure --board SALEHFC
+./waf configure --board SALFC
 ./waf copter
 
-# Output: build/SALEHFC/bin/arducopter_with_bl.hex
+# Output: build/SALFC/bin/arducopter_with_bl.hex
 ```
 
 > [!NOTE]
-> Do not define `STM32_HSE_BYPASS` in `hwdef.dat`. The board uses a passive crystal.
+> Do not define `STM32_HSE_BYPASS` in `hwdef.dat`. The board uses an 8 MHz oscillator.
 
 </details>
 
@@ -366,9 +363,6 @@ Flight-Controller/
 └── README.md
 ```
 
-> [!NOTE]
-> Adjust this tree to match your actual repository layout. If your folder names or structure differ, update accordingly before committing.
-
 ---
 
 ## License
@@ -384,5 +378,11 @@ You are free to study, modify, manufacture, and distribute this hardware design 
 | Name | Role | GitHub |
 |---|---|---|
 | Saleh Alhomeidy | Project lead, PCB design, firmware porting | [@salehali22](https://github.com/salehali22) |
-| Akaki Gvelesiani | Mechanical/technical lead, propulsion testing, sensor fusion | |
-| Levani Kazaishvili | Schematic capture, soldering, hardware verification | |
+| Akaki Gvelesiani | Mechanical/technical lead, propulsion testing, sensor fusion | [@kaki04](https://github.com/kaki04) |
+| Levani Kazaishvili | Schematic capture, soldering, hardware verification | [@levvans](https://github.com/levvans) |
+
+**Supervising Professors:** Prof. Giorgi Veshapidze, Prof. Archil Gvimradze
+
+**Institution:** Ilia State University, Faculty of Business, Technology, and Education -- Tbilisi, Georgia
+
+**Senior Design Project:** EE490B, Electrical and Electronic Engineering, 2025--2026
