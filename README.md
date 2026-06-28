@@ -161,7 +161,7 @@ SAL FC is a custom 40.5 x 40.5 mm, six-layer flight controller PCB designed to b
 
 <!-- Replace the path below with your actual CubeMX screenshot filename -->
 <p align="center">
-  <img src="Renders%20and%20Images/CubeMX_pinmap.png" alt="STM32CubeMX Pin Assignment" width="700"/>
+  <img src="Renders and Images/pinout.png" alt="STM32CubeMX Pin Assignment" width="700"/>
 </p>
 
 ### Board Layout
@@ -180,11 +180,11 @@ SAL FC is a custom 40.5 x 40.5 mm, six-layer flight controller PCB designed to b
 
 <!-- Replace with your actual wiring diagram image filenames -->
 <p align="center">
-  <img src="Renders%20and%20Images/wiring_diagram.png" alt="SAL FC Wiring Diagram" width="700"/>
+  <img src="Renders and Images/wiring diagram 1.png" alt="SAL FC Wiring Diagram" width="700"/>
 </p>
 
 <p align="center">
-  <img src="Renders%20and%20Images/expansion_wiring.png" alt="Expansion Board Wiring" width="700"/>
+  <img src="Renders and Images/expansion.png" alt="Expansion Board Wiring" width="700"/>
 </p>
 
 ---
