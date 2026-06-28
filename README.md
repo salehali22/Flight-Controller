@@ -380,9 +380,3 @@ You are free to study, modify, manufacture, and distribute this hardware design 
 | Saleh Alhomeidy | Project lead, PCB design, firmware porting | [@salehali22](https://github.com/salehali22) |
 | Akaki Gvelesiani | Mechanical/technical lead, propulsion testing, sensor fusion | [@kaki04](https://github.com/kaki04) |
 | Levani Kazaishvili | Schematic capture, soldering, hardware verification | [@levvans](https://github.com/levvans) |
-
-**Supervising Professors:** Prof. Giorgi Veshapidze, Prof. Archil Gvimradze
-
-**Institution:** Ilia State University, Faculty of Business, Technology, and Education -- Tbilisi, Georgia
-
-**Senior Design Project:** EE490B, Electrical and Electronic Engineering, 2025--2026
