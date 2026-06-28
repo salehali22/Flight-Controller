@@ -1,5 +1,5 @@
-# Betaflight 4.5.1 target.mk for SALEHFC
-# Place in src/main/target/SALEHFC/
+TARGET_MCU        := STM32H743xx
+TARGET_MCU_FAMILY := STM32H7
 
 H743xI_TARGETS += $(TARGET)
 

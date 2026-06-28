@@ -1,5 +1,5 @@
 /*
- * iNAV target.c for SALEHFC
+ * iNAV target.c for SALFC
  * Based on MATEKH743 pattern
  *
  * Motor outputs (DSHOT via TIM1):

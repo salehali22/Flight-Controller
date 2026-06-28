@@ -1,5 +1,5 @@
 /*
- * iNAV config.c for SALEHFC
+ * iNAV config.c for SALFC
  * Minimal — most config is done via Configurator after flashing
  */
 

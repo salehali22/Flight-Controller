@@ -1,1 +1,1 @@
-target_stm32h743xi(SALEHFC DISABLE_MSC)
+target_stm32h743xi(SALFC DISABLE_MSC)

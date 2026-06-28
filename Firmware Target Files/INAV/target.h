@@ -1,5 +1,5 @@
 /*
- * iNAV target.h for SALEHFC
+ * iNAV target.h for SALFC
  * Custom STM32H743VIT6 flight controller
  *
  * NOTE: ICM42688P is on SPI6 — NOT supported by iNAV H743 HAL (SPI1-4 only)
@@ -13,7 +13,7 @@
  #pragma once
 
  #define TARGET_BOARD_IDENTIFIER "SLEH"
- #define USBD_PRODUCT_STRING     "SALEHFC"
+ #define USBD_PRODUCT_STRING     "SALFC"
  #define USE_VCP
  // Required by iNAV — declare which GPIO ports exist
  #define TARGET_IO_PORTA 0xffff
@@ -83,7 +83,10 @@
  #define SPI4_MISO_PIN           PE5
  #define SPI4_MOSI_PIN           PE6
  
- // SPI6 (ICM42688P) is NOT supported by iNAV — omitted
+ #define USE_SPI_DEVICE_6        // ICM42688P
+ #define SPI6_SCK_PIN            PB3
+ #define SPI6_MISO_PIN           PB4
+ #define SPI6_MOSI_PIN           PB5
  
  // ============================================================
  // I2C — only I2C2 for BMP388 barometer
@@ -95,8 +98,14 @@
  #define I2C2_SDA                PB11
  
  // ============================================================
- // IMU — BMI270 on SPI3 (sole IMU, ICM42688P on SPI6 unsupported)
+ // IMU — Dual: ICM42688P on SPI6, BMI270 on SPI3
  // ============================================================
+ #define USE_IMU_ICM42605        // ICM42605 driver covers ICM42688P
+ #define IMU_ICM42605_ALIGN      CW0_DEG
+ #define ICM42605_CS_PIN         PD7
+ #define ICM42605_SPI_BUS        BUS_SPI6
+ #define ICM42605_EXTI_PIN       PE4
+
  #define USE_IMU_BMI270
  #define IMU_BMI270_ALIGN        CW0_DEG
  #define BMI270_CS_PIN           PD3
