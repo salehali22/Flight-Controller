@@ -44,31 +44,18 @@ SAL FC is a custom 40.5 x 40.5 mm, six-layer flight controller PCB designed to b
 
 ## Features
 
-**Hardware**
-- STM32H743VIT6 Cortex-M7 at 480 MHz, 2 MB flash, 1 MB SRAM
-- Dual dissimilar IMUs: TDK ICM42688P + Bosch BMI270 on separate SPI buses
-- BMP388 barometric pressure sensor
-- AT7456E analog OSD controller
-- W25Q128 128 Mbit SPI flash for blackbox logging
-- CAN bus transceiver (SN65HVD230D)
+- Three open-source firmware stacks supported: Betaflight 4.5.1, iNAV 9.0.1, and ArduPilot, compiled from source with custom target definitions
+- Dual dissimilar IMUs on separate SPI buses, following Pixhawk FMUv6C redundancy guidelines
+- 12 PWM motor/servo outputs on advanced timers (TIM1, TIM8, TIM4) with independent DMA channels per output, eliminating stream contention
+- DSHOT150/300/600 protocol support with bidirectional telemetry
+- MAVLink v2 companion computer interface over dedicated UART
+- CRSF / ExpressLRS receiver input, IRC Tramp VTX control, DJI air unit support
+- GPS and magnetometer passthrough on I2C4, CAN bus for DroneCAN peripherals
 - USB-C with host and device support, 90 ohm differential impedance routing
 - Reverse polarity protection (P-FET) and TVS diode protection on USB and power inputs
-- Six-layer PCB (JLC06161H-3313 stackup), ENIG finish, resin-plugged vias
-
-**Firmware**
-- Betaflight 4.5.1, iNAV 9.0.1, and ArduPilot compiled from source with custom target definitions
-- 12 PWM motor/servo outputs on advanced timers (TIM1, TIM8, TIM4) with independent DMA channels per output
-- DSHOT150/300/600 protocol support
-- MAVLink v2 companion computer telemetry over dedicated UART
+- Six-layer PCB with dedicated ground planes, ENIG finish, resin-plugged vias
+- JST-SH 1.0 mm connectors on all ports with solder pad fallback
 - iNAV SPI6 HAL patch included for ICM42688P detection (see [`Firmware Target Files/iNAV/`](Firmware%20Target%20Files/iNAV/))
-
-**Connectivity**
-- 7 UARTs, 4 SPI buses, 3 I2C buses, 1 CAN bus
-- CRSF / ExpressLRS receiver input
-- GPS (uBlox M8N) with magnetometer passthrough on I2C4
-- IRC Tramp VTX control, DJI air unit support
-- JST-SH 1.0 mm connectors on all peripheral ports, with solder pad fallback
-- 30.5 mm M3 mounting pattern, 40.5 x 40.5 mm board dimensions
 
 ---
 
@@ -221,17 +208,26 @@ SAL FC is a custom 40.5 x 40.5 mm, six-layer flight controller PCB designed to b
 
 **Requirements:** [STM32CubeProgrammer](https://www.st.com/en/development-tools/stm32cubeprog.html), [Mission Planner](https://ardupilot.org/planner/docs/mission-planner-installation.html)
 
-**First flash (bootloader + firmware):**
+**Step 1 -- Flash the bootloader:**
 
 1. Enter DFU mode: hold the **BOOT** button while connecting USB-C.
 2. Open STM32CubeProgrammer, connect via **USB**, and perform a **Full chip erase**.
-3. Load the combined `arducopter_with_bl.hex` file from [`Firmware Target Files/ArduPilot/`](Firmware%20Target%20Files/ArduPilot/) and click **Start Programming**. This writes both the bootloader and firmware in one step.
-4. Disconnect and reconnect USB. The board should enumerate as a COM port.
-5. Open Mission Planner to verify telemetry and sensor detection.
+3. Load `SALFC_bl.bin` from [`Firmware Target Files/ArduPilot/`](Firmware%20Target%20Files/ArduPilot/) and click **Start Programming**.
+4. Disconnect USB.
+
+**Step 2 -- Flash the firmware:**
+
+1. Reconnect USB (without BOOT button). The board should enumerate as a COM port.
+2. Open Mission Planner and connect to the board.
+3. Go to **Setup > Install Firmware > Load custom firmware** and select `arducopter.apj` from [`Firmware Target Files/ArduPilot/`](Firmware%20Target%20Files/ArduPilot/).
+4. Wait for the flash to complete and verify telemetry and sensor detection.
 
 **Subsequent updates:**
 
-Once the bootloader is installed, future firmware updates can be done through Mission Planner: **Setup > Install Firmware > Load custom firmware** and select the new `.apk` / `.hex` file.
+Once the bootloader is installed, future firmware updates follow Step 2 only.
+
+> [!NOTE]
+> The provided firmware is built for quadcopter (ArduCopter). Builds for octocopter and fixed-wing configurations will be available soon.
 
 > [!IMPORTANT]
 > The SAL FC uses an 8 MHz oscillator, **not** a passive crystal. The ArduPilot `hwdef.dat` must **not** define `STM32_HSE_BYPASS`. If bypass mode is enabled, the PLL will fail to lock and USB will not enumerate. The target files in this repository are already configured correctly.
@@ -380,3 +376,4 @@ You are free to study, modify, manufacture, and distribute this hardware design 
 | Saleh Alhomeidy | Project lead, PCB design, firmware porting | [@salehali22](https://github.com/salehali22) |
 | Akaki Gvelesiani | Mechanical/technical lead, propulsion testing, sensor fusion | [@kaki04](https://github.com/kaki04) |
 | Levani Kazaishvili | Schematic capture, soldering, hardware verification | [@levvans](https://github.com/levvans) |
+
