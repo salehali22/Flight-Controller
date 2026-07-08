@@ -5011,6 +5011,16 @@
 	)
 	(wire
 		(pts
+			(xy 429.26 185.42) (xy 429.26 179.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1213e4ac-34f9-4c85-8509-ac393b6a3057")
+	)
+	(wire
+		(pts
 			(xy 323.85 238.76) (xy 323.85 237.49)
 		)
 		(stroke
@@ -5230,6 +5240,16 @@
 			(type default)
 		)
 		(uuid "2e6ccd91-fbf2-43eb-b0b7-6d3a99cf2ac4")
+	)
+	(wire
+		(pts
+			(xy 429.26 168.91) (xy 429.26 173.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2f1526a2-3b76-4a6a-a733-332296465281")
 	)
 	(wire
 		(pts
@@ -5541,6 +5561,16 @@
 			(type default)
 		)
 		(uuid "513ae4cf-063f-4d6c-9b59-73aefe090733")
+	)
+	(wire
+		(pts
+			(xy 424.18 168.91) (xy 424.18 173.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "51e43fe6-654c-4b84-b6fd-0114b93b8cf0")
 	)
 	(wire
 		(pts
@@ -6342,6 +6372,16 @@
 			(type default)
 		)
 		(uuid "bedde73c-d11b-48af-9f4f-1b13e5f2b79b")
+	)
+	(wire
+		(pts
+			(xy 424.18 185.42) (xy 424.18 179.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c0d99b80-e958-4ae0-ac5f-c1668f93604a")
 	)
 	(wire
 		(pts
@@ -7442,6 +7482,32 @@
 			)
 		)
 	)
+	(global_label "GPS_SDA"
+		(shape input)
+		(at 429.26 185.42 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "8e34c057-3469-41dd-9c30-c8899ffb0205")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 429.26 192.468 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "OSD_MISO"
 		(shape input)
 		(at 294.64 201.93 180)
@@ -7670,6 +7736,32 @@
 			)
 		)
 	)
+	(global_label "GPS_SCL"
+		(shape input)
+		(at 424.18 185.42 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.762 0.762)
+				(thickness 0.1524)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "ca4eb967-1bff-4320-9ca2-81a03415207a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 424.18 192.4318 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "FDCAN_TX"
 		(shape input)
 		(at 379.73 85.09 180)
@@ -7791,6 +7883,83 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3.3V")
+		(at 429.26 168.91 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "0215e31c-9fae-4494-a271-a230644e4fa8")
+		(property "Reference" "#PWR0131"
+			(at 429.26 172.72 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3.3V"
+			(at 430.784 164.592 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 429.26 168.91 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 429.26 168.91 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(at 429.26 168.91 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "6fe3c4d9-5150-4da7-9f26-220001fec4b8")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/cba678f1-cd76-4d72-9114-2cc1e511120c"
+					(reference "#PWR0131")
+					(unit 1)
+				)
 			)
 		)
 	)
@@ -8300,6 +8469,83 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/cba678f1-cd76-4d72-9114-2cc1e511120c"
 					(reference "#PWR085")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3.3V")
+		(at 424.18 168.91 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "151bc6db-4563-4a1d-9145-4d1aaabfb326")
+		(property "Reference" "#PWR0106"
+			(at 424.18 172.72 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3.3V"
+			(at 421.894 164.846 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 424.18 168.91 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 424.18 168.91 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(at 424.18 168.91 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "aaf8d5b0-6b47-4ead-b74e-7964553f16c8")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/cba678f1-cd76-4d72-9114-2cc1e511120c"
+					(reference "#PWR0106")
 					(unit 1)
 				)
 			)
@@ -13307,6 +13553,191 @@
 			(project "Flight Controller"
 				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/cba678f1-cd76-4d72-9114-2cc1e511120c"
 					(reference "C40")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small")
+		(at 429.26 176.53 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a60a291b-bf25-495e-b8b2-8879c0df005d")
+		(property "Reference" "R32"
+			(at 431.8 175.2599 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "4.7k"
+			(at 431.8 177.7999 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 429.26 176.53 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 429.26 176.53 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 429.26 176.53 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Link" ""
+			(at 429.26 176.53 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "1603bc0c-0c8e-483f-87bf-7b47cd463bb6")
+		)
+		(pin "2"
+			(uuid "0b9a0137-0b84-479e-8897-2b19156fc664")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/cba678f1-cd76-4d72-9114-2cc1e511120c"
+					(reference "R32")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small")
+		(at 424.18 176.53 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "a99d833e-b2a0-4f98-a7b9-375543d40191")
+		(property "Reference" "R31"
+			(at 418.084 175.26 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "4.7k"
+			(at 418.084 177.8 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 424.18 176.53 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 424.18 176.53 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 424.18 176.53 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Link" ""
+			(at 424.18 176.53 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "5308b4cf-58ba-49c8-b71e-72d2997a65b9")
+		)
+		(pin "2"
+			(uuid "db388ce4-3254-4372-aeb5-00df0fd07ef3")
+		)
+		(instances
+			(project "Flight Controller"
+				(path "/affbaa1c-796a-43e2-b357-d8056264fe45/cba678f1-cd76-4d72-9114-2cc1e511120c"
+					(reference "R31")
 					(unit 1)
 				)
 			)
