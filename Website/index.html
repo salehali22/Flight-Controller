@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom Flight Controller | UAV Applications</title>
+    <title>SAL FC | Custom Flight Controller Platform</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +14,7 @@
     <nav class="navbar" id="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <span class="logo-text">FC</span>
+                <span class="logo-text">SAL</span>
                 <span class="logo-subtitle">Flight Controller</span>
             </div>
             <ul class="nav-menu" id="nav-menu">
@@ -38,37 +38,29 @@
     <!-- Hero Section -->
     <section id="home" class="hero">
         <div class="hero-background">
+            <img src="assets/images/5-inch-frame.jpg" alt="" class="hero-photo" aria-hidden="true">
+            <div class="hero-photo-overlay"></div>
             <div class="circuit-pattern"></div>
-            <div class="floating-particles">
-                <div class="particle"></div>
-                <div class="particle"></div>
-                <div class="particle"></div>
-                <div class="particle"></div>
-                <div class="particle"></div>
-                <div class="particle"></div>
-            </div>
-            <div class="gradient-orb orb-1"></div>
-            <div class="gradient-orb orb-2"></div>
-            <div class="gradient-orb orb-3"></div>
         </div>
         <div class="hero-content">
-            <div class="hero-badge">Senior Project Design</div>
+            <div class="hero-badge">Senior Design Project · Completed July 2026</div>
             <h1 class="hero-title">
-                Custom Flight Controller<br>
-                <span class="gradient-text">Development for UAV</span>
+                SAL FC<br>
+                <span class="gradient-text">Custom Flight Controller Platform</span>
             </h1>
             <p class="hero-description">
-                A fully custom, modular flight controller platform designed for multiple UAV configurations,
-                featuring high-performance processing, redundant sensors, and industry-standard interfaces.
+                An open-source 40.5 × 40.5 mm six-layer flight controller bridging FPV racing boards and
+                full autopilots — dual IMUs, twelve DMA-backed PWM outputs, and verified flight on
+                Betaflight, iNAV, and ArduPilot.
             </p>
             <div class="hero-stats">
                 <div class="stat-item">
-                    <div class="stat-value">24</div>
-                    <div class="stat-label">Months Project</div>
+                    <div class="stat-value">40.5</div>
+                    <div class="stat-label">mm Form Factor</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value">480</div>
-                    <div class="stat-label">MHz Processing</div>
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Firmware Stacks</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">6</div>
@@ -90,44 +82,27 @@
                 </a>
             </div>
         </div>
-        <div class="scroll-indicator">
-            <div class="mouse"></div>
-        </div>
     </section>
 
-    <!-- Featured Visuals Section -->
-    <section class="section featured-visuals">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">Highlights</span>
-                <h2 class="section-title">Project Visual Highlights</h2>
-                <p class="section-description">
-                    Key project milestones showcased with design renders and real test platform visuals.
-                </p>
-            </div>
-            <div class="featured-visuals-grid">
-                <article class="featured-visual-card featured-visual-main">
-                    <img src="assets/images/drone_frame_front_top_view.png" alt="First test flight platform front-top view" class="featured-visual-image">
-                    <div class="featured-visual-overlay">
-                        <h3>First Test Flight</h3>
-                        <p>Initial successful flight validation of the integrated system.</p>
-                    </div>
-                </article>
-                <article class="featured-visual-card">
-                    <img src="assets/images/PCB_render_angled_side_view.png" alt="First flight controller iteration angled render" class="featured-visual-image">
-                    <div class="featured-visual-overlay">
-                        <h3>Flight Controller v1</h3>
-                        <p>First complete iteration of the custom board design.</p>
-                    </div>
-                </article>
-                <article class="featured-visual-card">
-                    <img src="assets/images/PCB_render_bottom_side_view.png" alt="Bottom-side view of the controller board render" class="featured-visual-image">
-                    <div class="featured-visual-overlay">
-                        <h3>Board Design Detail</h3>
-                        <p>Layout and routing quality from the first hardware cycle.</p>
-                    </div>
-                </article>
-            </div>
+    <!-- Hardware photos -->
+    <section class="photo-strip" aria-label="Project hardware photos">
+        <div class="photo-strip-grid">
+            <figure class="photo-strip-item photo-strip-large">
+                <img src="assets/images/pcb-assembled-front.jpeg" alt="Hand-assembled SAL FC board with STM32H743 and USB-C">
+                <figcaption>Assembled SAL FC</figcaption>
+            </figure>
+            <figure class="photo-strip-item">
+                <img src="assets/images/pcb-render-front.png" alt="3D render of SAL FC front side">
+                <figcaption>PCB render</figcaption>
+            </figure>
+            <figure class="photo-strip-item">
+                <img src="assets/images/10-inch-frame.jpg" alt="10-inch quadcopter airframe used for flight testing">
+                <figcaption>10-inch airframe</figcaption>
+            </figure>
+            <figure class="photo-strip-item">
+                <img src="assets/images/thrust_stand_photo_1.jpg" alt="Custom thrust stand for motor characterization">
+                <figcaption>Thrust stand</figcaption>
+            </figure>
         </div>
     </section>
 
@@ -138,8 +113,8 @@
                 <span class="section-tag">About</span>
                 <h2 class="section-title">Project Overview</h2>
                 <p class="section-description">
-                    A comprehensive embedded systems project developing a custom flight controller
-                    from schematic design to functional flight validation.
+                    Designed, manufactured, and flight-tested at Ilia State University — from KiCad
+                    schematics and JLCPCB fabrication to stable hover on 5-inch and 10-inch platforms.
                 </p>
             </div>
             
@@ -147,52 +122,64 @@
                 <div class="overview-card">
                     <div class="card-icon">🎯</div>
                     <h3>Objective</h3>
-                    <p>Design and implement a modular flight controller hardware platform supporting multiple UAV firmware ecosystems and vehicle configurations.</p>
+                    <p>Build SAL FC — a compact open-source controller that fits 30.5 mm FPV mounts while delivering autopilot-class interfaces and dual-IMU redundancy.</p>
                 </div>
                 <div class="overview-card">
                     <div class="card-icon">🔧</div>
                     <h3>Approach</h3>
-                    <p>Hardware-first development with emphasis on modularity, electrical robustness, and compatibility with established open-source firmware.</p>
+                    <p>Hardware-first design in KiCad, hand assembly, then custom target files and HAL patches for Betaflight 4.5.1, iNAV 9.0.1, and ArduPilot.</p>
                 </div>
                 <div class="overview-card">
                     <div class="card-icon">⚡</div>
                     <h3>Technology</h3>
-                    <p>STM32H743 microcontroller, dual redundant IMUs, comprehensive sensor suite, and industry-standard communication interfaces.</p>
+                    <p>STM32H743VIT6 @ 480 MHz, ICM42688P + BMI270, BMP388, W25Q128 flash, AT7456E OSD, CAN, and twelve DMA-backed PWM outputs.</p>
                 </div>
                 <div class="overview-card">
-                    <div class="card-icon">🎓</div>
-                    <h3>Education</h3>
-                    <p>Complete engineering workflow from concept and design to implementation and testing, delivering cost-efficient, educational value.</p>
+                    <div class="card-icon">✅</div>
+                    <h3>Outcome</h3>
+                    <p>Power rails, DSHOT600, sensors, GPS, and CRSF verified on the bench; stable hover demonstrated; design files released for educational reuse.</p>
                 </div>
             </div>
 
             <div class="features-showcase">
-                <div class="feature-item">
+                <div class="feature-item feature-with-photo">
+                    <div class="feature-photo">
+                        <img src="assets/images/pcb-enig-front.jpeg" alt="Bare ENIG-finished SAL FC PCB">
+                    </div>
                     <div class="feature-number">01</div>
                     <div class="feature-content">
-                        <h3>Modular Architecture</h3>
-                        <p>Standardized interfaces (UART, SPI, I²C, PWM, CAN, USB) enable compatibility with diverse UAV frames, ESC systems, and sensors.</p>
+                        <h3>FPV Size, Autopilot IO</h3>
+                        <p>Seven UARTs, four SPI buses, three I²C buses, CAN, USB-C host/device, and DJI Air Unit support on a 40.5 × 40.5 mm board.</p>
                     </div>
                 </div>
-                <div class="feature-item">
+                <div class="feature-item feature-with-photo feature-photo-right">
+                    <div class="feature-photo">
+                        <img src="assets/images/wiring-overview.png" alt="SAL FC wiring overview diagram">
+                    </div>
                     <div class="feature-number">02</div>
                     <div class="feature-content">
-                        <h3>Redundant Sensing</h3>
-                        <p>Dual independent IMUs (ICM-42688-P + BMI270) provide sensor cross-validation and firmware-level failover capabilities.</p>
+                        <h3>Dissimilar Dual IMUs</h3>
+                        <p>ICM42688P and BMI270 on separate SPI buses, following Pixhawk FMUv6C guidance to reduce common-mode sensor failure risk.</p>
                     </div>
                 </div>
-                <div class="feature-item">
+                <div class="feature-item feature-with-photo">
+                    <div class="feature-photo">
+                        <img src="assets/images/pcb-enig-back.jpeg" alt="SAL FC PCB back side with silkscreen branding">
+                    </div>
                     <div class="feature-number">03</div>
                     <div class="feature-content">
-                        <h3>EMC Design</h3>
-                        <p>Six-layer PCB stack-up with design-for-compliance approach following IEC 61000, CISPR 32, and IPC-2221 standards.</p>
+                        <h3>Six-Layer EMC Stack-Up</h3>
+                        <p>JLCPCB JLC06161H-3313 stack-up with dedicated grounds, ENIG finish, and resin-filled vias per IPC-2221 / IPC-2222 practice.</p>
                     </div>
                 </div>
-                <div class="feature-item">
+                <div class="feature-item feature-with-photo feature-photo-right">
+                    <div class="feature-photo">
+                        <img src="assets/images/5-inch-frame.jpg" alt="5-inch quadcopter used for firmware flight validation">
+                    </div>
                     <div class="feature-number">04</div>
                     <div class="feature-content">
-                        <h3>Open Ecosystem</h3>
-                        <p>Compatible with ArduPilot, iNav, and Betaflight firmware ecosystems while enabling custom firmware development.</p>
+                        <h3>Three Firmware Stacks</h3>
+                        <p>Custom targets from source for Betaflight, iNAV (including an SPI6 HAL patch), and ArduPilot with Mission Planner / MAVLink validation.</p>
                     </div>
                 </div>
             </div>
@@ -206,7 +193,7 @@
                 <span class="section-tag">Technical</span>
                 <h2 class="section-title">Specifications</h2>
                 <p class="section-description">
-                    Detailed technical specifications of the flight controller hardware platform.
+                    Hardware specifications of the manufactured SAL FC board.
                 </p>
             </div>
 
@@ -220,7 +207,7 @@
                     <ul class="specs-list">
                         <li>
                             <span class="spec-label">Microcontroller</span>
-                            <span class="spec-value">STM32H743</span>
+                            <span class="spec-value">STM32H743VIT6</span>
                         </li>
                         <li>
                             <span class="spec-label">CPU Core</span>
@@ -236,7 +223,7 @@
                         </li>
                         <li>
                             <span class="spec-label">Flash</span>
-                            <span class="spec-value">2 MB on-chip</span>
+                            <span class="spec-value">2 MB on-chip + W25Q128 SPI</span>
                         </li>
                         <li>
                             <span class="spec-label">Clock Source</span>
@@ -254,27 +241,27 @@
                     <ul class="specs-list">
                         <li>
                             <span class="spec-label">Primary IMU</span>
-                            <span class="spec-value">InvenSense ICM-42688-P</span>
+                            <span class="spec-value">ICM42688P (SPI)</span>
                         </li>
                         <li>
                             <span class="spec-label">Secondary IMU</span>
-                            <span class="spec-value">Bosch BMI270</span>
-                        </li>
-                        <li>
-                            <span class="spec-label">IMU Interface</span>
-                            <span class="spec-value">SPI (8-10 MHz)</span>
-                        </li>
-                        <li>
-                            <span class="spec-label">Gyro Rate</span>
-                            <span class="spec-value">Up to 4 kHz</span>
+                            <span class="spec-value">BMI270 (SPI)</span>
                         </li>
                         <li>
                             <span class="spec-label">Barometric</span>
-                            <span class="spec-value">BMP388 (±0.08 m resolution)</span>
+                            <span class="spec-value">BMP388 (I²C)</span>
                         </li>
                         <li>
-                            <span class="spec-label">GPS/Magnetometer</span>
-                            <span class="spec-value">External module (UART/I²C)</span>
+                            <span class="spec-label">OSD</span>
+                            <span class="spec-value">AT7456E</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">GPS / Mag</span>
+                            <span class="spec-value">External UART + I²C</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">Motor Protocol</span>
+                            <span class="spec-value">DSHOT600 verified</span>
                         </li>
                     </ul>
                 </div>
@@ -288,27 +275,27 @@
                     <ul class="specs-list">
                         <li>
                             <span class="spec-label">PWM Outputs</span>
-                            <span class="spec-value">12 channels (motors/servos)</span>
+                            <span class="spec-value">12 channels (dedicated DMA)</span>
                         </li>
                         <li>
                             <span class="spec-label">UART</span>
-                            <span class="spec-value">Multiple (GPS, telemetry, video)</span>
+                            <span class="spec-value">7 ports</span>
                         </li>
                         <li>
                             <span class="spec-label">SPI</span>
-                            <span class="spec-value">High-speed sensor interfaces</span>
+                            <span class="spec-value">4 buses</span>
                         </li>
                         <li>
                             <span class="spec-label">I²C</span>
-                            <span class="spec-value">400 kHz fast-mode</span>
+                            <span class="spec-value">3 buses</span>
                         </li>
                         <li>
                             <span class="spec-label">CAN Bus</span>
-                            <span class="spec-value">FDCAN with transceiver</span>
+                            <span class="spec-value">SN65HVD230 transceiver</span>
                         </li>
                         <li>
                             <span class="spec-label">USB</span>
-                            <span class="spec-value">USB 2.0 FS, USB-C power</span>
+                            <span class="spec-value">USB-C host + device</span>
                         </li>
                     </ul>
                 </div>
@@ -322,27 +309,27 @@
                     <ul class="specs-list">
                         <li>
                             <span class="spec-label">PCB Layers</span>
-                            <span class="spec-value">6-layer stack-up</span>
+                            <span class="spec-value">6-layer (JLCPCB)</span>
                         </li>
                         <li>
-                            <span class="spec-label">Form Factor</span>
-                            <span class="spec-value">50 mm mounting standard</span>
+                            <span class="spec-label">Dimensions</span>
+                            <span class="spec-value">40.5 × 40.5 mm</span>
                         </li>
                         <li>
-                            <span class="spec-label">Power Input</span>
-                            <span class="spec-value">Battery + USB-C (auto-select)</span>
+                            <span class="spec-label">Mounting</span>
+                            <span class="spec-value">30.5 mm M3 pattern</span>
+                        </li>
+                        <li>
+                            <span class="spec-label">Input Voltage</span>
+                            <span class="spec-value">Up to 6S (25.2 V)</span>
                         </li>
                         <li>
                             <span class="spec-label">Regulation</span>
-                            <span class="spec-value">Buck converters + LDOs</span>
+                            <span class="spec-value">5 V / 8.5 V bucks + 3.3 V LDOs</span>
                         </li>
                         <li>
-                            <span class="spec-label">Protection</span>
-                            <span class="spec-value">Reverse-polarity, transient suppression</span>
-                        </li>
-                        <li>
-                            <span class="spec-label">Video Systems</span>
-                            <span class="spec-value">Analog OSD + DJI Air Unit support</span>
+                            <span class="spec-label">Video</span>
+                            <span class="spec-value">Analog OSD + DJI Air Unit</span>
                         </li>
                     </ul>
                 </div>
@@ -373,7 +360,7 @@
                             <div class="diagram-icon-wrapper">
                                 <div class="diagram-icon">💻</div>
                             </div>
-                            <div class="diagram-label">STM32H743</div>
+                            <div class="diagram-label">STM32H743VIT6</div>
                             <div class="diagram-spec">480 MHz</div>
                             <div class="diagram-info-panel">
                                 <div class="info-title">Processing Core</div>
@@ -452,7 +439,7 @@
                 <span class="section-tag">Timeline</span>
                 <h2 class="section-title">Project Progress</h2>
                 <p class="section-description">
-                    Development timeline from October 2025 to June 2026
+                    Completed development cycle — October 2025 to July 2026
                 </p>
             </div>
 
@@ -462,7 +449,7 @@
                     <div class="timeline-content">
                         <div class="timeline-date">October 2025</div>
                         <h3>Planning & Schematic Design</h3>
-                        <p>System architecture definition and initial schematic design</p>
+                        <p>System architecture, concept selection, and KiCad schematic capture</p>
                     </div>
                 </div>
 
@@ -471,70 +458,61 @@
                     <div class="timeline-content">
                         <div class="timeline-date">November 2025</div>
                         <h3>PCB Layout & Stack-Up</h3>
-                        <p>Six-layer PCB layout with EMC design considerations</p>
+                        <p>Six-layer layout, design-rule checks, and manufacturing package</p>
                     </div>
                 </div>
 
                 <div class="timeline-item" data-status="completed">
                     <div class="timeline-marker"></div>
                     <div class="timeline-content">
-                        <div class="timeline-date">December 2025</div>
-                        <h3>PCB Manufacturing</h3>
-                        <p>Fabrication and assembly of initial test board</p>
+                        <div class="timeline-date">December 2025 – January 2026</div>
+                        <h3>Fabrication & Hand Assembly</h3>
+                        <p>JLCPCB manufacture, ENIG finish, and component soldering</p>
                     </div>
                 </div>
 
                 <div class="timeline-item" data-status="completed">
                     <div class="timeline-marker"></div>
                     <div class="timeline-content">
-                        <div class="timeline-date">December 2025</div>
-                        <h3>First Test Board Success</h3>
-                        <p>Electrical validation completed successfully on the first assembled test board.</p>
+                        <div class="timeline-date">February 2026</div>
+                        <h3>Board Bring-Up</h3>
+                        <p>Power rails, USB-C DFU, sensor detection, and CRSF receiver checks</p>
                     </div>
                 </div>
 
                 <div class="timeline-item" data-status="completed">
                     <div class="timeline-marker"></div>
                     <div class="timeline-content">
-                        <div class="timeline-date">Dec 2025 - Jan 2026</div>
-                        <h3>First Flight Controller Iteration</h3>
-                        <p>Completed first hardware iteration with bring-up, validation, and integration checks.</p>
-                    </div>
-                </div>
-
-                <div class="timeline-item" data-status="planned">
-                    <div class="timeline-marker"></div>
-                    <div class="timeline-content">
-                        <div class="timeline-date">January - March 2026</div>
-                        <h3>Firmware Development</h3>
-                        <p>Microcontroller bring-up, drivers, and sensor integration</p>
-                    </div>
-                </div>
-
-                <div class="timeline-item" data-status="planned">
-                    <div class="timeline-marker"></div>
-                    <div class="timeline-content">
-                        <div class="timeline-date">February - April 2026</div>
-                        <h3>Control Algorithms</h3>
-                        <p>Sensor fusion, filtering, and stabilization logic</p>
+                        <div class="timeline-date">February – April 2026</div>
+                        <h3>Firmware Porting</h3>
+                        <p>Custom targets for Betaflight 4.5.1, iNAV 9.0.1 (SPI6 patch), and ArduPilot</p>
                     </div>
                 </div>
 
                 <div class="timeline-item" data-status="completed">
                     <div class="timeline-marker"></div>
                     <div class="timeline-content">
-                        <div class="timeline-date">April - May 2026</div>
-                        <h3>First Test Flight</h3>
-                        <p>Completed initial integration and achieved first successful flight validation.</p>
+                        <div class="timeline-date">March – May 2026</div>
+                        <h3>Propulsion & Airframes</h3>
+                        <p>Thrust-stand characterization of MT2212 motors; 5-inch and 10-inch builds</p>
                     </div>
                 </div>
 
-                <div class="timeline-item" data-status="planned">
+                <div class="timeline-item" data-status="completed">
                     <div class="timeline-marker"></div>
                     <div class="timeline-content">
-                        <div class="timeline-date">June 2026</div>
+                        <div class="timeline-date">April – May 2026</div>
+                        <h3>Flight Testing</h3>
+                        <p>Stable hover verified; MAVLink telemetry with Raspberry Pi 5 companion</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-status="completed">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">July 2026</div>
                         <h3>Documentation & Delivery</h3>
-                        <p>Final validation, documentation, and project submission</p>
+                        <p>Final report, presentation, and open-source design release</p>
                     </div>
                 </div>
             </div>
@@ -543,18 +521,18 @@
             <div class="progress-stats">
                 <div class="progress-stat">
                     <div class="progress-stat-icon">📅</div>
-                    <div class="progress-stat-value">75%</div>
+                    <div class="progress-stat-value">100%</div>
                     <div class="progress-stat-label">Overall Progress</div>
                 </div>
                 <div class="progress-stat">
-                    <div class="progress-stat-icon">🔧</div>
-                    <div class="progress-stat-value">Flight Validation</div>
-                    <div class="progress-stat-label">Current Phase</div>
+                    <div class="progress-stat-icon">🚁</div>
+                    <div class="progress-stat-value">Flight Verified</div>
+                    <div class="progress-stat-label">Current Status</div>
                 </div>
                 <div class="progress-stat">
                     <div class="progress-stat-icon">📦</div>
-                    <div class="progress-stat-value">1</div>
-                    <div class="progress-stat-label">Months Remaining</div>
+                    <div class="progress-stat-value">Delivered</div>
+                    <div class="progress-stat-label">July 2026</div>
                 </div>
             </div>
         </div>
@@ -577,10 +555,10 @@
                         <div class="avatar-placeholder">AG</div>
                     </div>
                     <h3>Akaki Gvelesiani</h3>
-                    <p class="team-role">Hardware Design & Low-Level Firmware</p>
+                    <p class="team-role">Technical Lead</p>
                     <p class="team-description">
-                        System architecture, schematic design, 6-layer PCB layout, EMI/EMC design,
-                        microcontroller bring-up, sensor fusion, and driver development.
+                        Frame design and fabrication, propulsion testing (thrust, resonance, efficiency),
+                        Mahony sensor-fusion development, power wiring, hardware integration, and flight testing.
                     </p>
                     <div class="team-social">
                         <a href="https://www.linkedin.com/in/akaki-gvelesiani-631b27300/" target="_blank" rel="noopener noreferrer" class="social-link linkedin">
@@ -597,10 +575,10 @@
                         <div class="avatar-placeholder">SA</div>
                     </div>
                     <h3>Saleh Alhomeidy</h3>
-                    <p class="team-role">Hardware Design & High-Level Firmware</p>
+                    <p class="team-role">Project Lead</p>
                     <p class="team-description">
-                        Schematic design review, PCB layout coordination, state estimation,
-                        control logic implementation, and stabilization algorithm tuning.
+                        PCB layout and validation; firmware targets for Betaflight, iNAV, and ArduPilot;
+                        iNAV SPI6 patch; DSHOT characterization; ESP32-P4 expansion board; MAVLink companion setup.
                     </p>
                     <div class="team-social">
                         <a href="https://www.linkedin.com/in/salehalhomeidy/" target="_blank" rel="noopener noreferrer" class="social-link linkedin">
@@ -617,10 +595,10 @@
                         <div class="avatar-placeholder">LK</div>
                     </div>
                     <h3>Levani Kazaishvili</h3>
-                    <p class="team-role">Component Sourcing & Mechanical Integration</p>
+                    <p class="team-role">Test & Verification Lead</p>
                     <p class="team-description">
-                        Component selection, procurement, budget management, and mechanical
-                        integration including board dimensions and mounting patterns.
+                        Schematic capture in KiCad, component procurement, soldering and rework,
+                        budget management, and hardware verification on the bench.
                     </p>
                     <div class="team-social">
                         <a href="https://www.linkedin.com/in/levan-kazaishvili-665139289/" target="_blank" rel="noopener noreferrer" class="social-link linkedin">
@@ -635,8 +613,9 @@
 
             <div class="supervisor-info">
                 <div class="supervisor-card">
-                    <h3>Supervising Professor</h3>
+                    <h3>Supervising Professors</h3>
                     <p class="supervisor-name">Prof. Giorgi Veshapidze</p>
+                    <p class="supervisor-name">Prof. Archil Gvimradze</p>
                     <p class="supervisor-institution">Ilia State University</p>
                     <div class="team-social" style="margin-top: 1rem;">
                         <a href="https://www.linkedin.com/in/giorgi-veshapidze-71227448/" target="_blank" rel="noopener noreferrer" class="social-link linkedin">
@@ -658,12 +637,13 @@
                 <span class="section-tag">Resources</span>
                 <h2 class="section-title">Documentation & Gallery</h2>
                 <p class="section-description">
-                    Project documentation, design files, and visual progress gallery
+                    Hardware photos, flight videos, thrust-stand data, and project documents
                 </p>
             </div>
 
             <div class="docs-tabs">
                 <button class="tab-btn active" data-tab="gallery">Gallery</button>
+                <button class="tab-btn" data-tab="videos">Flight Videos</button>
                 <button class="tab-btn" data-tab="documents">Documents</button>
                 <button class="tab-btn" data-tab="downloads">Downloads</button>
             </div>
@@ -672,33 +652,103 @@
             <div class="tab-content active" id="gallery-tab">
                 <div class="gallery-grid">
                     <div class="gallery-item">
-                        <img src="assets/images/PCB_layout.png" alt="PCB layout preview for the first test board" class="gallery-image">
-                        <div class="gallery-overlay">
-                            <span>PCB Layout</span>
-                        </div>
+                        <img src="assets/images/pcb-render-front.png" alt="SAL FC front-side 3D PCB render">
+                        <div class="gallery-overlay"><span>PCB Render — Front</span></div>
                     </div>
                     <div class="gallery-item">
-                        <img src="assets/images/PCB_render_top_side_view.png" alt="Top-side render of the first flight controller iteration" class="gallery-image">
-                        <div class="gallery-overlay">
-                            <span>Flight Controller v1</span>
-                        </div>
+                        <img src="assets/images/pcb-render-back.png" alt="SAL FC back-side 3D PCB render">
+                        <div class="gallery-overlay"><span>PCB Render — Back</span></div>
                     </div>
                     <div class="gallery-item">
-                        <img src="assets/images/drone_frame_front_top_view.png" alt="Drone frame setup during the first test flight" class="gallery-image">
-                        <div class="gallery-overlay">
-                            <span>First Test Flight</span>
-                        </div>
+                        <img src="assets/images/pcb-assembled-front.jpeg" alt="Hand-assembled SAL FC board with STM32H743">
+                        <div class="gallery-overlay"><span>Assembled Board</span></div>
                     </div>
                     <div class="gallery-item">
-                        <img src="assets/images/drone_frame_top_left_view.png" alt="Drone frame top-left perspective after initial integration" class="gallery-image">
-                        <div class="gallery-overlay">
-                            <span>Integration Progress</span>
-                        </div>
+                        <img src="assets/images/pcb-enig-front.jpeg" alt="Bare ENIG-finished SAL FC PCB front">
+                        <div class="gallery-overlay"><span>ENIG PCB — Front</span></div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="assets/images/pcb-enig-back.jpeg" alt="Bare ENIG-finished SAL FC PCB back with branding">
+                        <div class="gallery-overlay"><span>ENIG PCB — Back</span></div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="assets/images/fc-top-labeled.png" alt="SAL FC labeled connector and component map">
+                        <div class="gallery-overlay"><span>Labeled Connector Map</span></div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="assets/images/wiring-overview.png" alt="General flight controller wiring overview diagram">
+                        <div class="gallery-overlay"><span>Wiring Overview</span></div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="assets/images/5-inch-frame.jpg" alt="5-inch FPV quadcopter with SAL FC">
+                        <div class="gallery-overlay"><span>5-Inch Test Frame</span></div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="assets/images/10-inch-frame.jpg" alt="10-inch quadcopter with custom landing gear">
+                        <div class="gallery-overlay"><span>10-Inch Airframe</span></div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="assets/images/thrust_stand_photo_1.jpg" alt="Custom thrust stand with motor and propeller">
+                        <div class="gallery-overlay"><span>Thrust Stand</span></div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="assets/images/thrust_stand_photo_3.jpg" alt="Thrust stand motor characterization setup">
+                        <div class="gallery-overlay"><span>Propulsion Testing</span></div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="assets/images/mt2212-1045-4s-data.jpeg" alt="MT2212 motor thrust data with 1045 prop on 4S">
+                        <div class="gallery-overlay"><span>MT2212 / 1045 / 4S Data</span></div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="assets/images/mt2212-1045-4s-extrapolated.jpeg" alt="Extrapolated MT2212 thrust curve on 4S">
+                        <div class="gallery-overlay"><span>Thrust Curve Fit</span></div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="assets/images/expansion-board-front.png" alt="ESP32-P4 expansion board front render">
+                        <div class="gallery-overlay"><span>ESP32-P4 Expansion</span></div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="assets/images/crash-aftermath-01.jpg" alt="10-inch airframe after flight testing incident">
+                        <div class="gallery-overlay"><span>Flight Incident — Aftermath</span></div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="assets/images/crash-aftermath-03.jpg" alt="Damaged 10-inch frame components after crash">
+                        <div class="gallery-overlay"><span>Structural Damage Review</span></div>
                     </div>
                 </div>
-                <p class="gallery-note">
-                    Gallery updated with real project images from the assets folder.
-                </p>
+            </div>
+
+            <!-- Videos Tab -->
+            <div class="tab-content" id="videos-tab">
+                <div class="video-grid">
+                    <article class="video-card">
+                        <video controls preload="metadata" poster="assets/images/5-inch-frame.jpg">
+                            <source src="assets/videos/5-inch-flight-01.mp4" type="video/mp4">
+                        </video>
+                        <div class="video-card-body">
+                            <h4>5-Inch Flight Test 01</h4>
+                            <p>Stable hover and manual flight validation on the 5-inch platform.</p>
+                        </div>
+                    </article>
+                    <article class="video-card">
+                        <video controls preload="metadata" poster="assets/images/5-inch-frame.jpg">
+                            <source src="assets/videos/5-inch-flight-02.mp4" type="video/mp4">
+                        </video>
+                        <div class="video-card-body">
+                            <h4>5-Inch Flight Test 02</h4>
+                            <p>Additional flight footage confirming sensor and motor output integrity.</p>
+                        </div>
+                    </article>
+                    <article class="video-card video-card-wide">
+                        <video controls preload="metadata" poster="assets/images/5-inch-frame.jpg">
+                            <source src="assets/videos/5-inch-flight-03.mp4" type="video/mp4">
+                        </video>
+                        <div class="video-card-body">
+                            <h4>5-Inch Flight Test 03</h4>
+                            <p>Extended flight recording (~140 MB). Best viewed on a local connection.</p>
+                        </div>
+                    </article>
+                </div>
             </div>
 
             <!-- Documents Tab -->
@@ -707,34 +757,34 @@
                     <div class="document-item">
                         <div class="doc-icon">📄</div>
                         <div class="doc-info">
+                            <h4>Final Project Report</h4>
+                            <p>Complete design, verification, and results document (July 2026)</p>
+                        </div>
+                        <a href="Final Report.docx" class="doc-download" download>Download</a>
+                    </div>
+                    <div class="document-item">
+                        <div class="doc-icon">📑</div>
+                        <div class="doc-info">
                             <h4>Project Proposal</h4>
-                            <p>Complete project proposal document (PDF)</p>
+                            <p>Original proposal with objectives, architecture, and timeline</p>
                         </div>
                         <a href="Project proposal.pdf" class="doc-download" target="_blank">View</a>
+                    </div>
+                    <div class="document-item">
+                        <div class="doc-icon">🎤</div>
+                        <div class="doc-info">
+                            <h4>Senior Presentation</h4>
+                            <p>Final presentation slides covering design and flight results</p>
+                        </div>
+                        <a href="drone - senior presentation.pptx" class="doc-download" download>Download</a>
                     </div>
                     <div class="document-item">
                         <div class="doc-icon">📊</div>
                         <div class="doc-info">
                             <h4>Technical Analysis</h4>
-                            <p>Comprehensive technical analysis and feasibility study</p>
+                            <p>Independent feasibility review of the original proposal</p>
                         </div>
                         <a href="Project_Analysis.md" class="doc-download" target="_blank">View</a>
-                    </div>
-                    <div class="document-item">
-                        <div class="doc-icon">📐</div>
-                        <div class="doc-info">
-                            <h4>Schematic Diagrams</h4>
-                            <p>PCB schematic design files (Coming Soon)</p>
-                        </div>
-                        <span class="doc-coming-soon">Soon</span>
-                    </div>
-                    <div class="document-item">
-                        <div class="doc-icon">🔧</div>
-                        <div class="doc-info">
-                            <h4>Firmware Repository</h4>
-                            <p>Source code and firmware documentation (Coming Soon)</p>
-                        </div>
-                        <span class="doc-coming-soon">Soon</span>
                     </div>
                 </div>
             </div>
@@ -744,21 +794,21 @@
                 <div class="downloads-grid">
                     <div class="download-card">
                         <div class="download-icon">💾</div>
-                        <h4>Project Proposal PDF</h4>
-                        <p>Download the complete project proposal</p>
-                        <a href="Project proposal.pdf" download class="download-btn">Download PDF</a>
+                        <h4>Final Report</h4>
+                        <p>Full project report with appendices</p>
+                        <a href="Final Report.docx" download class="download-btn">Download DOCX</a>
                     </div>
                     <div class="download-card">
                         <div class="download-icon">📋</div>
-                        <h4>Technical Specifications</h4>
-                        <p>Detailed technical specifications document</p>
-                        <a href="#" class="download-btn disabled">Coming Soon</a>
+                        <h4>Project Proposal</h4>
+                        <p>Original PDF proposal document</p>
+                        <a href="Project proposal.pdf" download class="download-btn">Download PDF</a>
                     </div>
                     <div class="download-card">
-                        <div class="download-icon">📁</div>
-                        <h4>Design Files</h4>
-                        <p>PCB schematics and layout files (KiCad)</p>
-                        <a href="#" class="download-btn disabled">Coming Soon</a>
+                        <div class="download-icon">🎬</div>
+                        <h4>More Resources</h4>
+                        <p>Videos, photos, and additional files</p>
+                        <a href="downloads.html" class="download-btn">Open Downloads</a>
                     </div>
                 </div>
             </div>
@@ -796,9 +846,9 @@
                     <div class="contact-item">
                         <div class="contact-icon">📧</div>
                         <div class="contact-details">
-                            <h4>Email</h4>
-                            <p><a href="mailto:project@example.com">project@example.com</a></p>
-                            <p class="contact-note"><em>Update with your actual email address</em></p>
+                            <h4>Contact</h4>
+                            <p>Reach team members via LinkedIn on the Team section</p>
+                            <p class="contact-note"><em>Ilia State University · Tbilisi, Georgia</em></p>
                         </div>
                     </div>
                 </div>
@@ -823,7 +873,7 @@
                         </div>
                         <button type="submit" class="btn btn-primary">Send Message</button>
                         <p class="form-note">
-                            <em>Note: Form requires backend integration or email service (e.g., Formspree, EmailJS)</em>
+                            <em>Form submission can be wired to Formspree or EmailJS when you are ready to collect messages.</em>
                         </p>
                     </form>
                 </div>
@@ -836,9 +886,9 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h4>Custom Flight Controller</h4>
-                    <p>UAV Applications Development Project</p>
-                    <p class="footer-subtitle">Ilia State University | Senior Project Design</p>
+                    <h4>SAL FC</h4>
+                    <p>Custom Flight Controller Platform</p>
+                    <p class="footer-subtitle">Ilia State University | Senior Design Project</p>
                 </div>
                 <div class="footer-section">
                     <h4>Quick Links</h4>
@@ -852,8 +902,8 @@
                 <div class="footer-section">
                     <h4>Project Info</h4>
                     <ul class="footer-links">
-                        <li>Timeline: Oct 2025 - Jun 2026</li>
-                        <li>Status: First Test Flight Completed</li>
+                        <li>Timeline: Oct 2025 – Jul 2026</li>
+                        <li>Status: Completed</li>
                     </ul>
                 </div>
             </div>
