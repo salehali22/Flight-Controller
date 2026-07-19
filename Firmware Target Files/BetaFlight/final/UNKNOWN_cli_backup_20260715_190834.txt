@@ -1,0 +1,218 @@
+# diff all defaults
+
+# version
+# Betaflight / SALEHFC (SLEH) 4.5.1 Jun 24 2026 / 19:52:50 (77d01ba3b) MSP API: 1.46
+
+# start the command batch
+batch start
+
+# reset configuration to default settings
+defaults nosave
+
+mcu_id 0050002d3533511833393432
+signature 
+
+# name: SAL
+
+# resources
+#resource MOTOR 1 NONE
+resource MOTOR 1 E09
+#resource MOTOR 2 NONE
+resource MOTOR 2 E11
+#resource MOTOR 3 NONE
+resource MOTOR 3 E13
+#resource MOTOR 4 NONE
+resource MOTOR 4 E14
+#resource MOTOR 5 NONE
+resource MOTOR 5 C06
+#resource MOTOR 6 NONE
+resource MOTOR 6 C07
+#resource MOTOR 7 NONE
+resource MOTOR 7 C08
+#resource MOTOR 8 NONE
+resource MOTOR 8 C09
+#feature -SERVO_TILT
+#feature -GPS
+#feature -RANGEFINDER
+#feature -TELEMETRY
+#feature -LED_STRIP
+#feature -DISPLAY
+#feature -CHANNEL_FORWARDING
+#feature -TRANSPONDER
+
+# feature
+feature SERVO_TILT
+feature GPS
+feature RANGEFINDER
+feature TELEMETRY
+feature LED_STRIP
+feature DISPLAY
+feature CHANNEL_FORWARDING
+feature TRANSPONDER
+
+# serial
+#serial 7 0 115200 57600 0 115200
+serial 7 2 115200 57600 0 115200
+#beacon -RX_LOST
+
+# beacon
+beacon RX_LOST
+#beacon -RX_SET
+beacon RX_SET
+
+# aux
+#aux 0 0 0 900 900 0 0
+aux 0 0 0 1700 2100 0 0
+#aux 1 0 0 900 900 0 0
+aux 1 1 3 1700 2100 0 0
+#aux 2 0 0 900 900 0 0
+aux 2 2 2 1700 2100 0 0
+
+# master
+#set gyro_lpf1_static_hz = 250
+set gyro_lpf1_static_hz = 0
+#set gyro_lpf2_static_hz = 500
+set gyro_lpf2_static_hz = 600
+#set dyn_notch_count = 3
+set dyn_notch_count = 2
+#set dyn_notch_q = 300
+set dyn_notch_q = 400
+#set dyn_notch_min_hz = 100
+set dyn_notch_min_hz = 90
+#set dyn_notch_max_hz = 600
+set dyn_notch_max_hz = 400
+#set gyro_lpf1_dyn_min_hz = 250
+set gyro_lpf1_dyn_min_hz = 0
+#set acc_calibration = 0,0,0,0
+set acc_calibration = 0,52,5,1
+#set dshot_bidir = OFF
+set dshot_bidir = ON
+#set bat_capacity = 0
+set bat_capacity = 1500
+#set vbat_max_cell_voltage = 430
+set vbat_max_cell_voltage = 420
+#set vbat_scale = 110
+set vbat_scale = 55
+#set yaw_motors_reversed = OFF
+set yaw_motors_reversed = ON
+#set small_angle = 25
+set small_angle = 180
+#set simplified_gyro_filter_multiplier = 100
+set simplified_gyro_filter_multiplier = 120
+#set gyro_1_sensor_align = CW0
+set gyro_1_sensor_align = CW90
+#set gyro_1_align_yaw = 0
+set gyro_1_align_yaw = 900
+#set rpm_filter_weights = 100,100,100
+set rpm_filter_weights = 90,50,90
+#set rpm_filter_q = 500
+set rpm_filter_q = 700
+#set craft_name = -
+set craft_name = SAL
+#set pilot_name = -
+set pilot_name = Akaki Gvelesiani
+
+profile 0
+
+profile 1
+
+profile 2
+
+# profile 2
+#set dterm_lpf1_dyn_min_hz = 75
+set dterm_lpf1_dyn_min_hz = 0
+#set dterm_lpf1_static_hz = 75
+set dterm_lpf1_static_hz = 0
+#set dterm_lpf2_type = PT1
+set dterm_lpf2_type = PT3
+#set dterm_lpf2_static_hz = 150
+set dterm_lpf2_static_hz = 120
+#set anti_gravity_gain = 80
+set anti_gravity_gain = 120
+#set iterm_relax_cutoff = 15
+set iterm_relax_cutoff = 10
+#set p_pitch = 47
+set p_pitch = 71
+#set i_pitch = 84
+set i_pitch = 108
+#set d_pitch = 46
+set d_pitch = 49
+#set f_pitch = 125
+set f_pitch = 146
+#set p_roll = 45
+set p_roll = 56
+#set i_roll = 80
+set i_roll = 86
+#set d_roll = 40
+set d_roll = 36
+#set f_roll = 120
+set f_roll = 117
+#set p_yaw = 45
+set p_yaw = 56
+#set i_yaw = 80
+set i_yaw = 86
+#set f_yaw = 120
+set f_yaw = 117
+#set d_min_roll = 30
+set d_min_roll = 36
+#set d_min_pitch = 34
+set d_min_pitch = 49
+#set thrust_linear = 0
+set thrust_linear = 30
+#set dyn_idle_min_rpm = 0
+set dyn_idle_min_rpm = 30
+#set simplified_master_multiplier = 100
+set simplified_master_multiplier = 115
+#set simplified_i_gain = 100
+set simplified_i_gain = 85
+#set simplified_d_gain = 100
+set simplified_d_gain = 105
+#set simplified_pi_gain = 100
+set simplified_pi_gain = 110
+#set simplified_dmax_gain = 100
+set simplified_dmax_gain = 0
+#set simplified_feedforward_gain = 100
+set simplified_feedforward_gain = 85
+#set simplified_pitch_d_gain = 100
+set simplified_pitch_d_gain = 120
+#set simplified_pitch_pi_gain = 100
+set simplified_pitch_pi_gain = 120
+#set simplified_dterm_filter_multiplier = 100
+set simplified_dterm_filter_multiplier = 80
+#set tpa_mode = D
+set tpa_mode = PD
+#set tpa_rate = 65
+set tpa_rate = 50
+#set tpa_breakpoint = 1350
+set tpa_breakpoint = 1250
+#set tpa_low_breakpoint = 1050
+set tpa_low_breakpoint = 1100
+#set tpa_low_always = OFF
+set tpa_low_always = ON
+#set ez_landing_limit = 15
+set ez_landing_limit = 5
+
+profile 3
+
+# restore original profile selection
+profile 2
+
+rateprofile 0
+
+# rateprofile 0
+#set throttle_limit_type = OFF
+set throttle_limit_type = SCALE
+#set throttle_limit_percent = 100
+set throttle_limit_percent = 60
+
+rateprofile 1
+
+rateprofile 2
+
+rateprofile 3
+
+# restore original rateprofile selection
+rateprofile 0
+
+# save configuration
+save

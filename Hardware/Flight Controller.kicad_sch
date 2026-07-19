@@ -309,7 +309,7 @@
 		)
 	)
 	(sheet
-		(at 201.295 61.595)
+		(at 201.295 61.849)
 		(size 142.24 201.93)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -325,7 +325,7 @@
 		)
 		(uuid "8463a60f-8f72-494c-88d1-488c894f8e30")
 		(property "Sheetname" "MCU"
-			(at 201.295 59.6134 0)
+			(at 201.295 59.8674 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -338,7 +338,7 @@
 			)
 		)
 		(property "Sheetfile" "MCU.kicad_sch"
-			(at 201.295 264.1096 0)
+			(at 201.295 264.3636 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
