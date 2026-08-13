@@ -11491,7 +11491,7 @@
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim yes)
-		(in_bom no)
+		(in_bom yes)
 		(on_board no)
 		(in_pos_files yes)
 		(dnp yes)
