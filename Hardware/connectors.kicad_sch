@@ -8977,7 +8977,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "CAN BUS"
+		(property "Value" "Mavlink"
 			(at 262.89 184.15 0)
 			(show_name no)
 			(do_not_autoplace no)
