@@ -1,9 +1,0 @@
-Record=TopLevelDocument|FileName=Flight Controller.SchDoc|SheetNumber= 
-Record=SheetSymbol|SourceDocument=Flight Controller.SchDoc|Designator=Connectors|SchDesignator=Connectors|FileName=connectors.SchDoc|SheetNumber= |SymbolType=Normal|RawFileName=connectors.SchDoc|DesignItemId= |SourceLibraryName=connectors.SchDoc|ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
-Record=SheetSymbol|SourceDocument=Flight Controller.SchDoc|Designator=MCU|SchDesignator=MCU|FileName=MCU.SchDoc|SheetNumber= |SymbolType=Normal|RawFileName=MCU.SchDoc|DesignItemId= |SourceLibraryName=MCU.SchDoc|ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
-Record=SheetSymbol|SourceDocument=Flight Controller.SchDoc|Designator=Power|SchDesignator=Power|FileName=power.SchDoc|SheetNumber= |SymbolType=Normal|RawFileName=power.SchDoc|DesignItemId= |SourceLibraryName=power.SchDoc|ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
-Record=SheetSymbol|SourceDocument=Flight Controller.SchDoc|Designator=Sensors and Peripherals|SchDesignator=Sensors and Peripherals|FileName=Sensors.SchDoc|SheetNumber= |SymbolType=Normal|RawFileName=Sensors.SchDoc|DesignItemId= |SourceLibraryName=Sensors.SchDoc|ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
-Record=NoMainPathDocument|SourceDocument=Flight Controller.SchDoc|FileName=connectors.SchDoc|SheetNumber= 
-Record=NoMainPathDocument|SourceDocument=Flight Controller.SchDoc|FileName=MCU.SchDoc|SheetNumber= 
-Record=NoMainPathDocument|SourceDocument=Flight Controller.SchDoc|FileName=power.SchDoc|SheetNumber= 
-Record=NoMainPathDocument|SourceDocument=Flight Controller.SchDoc|FileName=Sensors.SchDoc|SheetNumber= 
