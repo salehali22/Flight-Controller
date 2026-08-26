@@ -348,7 +348,6 @@ Flight-Controller/
 │   ├── Betaflight/                 #   Betaflight 4.5.1 target and hex
 │   ├── iNAV/                       #   iNAV 9.0.1 target, hex, and SPI6 patch
 │   └── ArduPilot/                  #   ArduPilot hwdef and hex
-├── Hardware/                       # KiCad project, Gerbers, BOM, pick-and-place
 ├── Renders and Images/             # PCB renders, photos, wiring diagrams, CubeMX
 ├── Website/                        # Project landing page
 ├── firmware/
@@ -358,6 +357,24 @@ Flight-Controller/
 ├── LICENSE                         # CERN-OHL-S-2.0
 └── README.md
 ```
+
+---
+
+## Hardware Files Access
+
+The KiCad project, Gerbers, BOM, pick-and-place files, and 3D models are no longer hosted in this public repository. They have been moved to a private repository ahead of the v2 commercial release.
+
+Developers, researchers, or hobbyists genuinely interested in the hardware design are welcome to reach out. We are happy to share access on a case-by-case basis for legitimate technical, academic, or collaborative purposes.
+
+**Contact:**
+
+| Name | Email | LinkedIn |
+|---|---|---|
+| Saleh Alhomeidy | salehalhomeidy@gmail.com | [linkedin.com/in/salehalhomeidy](https://www.linkedin.com/in/salehalhomeidy/) |
+| Akaki Gvelesiani | | [linkedin.com/in/akaki-gvelesiani-631b27300/](https://www.linkedin.com/in/akaki-gvelesiani-631b27300//) |
+| Levani Kazaishvili | Levanikazaishvili@gmail.com |  [linkedin.com/in/levan-kazaishvili-665139289/](https://www.linkedin.com/in/levan-kazaishvili-665139289/) |
+
+Please include a brief description of your interest and intended use when reaching out.
 
 ---
 
@@ -376,4 +393,3 @@ You are free to study, modify, manufacture, and distribute this hardware design 
 | Saleh Alhomeidy | Project lead, PCB design, firmware porting | [@salehali22](https://github.com/salehali22) |
 | Akaki Gvelesiani | Mechanical/technical lead, propulsion testing, sensor fusion | [@kaki04](https://github.com/kaki04) |
 | Levani Kazaishvili | Schematic capture, soldering, hardware verification | [@levvans](https://github.com/levvans) |
-
