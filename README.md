@@ -371,7 +371,7 @@ Developers, researchers, or hobbyists genuinely interested in the hardware desig
 | Name | Email | LinkedIn |
 |---|---|---|
 | Saleh Alhomeidy | salehalhomeidy@gmail.com | [linkedin.com/in/salehalhomeidy](https://www.linkedin.com/in/salehalhomeidy/) |
-| Akaki Gvelesiani | | [linkedin.com/in/akaki-gvelesiani-631b27300/](https://www.linkedin.com/in/akaki-gvelesiani-631b27300//) |
+| Akaki Gvelesiani | akaki.g@hotmail.com | [linkedin.com/in/akaki-gvelesiani-631b27300/](https://www.linkedin.com/in/akaki-gvelesiani-631b27300//) |
 | Levani Kazaishvili | Levanikazaishvili@gmail.com |  [linkedin.com/in/levan-kazaishvili-665139289/](https://www.linkedin.com/in/levan-kazaishvili-665139289/) |
 
 Please include a brief description of your interest and intended use when reaching out.
